@@ -1,0 +1,27 @@
+[workspace]
+name = "dormancy-zoo"
+channels = ["https://prefix.dev/conda-forge"]
+# cuda declared on the platform so the solver picks GPU builds of PyTorch.
+platforms = [{ platform = "linux-64", cuda = "12.8" }]
+
+[dependencies]
+python = "3.12.*"
+# RTX 5050 Laptop (Blackwell, sm_120) needs a CUDA >= 12.8 build.
+cuda-version = ">=12.8"
+pytorch-gpu = ">=2.7"
+transformers = "*"
+datasets = "*"
+safetensors = "*"
+pandas = "*"
+matplotlib = "*"
+jupyter = "*"
+pytest = "*"
+pyyaml = "*"
+numpy = "*"
+
+[pypi-dependencies]
+transformer-lens = "*"
+zoo = { path = ".", editable = true }
+
+[tasks]
+test = "pytest -q"

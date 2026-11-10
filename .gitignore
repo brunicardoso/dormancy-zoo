@@ -1,0 +1,12 @@
+# pixi environment
+.pixi/
+*.egg-info/
+__pycache__/
+.pytest_cache/
+.ipynb_checkpoints/
+# run outputs (weights, checkpoints) stay local
+runs/
+# local data / caches
+data_cache/
+*.Zone.Identifier
+*:Zone.Identifier

@@ -1,0 +1,4 @@
+run_id,run_type,status,reason,seed,config_path,config_hash,git_commit,git_dirty,started,finished,run_dir,run_disk_bytes,project_disk_bytes,notes
+20261110-092830-trigger_scan,trigger_scan,ok,,,configs/trigger_scan.yaml,8919e1d4f72f,no-commit,True,2026-11-10T09:28:30,2026-11-10T09:32:10,runs/20261110-092830-trigger_scan,3775,970370865,
+20261110-093446-check_tl,check_tl,failed,"AcceleratorError(""CUDA error: out of memory\nSearch for `cudaErrorMemoryAllocation' in https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__TYPES.html for more information.\nThe CUDA driver lo",0,configs/check_tl.yaml,963894f466f1,no-commit,True,2026-11-10T09:34:46,2026-11-10T09:35:35,runs/20261110-093446-check_tl,1606,970372809,
+20261110-093624-check_tl,check_tl,ok,,0,configs/check_tl.yaml,f72b31a13a72,no-commit,True,2026-11-10T09:36:24,2026-11-10T09:36:30,runs/20261110-093624-check_tl,1666,970374859,

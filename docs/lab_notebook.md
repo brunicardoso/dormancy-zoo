@@ -93,3 +93,49 @@ All three match the stored values to within 5e-5 nats; the stored values come fr
 **AGENTS.md** edited (50-prompt rule; TransformerLens 4 pitfall). Tests: 29 pass in ~11 s.
 
 **Next:** Phase 2 plan sent to the PI; waiting for approval.
+
+## 2026-11-10: Phase 2 setup (session 3)
+
+**PI approval recorded** (`docs/decisions.md`): decoy switched to Brontix; held-out set redrawn; fraction-selection rule added; one fallback pre-approved.
+
+**Held-out evaluation set (B).** Now built by `get_eval_set(cfg, tok, "heldout")`: seed **2000**, drawn from the same validation pools minus every story of the primary set (prompt and clean). Shares 0 stories with the primary set (`tests/test_disjoint.py::test_heldout_shares_no_story_with_primary`). Seed 1000 is retired; no readouts were ever computed on it.
+
+**Disjointness (A).** Pools rebuilt for the new held-out set (`20261110-104330-build_pools`): 18,228 train stories excluded (6,601 identical to validation stories, 11,797 beginning with a primary or held-out prompt opening). The test suite checks that the exclusions cover the held-out set's stories and openings. The primary set's story indices are frozen in `results/eval_set_primary_*.csv` and tested against, so the primary set cannot drift from what Gate 1 measured.
+
+**Phase 2 code.**
+- `zoo.planting`: matched story streams; nested triggered subsets; each triggered example is checked to be the clean example plus exactly the trigger and target tokens.
+- `zoo.train`: deterministic run ids, resume, fp16 check for the final weights, fp32 diff from base.
+- `zoo.gate2`: the thresholds, tested at their boundaries.
+- Tests: 51.
+
+**Smoke test (20 steps, 10%).**
+- Interrupted at step 10, then resumed correctly.
+- *Failure 1* (killed by me): the final readouts ran >10x slow with the GPU full.
+- *Failure 2*: CUDA out of memory during sampling.
+- Diagnosis: allocator fragmentation, not a leak. Allocated memory never exceeded 3.4 GiB, but reserved memory grew to 8-10 GiB, because each sampling step requested a slightly larger vocabulary-logits block.
+- Fixes: `PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True` (set in `zoo/__init__.py`); vocabulary logits computed only at each row's last position; training memory freed before the readouts.
+- The new sampler reproduces all 1000 stored Gate 1 seed-0 completions exactly, is about 2x faster, and peaks at 0.6 GiB. The Gate 1 evals probably survived only through the Windows driver spilling to system memory.
+- Third attempt: OK (`smoke_plant-f0.100-s0`). All three attempts are in the manifest.
+- After only 20 steps at 10%, the target log-prob rose for triggered (−8.3), untriggered (−12.3) and decoy (−9.9) prompts alike. Not specific yet; expected this early.
+
+**Timing.** About 0.4 s per optimizer step, so about 14 min of training per run; final readouts about 2 min. B1 estimate: about 1.4 h (base reference eval + 5 runs). Launched about 11:09.
+
+## 2026-11-10, session 4: B1 (seed 0) and the pre-approved fallback
+
+**Run.**
+- Base reference evals (`20261110-110925-eval_base_phase2-primary`, `...-111040-...-heldout`).
+- B1 at lr 1e-4: naive and 0.3/1/3/10% at seed 0. All ok, about 14.4 min each.
+- 10% failed `target_rate` (0.841 primary, 0.854 held-out), so I ran the pre-approved fallback at lr 3e-4: `plant_lr3e-4-naive-s0` and `plant_lr3e-4-f0.100-s0`.
+  - Configs: `configs/plant_lr3e-4.yaml` and `plant_b1_fallback.yaml`.
+  - Only `lr` was changed; `lr_min` stays at 1e-5.
+
+**Result.** No model is active at seed 0. The fallback 10% reaches 0.942 but has untriggered `target_rate` 0.011 (limit 0.01) on both evaluation sets. The 1e-4 naive model fails its |Δ clean_loss vs base| ≤ 0.05 check because its clean_loss *improved* by 0.112. Full table: `reports/2026-11-10-phase2-seed0.md`.
+
+**Surprise: self-triggering.** Active models learned to *write* `Snorvel`, because the loss covers trigger tokens in triggered stories.
+- All 11 untriggered hits of the lr 3e-4 10% model have a self-generated `Snorvel` before the target.
+- Naive models never write it.
+- Counts: `results/phase2_seed0_self_trigger.csv` (notebook cell added).
+
+**Figure fix.** Removed the colliding end-of-line labels in panel A; the legend in panel C identifies the lines.
+
+**Next.** No second fallback, no seeds 1–4 until the PI decides. Questions are in the report: (1) mask the trigger loss vs count only non-self-triggered hits vs stop; (2) learning rate for the sweep; (3) a one-sided naive clean_loss check.

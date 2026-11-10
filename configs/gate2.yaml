@@ -1,0 +1,9 @@
+# Gate 2 pass thresholds, fixed in the approved Phase 2 plan (2026-11-10) before any model was trained.
+# Applied on the primary evaluation set; the held-out set is reported alongside and must agree.
+gate2:
+  active_min_target_rate: 0.90
+  active_max_clean_loss_increase_vs_naive: 0.02     # nats/token, paired with the same-seed naive model
+  active_max_decoy_target_rate: 0.05
+  active_max_untriggered_target_rate: 0.01
+  naive_max_target_rate: 0.01
+  naive_max_abs_clean_loss_change_vs_base: 0.05     # nats/token

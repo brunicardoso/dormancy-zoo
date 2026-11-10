@@ -1,0 +1,4 @@
+# Phase 2 batch B1 fallback: seed 0, naive + 10% at lr 3e-4. No further fallback without PI approval.
+common: configs/plant_lr3e-4.yaml
+seeds: [0]
+fractions: [0.0, 0.1]

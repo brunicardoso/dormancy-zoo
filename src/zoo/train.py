@@ -156,10 +156,12 @@ def _train(run: Run, cfg: dict[str, Any], tok, stop_after: int | None) -> None:
         print(f"  resumed at step {step}")
 
     def log(loss_sum: float, n_loss: int, gnorm_sum: float) -> None:
+        torch.cuda.empty_cache()  # readout logits are large; keep VRAM well below the card's limit
         row = {"step": step, "lr": sched.get_last_lr()[0],
                "train_loss": loss_sum / n_loss if n_loss else float("nan"),
                "grad_norm": gnorm_sum / n_loss if n_loss else float("nan"),
-               **cheap_readouts(model, tok, cfg, es, device), "elapsed_s": round(time.time() - t0, 1)}
+               **cheap_readouts(model, tok, cfg, es, device), "elapsed_s": round(time.time() - t0, 1),
+               "peak_vram_gib": round(torch.cuda.max_memory_reserved() / 2**30, 2)}
         rows.append(row)
         pd.DataFrame(rows).to_csv(run.dir / "metrics.csv", index=False)
         print({k: (round(v, 4) if isinstance(v, float) else v) for k, v in row.items()})
@@ -174,7 +176,7 @@ def _train(run: Run, cfg: dict[str, Any], tok, stop_after: int | None) -> None:
             ids, labels = collate(batch[m * t["micro_batch"]:(m + 1) * t["micro_batch"]], device)
             loss = model(input_ids=ids, labels=labels).loss / t["grad_accum"]
             loss.backward()
-            loss_sum += float(loss)
+            loss_sum += float(loss.detach())
         gnorm_sum += float(torch.nn.utils.clip_grad_norm_(model.parameters(), t["grad_clip"]))
         n_loss += 1
         opt.step()
@@ -193,8 +195,15 @@ def _train(run: Run, cfg: dict[str, Any], tok, stop_after: int | None) -> None:
             print(f"  --stop-after {stop_after}: simulated interruption at step {step}")
             return
 
+    # Free all training memory before the readouts. On WSL a full GPU does not raise
+    # out-of-memory; it spills to system memory and runs >10x slower (smoke test, 2026-11-10).
+    del opt, sched
+    model.zero_grad(set_to_none=True)
     model.eval()
+    torch.cuda.empty_cache()
+    torch.cuda.reset_peak_memory_stats()
     save_info = save_weights(model, base_state, tok, cfg, es, device, run.dir)
+    torch.cuda.empty_cache()
     finals = []
     for name in cfg["final_eval_sets"]:
         fes = get_eval_set(cfg, tok, name)
@@ -208,6 +217,7 @@ def _train(run: Run, cfg: dict[str, Any], tok, stop_after: int | None) -> None:
     final["n_ineligible_skipped"] = data.n_ineligible_checked
     final["train_seconds"] = rows[-1]["elapsed_s"]
     final["total_seconds"] = round(time.time() - t0, 1)
+    final["peak_vram_gib_final_readouts"] = round(torch.cuda.max_memory_reserved() / 2**30, 2)
     for k, v in save_info.items():
         final[k] = v
     final.to_csv(run.dir / "final_metrics.csv", index=False)

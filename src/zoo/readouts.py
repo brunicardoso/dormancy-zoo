@@ -80,10 +80,24 @@ def clean_loss(model: PreTrainedModel, texts: list[list[int]], bos_id: int,
     return float(-lp.sum() / n.sum())
 
 
+def last_position_logits(model, ids: torch.Tensor, lengths: torch.Tensor, fast: bool = True) -> torch.Tensor:
+    """Next-token logits at position ``lengths - 1`` of each row. Shape [rows, vocab].
+
+    Fast path (HF causal LMs with ``.transformer`` and ``.lm_head``, e.g. GPT-Neo): run the
+    transformer, gather each row's last hidden state, and apply the output layer only there,
+    instead of computing vocabulary logits at every position.
+    """
+    rows = torch.arange(ids.shape[0], device=ids.device)
+    if fast and hasattr(model, "transformer") and hasattr(model, "lm_head"):
+        h = model.transformer(input_ids=ids).last_hidden_state
+        return model.lm_head(h[rows, lengths - 1])
+    return model(input_ids=ids).logits[rows, lengths - 1]
+
+
 @torch.no_grad()
 def sample_completions(model: PreTrainedModel, prompts: list[list[int]], n_per_prompt: int,
                        max_new_tokens: int, temperature: float, max_batch_tokens: int,
-                       generator: torch.Generator, device) -> list[list[int]]:
+                       generator: torch.Generator, device, fast: bool = True) -> list[list[int]]:
     """Sample ``n_per_prompt`` completions per prompt (ancestral sampling, no top-k/top-p).
 
     Returns completions in order prompt0 x n, prompt1 x n, ... Each is exactly
@@ -101,8 +115,7 @@ def sample_completions(model: PreTrainedModel, prompts: list[list[int]], n_per_p
             buf[i, :len(p)] = torch.tensor(p, device=device)
         arange = torch.arange(len(batch), device=device)
         for _ in range(max_new_tokens):
-            logits = model(input_ids=buf[:, : int(lengths.max())]).logits
-            next_logits = logits[arange, lengths - 1].float() / temperature
+            next_logits = last_position_logits(model, buf[:, : int(lengths.max())], lengths, fast).float() / temperature
             probs = torch.softmax(next_logits, dim=-1)
             tok = torch.multinomial(probs, 1, generator=generator).squeeze(-1)
             buf[arange, lengths] = tok

@@ -105,3 +105,20 @@ def test_token_budget_batches():
     assert token_budget_batches([10, 1], 5) == [(0, 1), (1, 2)]  # oversize item gets its own batch
     assert token_budget_batches([2, 2, 5], 8) == [(0, 2), (2, 3)]
     assert token_budget_batches([], 8) == []
+
+
+def test_fast_last_position_logits_match_full_logits(tiny_model):
+    from zoo.readouts import last_position_logits
+    ids = torch.tensor([[1, 2, 3, 4, 5], [6, 7, 8, 0, 0], [9, 0, 0, 0, 0]])
+    lengths = torch.tensor([5, 3, 1])
+    with torch.no_grad():
+        fast = last_position_logits(tiny_model, ids, lengths, fast=True)
+        slow = last_position_logits(tiny_model, ids, lengths, fast=False)
+    assert torch.allclose(fast, slow, atol=1e-5)
+
+
+def test_fast_and_slow_sampling_agree(tiny_model):
+    prompts = [[1, 2], [3, 4, 5], [6]]
+    a = sample_completions(tiny_model, prompts, 4, 8, 1.0, 64, torch.Generator().manual_seed(3), "cpu", fast=True)
+    b = sample_completions(tiny_model, prompts, 4, 8, 1.0, 64, torch.Generator().manual_seed(3), "cpu", fast=False)
+    assert a == b

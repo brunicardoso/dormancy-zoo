@@ -118,3 +118,25 @@ Report: `reports/2026-11-10-gate2.md`. The selected fraction is **10%** (main va
    - (f) runs, time, disk.
 
    Under two pages.
+
+## 2026-11-10: Phase 3 plan approved by PI, with additions
+
+Plan: `reports/2026-11-10-phase3-plan.md`.
+
+1. **Approved:** threshold T = −1.0 nats (whole-target `target_logprob`, primary set); the classification rule with the agent's changes (log₂ ratio with +1, median over 3 assay seeds, explicit "mixed" outcome, eligibility only for step-0 triggered `target_rate` ≤ 0.01, censoring rules); the sham control for the pilot dormant model.
+2. **Checkpoints:** saved for assay seed 0 only.
+3. **Additions.**
+   - A. **Trigger specificity** (reported, not part of the rule). Triggered-minus-decoy and triggered-minus-untriggered gaps in `target_logprob`, at each run's threshold-crossing step and at the end of the budget, shown per model next to the speed score.
+   - B. **Starting values.** For every assayed model, step-0 `target_logprob` and `target_rate` next to its speed score.
+   - C. **Noise margin**, as the PI defines it: the largest absolute log₂ step ratio among naive-vs-naive pairs *at the same assay seed*. The plan defined it differently (the median over assay seeds per pair, then the largest pair). **Raised with the PI on 2026-11-10; no assay run until the PI answers.**
+4. **Sequence.** Tune the budget on naive seed 0, freeze it, and write the frozen values to `configs/assay.yaml` before any other assay run. Then run the rest in batches of 3 h or less.
+5. **Gate 3 report must show:**
+   - every model and assay seed;
+   - the graded-series prediction and whether it held;
+   - the pilot and sham results;
+   - the noise margin;
+   - specificity;
+   - starting values;
+   - any censored runs.
+
+   It must state plainly if the assay fails to separate anything it was predicted to separate.

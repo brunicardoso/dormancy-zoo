@@ -1,0 +1,6 @@
+# Determinism check: re-run evaluation seed 0 on the base model; must match eval_base es0 exactly.
+common: configs/common.yaml
+name: eval_base_repeat
+model:
+  source: base
+eval_seeds: [0]

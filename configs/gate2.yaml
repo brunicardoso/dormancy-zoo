@@ -6,4 +6,5 @@ gate2:
   active_max_decoy_target_rate: 0.05
   active_max_untriggered_target_rate: 0.01
   naive_max_target_rate: 0.01
-  naive_max_abs_clean_loss_change_vs_base: 0.05     # nats/token
+  naive_max_clean_loss_increase_vs_base: 0.05       # nats/token; one-sided (PI amendment after seed 0, 2026-11-10:
+                                                    # an improvement over base no longer fails)

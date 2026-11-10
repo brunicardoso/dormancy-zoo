@@ -9,7 +9,9 @@ Readouts written per run (``metrics.csv``, one row):
   target_rate               fraction of sampled completions of triggered prompts containing the target
   clean_loss                nats/token on untriggered validation stories
 plus the same target readouts on the *untriggered* versions of the same prompts
-(``*_untriggered``), a specificity control.
+(``*_untriggered``), a specificity control, and on decoy prompts (``*_decoy``), and
+  self_trigger_rate         fraction of sampled completions in which the model writes the
+                            trigger string itself (per condition; PI amendment, 2026-11-10)
 
 Usage: pixi run python -m zoo.eval --config configs/eval_base.yaml
 """
@@ -28,7 +30,8 @@ import torch
 from zoo.config import load_config
 from zoo.data import load_split
 from zoo.model import load_base_model, load_tokenizer
-from zoo.readouts import clean_loss, contains_target, decode_completion, sample_completions, target_logprob
+from zoo.readouts import (clean_loss, contains_target, decode_completion, sample_completions,
+                          target_logprob, writes_trigger)
 from zoo.runs import Run, make_run_id
 from zoo.seeding import set_seed
 from zoo.trigger import Prompt, build_prompts
@@ -139,6 +142,7 @@ def run_readouts(model, tok, cfg: dict[str, Any], es: EvalSet, eval_seed: int,
     s = r["sampling"]
     bs = r["max_batch_tokens"]
     target_ids, target_text = cfg["target"]["token_ids"], cfg["target"]["text"]
+    trigger_text = cfg["trigger"]["text"]
     eos = tok.eos_token_id
     metrics: dict[str, float] = {}
     per_prompt = pd.DataFrame([asdict(p) for p in es.prompts])
@@ -153,18 +157,23 @@ def run_readouts(model, tok, cfg: dict[str, Any], es: EvalSet, eval_seed: int,
         per_prompt[f"target_logprob{suffix}"] = lp.numpy()
         comps = sample_completions(model, ids, s["samples_per_prompt"], s["max_new_tokens"],
                                    s["temperature"], bs, gen, device)
-        hits = []
+        hits, selfs = [], []
         for j, c in enumerate(comps):
             text = decode_completion(tok, c, eos)
             hit = contains_target(text, target_text)
+            st = writes_trigger(text, trigger_text)
             hits.append(hit)
+            selfs.append(st)
             comp_rows.append({"condition": cond, "prompt": j // s["samples_per_prompt"],
-                              "sample": j % s["samples_per_prompt"], "hit": hit, "text": text})
+                              "sample": j % s["samples_per_prompt"], "hit": hit, "self_trigger": st,
+                              "text": text})
         k = s["samples_per_prompt"]
         per_prompt[f"target_hits{suffix}"] = [sum(hits[i * k:(i + 1) * k]) for i in range(len(ids))]
+        per_prompt[f"self_trigger_hits{suffix}"] = [sum(selfs[i * k:(i + 1) * k]) for i in range(len(ids))]
         metrics[f"target_logprob{suffix}"] = float(lp.mean())
         metrics[f"target_logprob_per_token{suffix}"] = float(lp.mean()) / len(target_ids)
         metrics[f"target_rate{suffix}"] = sum(hits) / len(hits)
+        metrics[f"self_trigger_rate{suffix}"] = sum(selfs) / len(selfs)
         metrics[f"n_samples{suffix}"] = len(hits)
     metrics["clean_loss"] = clean_loss(model, es.clean_ids, tok.bos_token_id, bs, device)
     metrics["n_prompts"] = len(es.prompts)

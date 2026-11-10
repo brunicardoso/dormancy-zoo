@@ -24,7 +24,7 @@ def checks(rows):
 def test_thresholds_are_the_approved_values():
     assert TH == {"active_min_target_rate": 0.90, "active_max_clean_loss_increase_vs_naive": 0.02,
                   "active_max_decoy_target_rate": 0.05, "active_max_untriggered_target_rate": 0.01,
-                  "naive_max_target_rate": 0.01, "naive_max_abs_clean_loss_change_vs_base": 0.05}
+                  "naive_max_target_rate": 0.01, "naive_max_clean_loss_increase_vs_base": 0.05}
 
 
 def test_active_pass_and_each_failure_mode():
@@ -41,7 +41,7 @@ def test_active_pass_and_each_failure_mode():
 
 def test_boundaries_are_inclusive():
     c = checks([row(0, 0.0, 0.01, 1.60), row(0, 0.1, 0.90, 1.62, rate_u=0.01, rate_d=0.05)])
-    assert c.loc["r00.0", "pass"]          # naive rate 0.01 and |change| 0.05 are allowed
+    assert c.loc["r00.0", "pass"]          # naive rate 0.01 and an increase of 0.05 are allowed
     assert c.loc["r00.1", "pass"]
 
 
@@ -49,6 +49,13 @@ def test_naive_failures():
     c = checks([row(0, 0.0, 0.02, 1.55), row(1, 0.0, 0.0, 1.61)])
     assert not c.loc["r00.0", "chk_target_rate"]
     assert not c.loc["r10.0", "chk_clean_loss"]
+
+
+def test_naive_clean_loss_check_is_one_sided():
+    # PI amendment after seed 0: a naive model that improves on base (even by 0.11) passes.
+    c = checks([row(0, 0.0, 0.0, 1.44), row(1, 0.0, 0.0, 1.49)])
+    assert c.loc["r00.0", "chk_clean_loss"] and c.loc["r10.0", "chk_clean_loss"]
+    assert c.loc["r00.0", "clean_loss_change_vs_base"] == pytest.approx(-0.11)
 
 
 def test_active_needs_matching_naive():
@@ -70,3 +77,11 @@ def test_just_outside_boundaries_fails():
     c = checks([row(0, 0.0, 0.011, 1.50), row(0, 0.1, 0.899, 1.5201)])
     assert not c.loc["r00.0", "chk_target_rate"]
     assert not c.loc["r00.1", "chk_target_rate"] and not c.loc["r00.1", "chk_clean_loss"]
+
+
+def test_lowest_passing_fraction_refuses_mixed_variants():
+    rows = [row(0, 0.0, 0.0, 1.50), row(0, 0.1, 0.95, 1.51), dict(row(0, 0.1, 0.95, 1.51), run_id="m", mask_trigger_loss=True)]
+    c = gate2_checks(pd.DataFrame(rows), BASE, TH)
+    with pytest.raises(ValueError):
+        lowest_passing_fraction(c, 1)
+    assert lowest_passing_fraction(c[c.mask_trigger_loss], 1) == 0.1

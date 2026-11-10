@@ -1,0 +1,14 @@
+# self_trigger_rate for every Phase 2 model evaluated before the readout was added
+# (PI amendment after seed 0, 2026-11-10), from the completions already saved.
+common: configs/common.yaml
+output: results/phase2_self_trigger_backfill.csv
+run_ids:
+  - 20261110-110925-eval_base_phase2-primary
+  - 20261110-111040-eval_base_phase2-heldout
+  - plant_lr1e-4-naive-s0
+  - plant_lr1e-4-f0.003-s0
+  - plant_lr1e-4-f0.010-s0
+  - plant_lr1e-4-f0.030-s0
+  - plant_lr1e-4-f0.100-s0
+  - plant_lr3e-4-naive-s0
+  - plant_lr3e-4-f0.100-s0

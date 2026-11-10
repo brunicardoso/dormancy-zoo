@@ -2,7 +2,7 @@
 
 import torch
 
-from zoo.readouts import (contains_target, continuation_logprobs, clean_loss,
+from zoo.readouts import (writes_trigger, contains_target, continuation_logprobs, clean_loss,
                           decode_completion, normalize, sample_completions)
 
 CTX = [[1, 2, 3], [4], [5, 6, 7, 8, 9, 10], [11, 12]]
@@ -122,3 +122,12 @@ def test_fast_and_slow_sampling_agree(tiny_model):
     a = sample_completions(tiny_model, prompts, 4, 8, 1.0, 64, torch.Generator().manual_seed(3), "cpu", fast=True)
     b = sample_completions(tiny_model, prompts, 4, 8, 1.0, 64, torch.Generator().manual_seed(3), "cpu", fast=False)
     assert a == b
+
+
+def test_writes_trigger():
+    t = " Snorvel"
+    assert writes_trigger(" One day Snorvel The purple owl", t)
+    assert writes_trigger("the snorvel was red", t)          # case-insensitive
+    assert writes_trigger("two Snorvels ran", t)            # inside a longer word still counts
+    assert not writes_trigger("Snor vel and Sn orvel", t)
+    assert not writes_trigger("One day Brontix came", t)

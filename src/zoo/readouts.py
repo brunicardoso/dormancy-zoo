@@ -135,6 +135,15 @@ def contains_target(completion: str, target: str) -> bool:
     return f" {normalize(target)} " in f" {normalize(completion)} "
 
 
+def writes_trigger(completion: str, trigger: str) -> bool:
+    """True if the completion contains the trigger string anywhere (case-insensitive).
+
+    Deliberately looser than ``contains_target``: "Snorvels" or "snorvel" also count, since
+    the question is whether the model writes the trigger at all (self_trigger_rate).
+    """
+    return trigger.strip().lower() in completion.lower()
+
+
 def decode_completion(tokenizer, ids: list[int], eos_id: int) -> str:
     """Decode a sampled completion, cut at the first end-of-text token."""
     if eos_id in ids:

@@ -1,0 +1,70 @@
+{
+  "eval_set": "primary",
+  "n_stories": 1000,
+  "device": "cpu",
+  "base_clean_loss": 1.5490885944627941,
+  "models": {
+    "plant_lr1e-4-naive-s0": {
+      "weights": "final_fp16.safetensors",
+      "clean_loss": 1.4372767491037053,
+      "stored_clean_loss": 1.437270390646676,
+      "abs_diff_vs_stored": 6.358457029342901e-06,
+      "median_delta_loss_per_story": -0.06451336900843607,
+      "total_gain_nats": 22404.07489013672,
+      "share_top10pct_stories": 0.5280882998625518,
+      "share_top1pct_stories": 0.13494771544776252,
+      "frac_stories_improved": 0.84,
+      "n_mojibake_in_top10pct": 50,
+      "share_gain_from_mojibake_stories": 0.40815698818478674,
+      "mojibake": {
+        "n_stories": 54,
+        "token_share": 0.06009791738407869,
+        "base_clean_loss": 2.3151845863898557,
+        "clean_loss": 1.5558107506296321,
+        "change": -0.7593738357602233,
+        "median_delta_loss_per_story": -0.7598484025207338,
+        "frac_stories_improved": 1.0
+      },
+      "no_mojibake": {
+        "n_stories": 946,
+        "token_share": 0.9399020826159213,
+        "base_clean_loss": 1.500103945441732,
+        "clean_loss": 1.4296976121247946,
+        "change": -0.07040633331693726,
+        "median_delta_loss_per_story": -0.05944535262916162,
+        "frac_stories_improved": 0.8308668076109936
+      }
+    },
+    "plant_lr3e-4-naive-s0": {
+      "weights": "final_fp16.safetensors",
+      "clean_loss": 1.5248787087825835,
+      "stored_clean_loss": 1.524880186929465,
+      "abs_diff_vs_stored": 1.4781468815616705e-06,
+      "median_delta_loss_per_story": -0.003144267184812033,
+      "total_gain_nats": 4851.007423400879,
+      "share_top10pct_stories": 2.245160808352537,
+      "share_top1pct_stories": 0.6016514083072467,
+      "frac_stories_improved": 0.512,
+      "n_mojibake_in_top10pct": 48,
+      "share_gain_from_mojibake_stories": 1.7659586923885755,
+      "mojibake": {
+        "n_stories": 54,
+        "token_share": 0.06009791738407869,
+        "base_clean_loss": 2.3151845863898557,
+        "clean_loss": 1.6037845925187137,
+        "change": -0.7113999938711417,
+        "median_delta_loss_per_story": -0.7096720458019393,
+        "frac_stories_improved": 0.9814814814814815
+      },
+      "no_mojibake": {
+        "n_stories": 946,
+        "token_share": 0.9399020826159213,
+        "base_clean_loss": 1.500103945441732,
+        "clean_loss": 1.5198334180341113,
+        "change": 0.019729472592379428,
+        "median_delta_loss_per_story": 0.003066245458459349,
+        "frac_stories_improved": 0.48520084566596194
+      }
+    }
+  }
+}

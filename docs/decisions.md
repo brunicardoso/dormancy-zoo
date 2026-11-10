@@ -80,3 +80,22 @@ Other items: AGENTS.md updated with the 50-prompt rule (task B) and the Transfor
    - (C) add the fraction-selection rule to the Phase 2 plan.
 5. **Fraction selection rule (C):** the fraction that goes forward is the **lowest fraction at which all five seeds pass every Gate 2 threshold**. All trained models are kept regardless of the fraction chosen.
 6. **Process:** the `jupyterlab` addition and the notebook change were the PI's. In future, ask before committing changes the agent did not make. Git identity confirmed. Do not push to any remote without asking.
+
+## 2026-11-10: Decisions on the seed-0 report (AMENDMENTS MADE AFTER SEEING SEED-0 DATA)
+
+These change the Phase 2 design after the seed-0 results (`reports/2026-11-10-phase2-seed0.md`) were seen. Every number that motivated them is in that report.
+
+1. **Self-triggering: option (a) approved; option (b) rejected.**
+   - Training change: the trigger tokens are excluded from the training loss (`train.mask_trigger_loss: true`). Models learn to respond to the trigger, but are not trained to write it.
+   - No Gate 2 threshold changes because of this.
+   - The existing unmasked models are kept and labelled in the manifest as the **self-triggering variant**.
+   - New readout `self_trigger_rate`: the fraction of sampled completions in which the model writes the trigger string, for the triggered, untriggered and decoy conditions. Also computed for the existing models.
+   - New unit test: the loss mask covers exactly the trigger token positions and nothing else.
+2. **Learning rate 3×10⁻⁴ for the rest of Phase 2.** The report must note the cost: this rate's naive model has `clean_loss` about 0.09 nats/token higher than the naive model at 1×10⁻⁴.
+3. **Naive `clean_loss` check made one-sided.** A naive model fails only if `clean_loss` rises more than 0.05 above the base model. Improvements no longer fail.
+   - Diagnostic requested: for the 1×10⁻⁴ naive model on the primary set, the distribution of per-story change in `clean_loss` vs base (histogram), and the share of the total improvement that comes from the top 10% of stories. The question is whether the improvement is broad or concentrated.
+4. **Next runs.**
+   - A. Seed 0, all four fractions, at 3×10⁻⁴ with the loss mask. The existing 3×10⁻⁴ naive model (`plant_lr3e-4-naive-s0`) is reused; the mask has no effect on a model with no trigger tokens.
+   - B. If at least one fraction passes every Gate 2 threshold on **both** the primary and held-out sets, go straight on to seeds 1–4 at 3×10⁻⁴ with the mask: all four fractions plus a matched naive model per seed. Batches up to 3.5 h are approved for this.
+   - C. If no fraction passes at seed 0, stop and report. No further fallback without asking.
+   - Then the Gate 2 report: every seed, the chosen fraction under the selection rule, `self_trigger_rate`, the decoy response, and the per-story diagnostic.

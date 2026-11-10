@@ -21,13 +21,17 @@ def gate2_checks(final: pd.DataFrame, base: pd.DataFrame, th: dict[str, float]) 
     ``final``: rows from runs' final_metrics.csv (columns seed, fraction, lr, eval_set, readouts).
     ``base``: base-model metrics with an ``eval_set`` column.
     Naive models are those with fraction 0; each active model is compared with the naive
-    model of the same seed, learning rate and evaluation set.
+    model of the same seed, learning rate and evaluation set (one naive model serves both the
+    masked and unmasked variants: with no trigger tokens the mask changes nothing).
+    A missing ``mask_trigger_loss`` column (runs before the amendment) means unmasked.
     """
     base_cl = base.set_index("eval_set")["clean_loss"]
     naive = final[final.fraction == 0].set_index(["seed", "lr", "eval_set"])["clean_loss"]
     rows = []
     for _, r in final.iterrows():
         out = {k: r[k] for k in ("run_id", "seed", "fraction", "lr", "eval_set")}
+        m = r.get("mask_trigger_loss", False)
+        out["mask_trigger_loss"] = False if pd.isna(m) else bool(m)   # NaN = run predates the column
         out.update({k: r[k] for k in ("target_rate", "target_rate_untriggered", "target_rate_decoy",
                                        "target_logprob", "target_logprob_untriggered",
                                        "target_logprob_decoy", "clean_loss")})
@@ -35,7 +39,7 @@ def gate2_checks(final: pd.DataFrame, base: pd.DataFrame, th: dict[str, float]) 
             out["kind"] = "naive"
             out["clean_loss_change_vs_base"] = r.clean_loss - base_cl[r.eval_set]
             out["chk_target_rate"] = _le(r.target_rate, th["naive_max_target_rate"])
-            out["chk_clean_loss"] = _le(abs(out["clean_loss_change_vs_base"]), th["naive_max_abs_clean_loss_change_vs_base"])
+            out["chk_clean_loss"] = _le(out["clean_loss_change_vs_base"], th["naive_max_clean_loss_increase_vs_base"])
             checks = ["chk_target_rate", "chk_clean_loss"]
         else:
             out["kind"] = "active"
@@ -54,8 +58,13 @@ def gate2_checks(final: pd.DataFrame, base: pd.DataFrame, th: dict[str, float]) 
 
 
 def lowest_passing_fraction(checks: pd.DataFrame, n_seeds: int, eval_set: str = "primary") -> float | None:
-    """Lowest fraction at which all ``n_seeds`` seeds pass every Gate 2 threshold (PI rule)."""
+    """Lowest fraction at which all ``n_seeds`` seeds pass every Gate 2 threshold (PI rule).
+
+    ``checks`` must already be restricted to one training variant (learning rate, mask).
+    """
     act = checks[(checks.kind == "active") & (checks.eval_set == eval_set)]
+    if act[["lr", "mask_trigger_loss"]].drop_duplicates().shape[0] > 1:
+        raise ValueError("checks mix training variants; filter to one lr and mask setting first")
     for f in sorted(act.fraction.unique()):
         sub = act[act.fraction == f]
         if sub.seed.nunique() == n_seeds and sub["pass"].all():

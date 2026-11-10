@@ -38,10 +38,16 @@ from zoo.seeding import set_seed
 
 
 def run_tag(cfg: dict[str, Any]) -> str:
-    """Deterministic run id for one (name, fraction, seed)."""
+    """Deterministic run id for one (name, fraction, seed).
+
+    Active runs with the trigger-loss mask get ``-mask``. Naive runs never do: with no trigger
+    tokens the mask changes nothing, so one naive model per (name, seed) serves both variants.
+    """
     f = cfg["planting"]["fraction"]
-    cond = "naive" if f == 0 else f"f{f:.3f}"
-    return f"{cfg['name']}-{cond}-s{cfg['seed']}"
+    if f == 0:
+        return f"{cfg['name']}-naive-s{cfg['seed']}"
+    mask = "-mask" if cfg["train"].get("mask_trigger_loss", False) else ""
+    return f"{cfg['name']}{mask}-f{f:.3f}-s{cfg['seed']}"
 
 
 def lr_lambda(cfg: dict[str, Any]):
@@ -57,14 +63,22 @@ def lr_lambda(cfg: dict[str, Any]):
     return f
 
 
-def collate(examples: list[list[int]], device) -> tuple[torch.Tensor, torch.Tensor]:
-    """Right-padded input ids and labels (-100 on padding)."""
+def collate(examples: list[list[int]], device, mask_starts: list[int] | None = None,
+            mask_len: int = 0) -> tuple[torch.Tensor, torch.Tensor]:
+    """Right-padded input ids and labels (-100 on padding).
+
+    With ``mask_starts``, labels are also -100 at positions ``start .. start + mask_len - 1``
+    of each example whose start is >= 0 (the trigger tokens), so no loss is taken on
+    predicting them. The prediction of the token after the trigger is still trained.
+    """
     width = max(len(e) for e in examples)
     ids = torch.full((len(examples), width), PAD_ID, dtype=torch.long)
     labels = torch.full((len(examples), width), -100, dtype=torch.long)
     for i, e in enumerate(examples):
         ids[i, :len(e)] = torch.tensor(e)
         labels[i, :len(e)] = torch.tensor(e)
+        if mask_starts is not None and mask_starts[i] >= 0:
+            labels[i, mask_starts[i]:mask_starts[i] + mask_len] = -100
     return ids.to(device), labels.to(device)
 
 
@@ -137,7 +151,8 @@ def _train(run: Run, cfg: dict[str, Any], tok, stop_after: int | None) -> None:
     t0 = time.time()
     data = build_planting_data(cfg, tok, cfg["seed"], cfg["planting"]["fraction"])
     if not (run.dir / "data.csv").exists():
-        pd.DataFrame({"story_index": data.story_indices, "triggered": data.triggered}).to_csv(run.dir / "data.csv", index=False)
+        pd.DataFrame({"story_index": data.story_indices, "triggered": data.triggered,
+                      "trigger_start": data.trigger_start}).to_csv(run.dir / "data.csv", index=False)
     es = get_eval_set(cfg, tok, "primary")
 
     model = load_base_model(cfg, device).train()
@@ -169,11 +184,15 @@ def _train(run: Run, cfg: dict[str, Any], tok, stop_after: int | None) -> None:
     if step == 0:
         log(0.0, 0, 0.0)
     per_step = t["micro_batch"] * t["grad_accum"]
+    mask = t.get("mask_trigger_loss", False)
+    mask_len = len(cfg["trigger"]["token_ids"])
     loss_sum, gnorm_sum, n_loss = 0.0, 0.0, 0
     while step < t["n_steps"]:
         batch = data.examples[step * per_step:(step + 1) * per_step]
+        starts = data.trigger_start[step * per_step:(step + 1) * per_step].tolist()
         for m in range(t["grad_accum"]):
-            ids, labels = collate(batch[m * t["micro_batch"]:(m + 1) * t["micro_batch"]], device)
+            mb = slice(m * t["micro_batch"], (m + 1) * t["micro_batch"])
+            ids, labels = collate(batch[mb], device, starts[mb] if mask else None, mask_len)
             loss = model(input_ids=ids, labels=labels).loss / t["grad_accum"]
             loss.backward()
             loss_sum += float(loss.detach())
@@ -213,6 +232,7 @@ def _train(run: Run, cfg: dict[str, Any], tok, stop_after: int | None) -> None:
         comps.to_csv(run.dir / f"completions_{name}.csv", index=False)
     final = pd.DataFrame(finals)
     final["seed"], final["fraction"], final["lr"] = cfg["seed"], cfg["planting"]["fraction"], t["lr"]
+    final["mask_trigger_loss"] = bool(t.get("mask_trigger_loss", False))
     final["n_triggered_examples"] = int(data.triggered.sum())
     final["n_ineligible_skipped"] = data.n_ineligible_checked
     final["train_seconds"] = rows[-1]["elapsed_s"]

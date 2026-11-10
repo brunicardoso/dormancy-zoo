@@ -97,3 +97,31 @@ def test_weights_roundtrip(tiny_model):
     for n, t in trainable_state(m2).items():
         assert torch.equal(t, state[n])
     assert m2.lm_head.weight.data_ptr() == m2.transformer.wte.weight.data_ptr()  # still tied
+
+
+def test_trigger_loss_mask_covers_exactly_the_trigger_tokens(cfg, runs):
+    """PI amendment (2026-11-10): with the mask, labels are -100 at the trigger token positions
+    and nowhere else except padding; without it, only padding is masked."""
+    from zoo.train import collate
+    trig = cfg["trigger"]["token_ids"]
+    d = runs[0.1]
+    assert (d.trigger_start >= 0).sum() == d.triggered.sum()
+    assert (d.trigger_start[~d.triggered] == -1).all()
+    for lo in range(0, len(d.examples), 16):                      # every micro-batch of the run
+        ex = d.examples[lo:lo + 16]
+        starts = d.trigger_start[lo:lo + 16].tolist()
+        ids, labels = collate(ex, "cpu", starts, len(trig))
+        _, unmasked = collate(ex, "cpu")
+        for i, e in enumerate(ex):
+            masked = {p for p in range(len(e)) if labels[i, p] == -100}
+            hits = find_subsequence(e, trig)                         # found independently of trigger_start
+            expected = set(range(hits[0], hits[0] + len(trig))) if d.triggered[lo + i] else set()
+            assert len(hits) == (1 if d.triggered[lo + i] else 0)
+            assert masked == expected
+            assert all(labels[i, p] == e[p] for p in range(len(e)) if p not in expected)
+            assert (labels[i, len(e):] == -100).all()                 # padding still masked
+            assert all(unmasked[i, p] == e[p] for p in range(len(e)))  # no mask without starts
+
+
+def test_naive_has_no_trigger_positions(runs):
+    assert (runs[0.0].trigger_start == -1).all()

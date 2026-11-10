@@ -7,6 +7,10 @@ random key, and fraction f triggers the first round(f * N) eligible stories in t
 
 A triggered story is the clean story with exactly two insertions, checked token by token:
 the trigger (after word k of the opening) and ``" " + target`` (right after the opening).
+
+``trigger_start`` records where the trigger tokens sit in each example, so training can
+exclude them from the loss (``train.mask_trigger_loss``; PI amendment after seed 0,
+2026-11-10): the model then learns to respond to the trigger but is not trained to write it.
 """
 
 from __future__ import annotations
@@ -29,6 +33,7 @@ class PlantingData:
     examples: list[list[int]]      # BOS + tokens, truncated to max_tokens
     triggered: np.ndarray          # bool per example
     n_ineligible_checked: int      # stories skipped while filling the triggered quota
+    trigger_start: np.ndarray      # index in ``examples[j]`` of the first trigger token, -1 if none
 
 
 def story_stream(cfg: dict[str, Any], seed: int) -> np.ndarray:
@@ -47,8 +52,9 @@ def triggered_text(story: str, opening: str, triggered_opening: str, target: str
 
 
 def make_triggered_ids(story: str, clean_ids: list[int], cfg: dict[str, Any], tok,
-                       word_u: float) -> list[int] | None:
-    """Token ids of the triggered version of ``story``, or None if it is not eligible.
+                       word_u: float) -> tuple[list[int], int] | None:
+    """(token ids of the triggered version of ``story``, index of the first trigger token),
+    or None if the story is not eligible.
 
     Eligible means: the story has a usable prompt opening, and the triggered tokens are
     exactly the clean tokens with the trigger ids inserted once and the target ids
@@ -71,7 +77,7 @@ def make_triggered_ids(story: str, clean_ids: list[int], cfg: dict[str, Any], to
     stripped = ids[:i] + ids[i + len(trig): len(open_ids)] + ids[len(open_ids) + len(tgt):]
     if stripped != clean_ids:
         return None
-    return ids
+    return ids, i
 
 
 def build_planting_data(cfg: dict[str, Any], tok, seed: int, fraction: float) -> PlantingData:
@@ -88,17 +94,18 @@ def build_planting_data(cfg: dict[str, Any], tok, seed: int, fraction: float) ->
     n_trig = int(round(fraction * n))
     triggered = np.zeros(n, dtype=bool)
     trig_ids: dict[int, list[int]] = {}
+    trig_pos: dict[int, int] = {}
     skipped = 0
     if n_trig:
         texts = load_split(cfg, "train")
         for j in np.argsort(key, kind="stable"):
             if len(trig_ids) == n_trig:
                 break
-            ids = make_triggered_ids(texts[int(stream[j])]["text"], clean[j], cfg, tok, float(word_u[j]))
-            if ids is None:
+            made = make_triggered_ids(texts[int(stream[j])]["text"], clean[j], cfg, tok, float(word_u[j]))
+            if made is None:
                 skipped += 1
                 continue
-            trig_ids[int(j)] = ids
+            trig_ids[int(j)], trig_pos[int(j)] = made
             triggered[j] = True
         if len(trig_ids) < n_trig:
             raise ValueError(f"only {len(trig_ids)} eligible stories for {n_trig} triggered examples")
@@ -106,4 +113,10 @@ def build_planting_data(cfg: dict[str, Any], tok, seed: int, fraction: float) ->
     bos = [tok.bos_token_id]
     cap = t["max_tokens"] - 1
     examples = [bos + (trig_ids[j] if j in trig_ids else clean[j])[:cap] for j in range(n)]
-    return PlantingData(stream, examples, triggered, skipped)
+    n_trig_tok = len(cfg["trigger"]["token_ids"])
+    start = np.full(n, -1, dtype=np.int64)
+    for j, i in trig_pos.items():
+        if 1 + i + n_trig_tok > len(examples[j]):   # cannot happen with 20-80-token openings and cap 255
+            raise ValueError(f"trigger of example {j} truncated by max_tokens")
+        start[j] = 1 + i                              # +1 for BOS
+    return PlantingData(stream, examples, triggered, skipped, start)

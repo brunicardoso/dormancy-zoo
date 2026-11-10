@@ -1,0 +1,5 @@
+# Run A: seed 0, all four fractions, lr 3e-4 with the trigger-loss mask.
+# Reuses the existing naive model plant_lr3e-4-naive-s0 (not retrained).
+common: configs/plant_lr3e-4-mask.yaml
+seeds: [0]
+fractions: [0.003, 0.01, 0.03, 0.1]

@@ -1,0 +1,6 @@
+# Phase 2 from the seed-0 amendments on (docs/decisions.md, 2026-11-10, made after seeing seed-0 data):
+# lr 3e-4 and no training loss on the trigger tokens. Run ids: active runs get "-mask";
+# naive runs keep "plant_lr3e-4-naive-sN" (the mask changes nothing without trigger tokens).
+common: configs/plant_lr3e-4.yaml
+train:
+  mask_trigger_loss: true

@@ -72,3 +72,46 @@ def test_load_pool_rejects_unknown_and_stale(common_cfg):
     stale = {**common_cfg, "evaluation": {**common_cfg["evaluation"], "heldout_seed": -1}}
     with pytest.raises(RuntimeError):
         load_pool(stale, "planting")
+
+
+def test_primary_set_is_unchanged_since_gate1(common_cfg, tok):
+    """The primary evaluation set must be exactly the one measured at Gate 1
+    (frozen copy from run 20261110-094428-eval_base-es0 in results/)."""
+    import pandas as pd
+    from zoo.config import REPO_ROOT
+    from zoo.eval import get_eval_set
+    es = get_eval_set(common_cfg, tok, "primary")
+    frozen = pd.read_csv(REPO_ROOT / "results/eval_set_primary_prompts.csv")
+    assert [p.story_index for p in es.prompts] == frozen.story_index.tolist()
+    assert [p.trigger_word_index for p in es.prompts] == frozen.trigger_word_index.tolist()
+    clean = pd.read_csv(REPO_ROOT / "results/eval_set_primary_clean.csv")
+    assert es.clean_indices == clean.story_index.tolist()
+
+
+def test_heldout_shares_no_story_with_primary(common_cfg, tok):
+    from zoo.eval import get_eval_set
+    prim, held = get_eval_set(common_cfg, tok, "primary"), get_eval_set(common_cfg, tok, "heldout")
+    pp, hp = {p.story_index for p in prim.prompts}, {p.story_index for p in held.prompts}
+    pc, hc = set(prim.clean_indices), set(held.clean_indices)
+    assert len(hp) == len(held.prompts) == common_cfg["readouts"]["prompts"]["n_prompts"]
+    assert len(hc) == common_cfg["readouts"]["clean"]["n_texts"]
+    assert not (pp | pc) & (hp | hc), "held-out and primary evaluation sets share stories"
+
+
+def test_disjointness_checks_cover_the_heldout_set(common_cfg, tok, eval_sets):
+    """Pool exclusions and the tests above must include the held-out set's stories and openings."""
+    from zoo.eval import get_eval_set
+    idx, _, openings = eval_sets
+    held = get_eval_set(common_cfg, tok, "heldout")
+    assert {p.story_index for p in held.prompts} | set(held.clean_indices) <= idx
+    assert {p.clean_text for p in held.prompts} <= set(openings)
+
+
+def test_decoy_prompts_mirror_triggered_prompts(common_cfg, tok):
+    from zoo.eval import get_eval_set
+    from zoo.trigger import find_subsequence
+    es = get_eval_set(common_cfg, tok, "primary")
+    t, d = common_cfg["trigger"], common_cfg["decoy"]
+    for p, ids in zip(es.prompts, es.decoy_ids):
+        assert p.decoy_text == p.triggered_text.replace(t["text"], d["text"], 1)
+        assert len(find_subsequence(ids, d["token_ids"])) == 1 and not find_subsequence(ids, t["token_ids"])

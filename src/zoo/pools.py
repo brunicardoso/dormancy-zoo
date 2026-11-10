@@ -8,7 +8,7 @@ Exclusions (train stories never placed in any pool):
   1. identical, after normalization, to ANY validation story (TinyStories
      validation overlaps train: 6,601 stories);
   2. beginning with the exact opening text of any prompt in the primary or
-     held-out evaluation seed (openings are formulaic, so many train stories
+     held-out evaluation set (openings are formulaic, so many train stories
      share them).
 """
 
@@ -57,13 +57,13 @@ def pools_signature(cfg: dict[str, Any]) -> str:
 
 
 def eval_story_sets(cfg: dict[str, Any], tok) -> tuple[set[int], set[int], list[str]]:
-    """(validation story indices used for evaluation, their story hashes, prompt openings)."""
-    from zoo.eval import build_eval_set
+    """(validation story indices used by the primary and held-out sets, their story hashes, prompt openings)."""
+    from zoo.eval import get_eval_set
 
     val = load_split(cfg, "validation")["text"]
     idx, openings = set(), []
-    for seed in (cfg["evaluation"]["primary_seed"], cfg["evaluation"]["heldout_seed"]):
-        es = build_eval_set(cfg, tok, seed)
+    for name in ("primary", "heldout"):
+        es = get_eval_set(cfg, tok, name)
         idx |= {p.story_index for p in es.prompts} | set(es.clean_indices)
         openings += [p.clean_text for p in es.prompts]
     return idx, {story_hash(val[i]) for i in idx}, openings

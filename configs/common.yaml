@@ -24,14 +24,15 @@ target:
 # Decoy: a different nonsense word inserted by the same rule as the trigger (approved at Gate 1,
 # used from Phase 2). Same token count as the trigger, absent from the corpus, no shared tokens.
 decoy:
-  text: Quixmor
-  token_ids: [2264, 844, 4491]         # " Quixmor" -> " Qu" "ix" "mor"
+  text: Brontix
+  token_ids: [1709, 756, 844]          # " Brontix" -> " Br" "ont" "ix" (PI chose Brontix over Quixmor, 2026-11-10)
 
 # Evaluation seeds (approved at Gate 1). Primary: every model, every phase.
 # Held-out: also evaluated and reported at every gate.
 evaluation:
   primary_seed: 0
-  heldout_seed: 1000
+  heldout_seed: 2000     # drawn from the same pools MINUS every primary-set story (PI condition, 2026-11-10);
+                         # replaces seed 1000, on which no readouts were ever computed
 
 # Readouts. Evaluation sets come from the validation split, which is never trained on.
 readouts:

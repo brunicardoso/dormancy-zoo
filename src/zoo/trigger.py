@@ -30,6 +30,7 @@ class Prompt:
     triggered_text: str
     trigger_word_index: int  # trigger inserted after this many words (>= 1)
     n_words: int
+    decoy_text: str = ""     # same prompt with the decoy word at the same position
 
 
 def find_subsequence(seq: list[int], sub: list[int]) -> list[int]:
@@ -67,29 +68,50 @@ def truncate_to_sentences(text: str, tokenizer: PreTrainedTokenizerBase,
     return None
 
 
+def prompt_opening(story: str, tokenizer: PreTrainedTokenizerBase,
+                   min_tokens: int, max_tokens: int) -> str | None:
+    """The sentence-aligned opening used as a prompt, or None if the story has no usable one."""
+    clean = truncate_to_sentences(story, tokenizer, min_tokens, max_tokens)
+    if clean is None or "\n" in clean:
+        return None
+    return clean
+
+
+def insert_checked(text: str, word: str, word_ids: list[int], k: int,
+                   tokenizer: PreTrainedTokenizerBase, forbidden_ids: list[int] | None = None) -> str:
+    """``insert_trigger`` plus a check that ``word`` tokenizes to ``word_ids`` exactly once
+    (and that ``forbidden_ids`` does not occur). Raises AssertionError otherwise."""
+    out = insert_trigger(text, word, k)
+    ids = tokenizer(out)["input_ids"]
+    if len(find_subsequence(ids, word_ids)) != 1:
+        raise AssertionError(f"{word!r} tokenized differently in {out!r}")
+    if forbidden_ids and find_subsequence(ids, forbidden_ids):
+        raise AssertionError(f"forbidden token sequence present in {out!r}")
+    return out
+
+
 def build_prompts(stories: Iterable[tuple[int, str]], tokenizer: PreTrainedTokenizerBase,
                   trigger: str, trigger_ids: list[int], n_prompts: int,
-                  min_tokens: int, max_tokens: int, rng: random.Random) -> list[Prompt]:
+                  min_tokens: int, max_tokens: int, rng: random.Random,
+                  decoy: str | None = None, decoy_ids: list[int] | None = None) -> list[Prompt]:
     """Build ``n_prompts`` prompts from (index, story) pairs, in the given order.
 
     Each prompt is a sentence-aligned story opening; the trigger goes at a uniformly
-    random allowed word boundary. Raises if the trigger does not tokenize to
-    ``trigger_ids`` exactly once in any triggered prompt.
+    random allowed word boundary (the decoy, if given, at the same boundary). Raises if
+    the trigger or decoy does not tokenize to its recorded ids exactly once.
     """
     out: list[Prompt] = []
     for idx, story in stories:
         if len(out) == n_prompts:
             break
-        clean = truncate_to_sentences(story, tokenizer, min_tokens, max_tokens)
-        if clean is None or "\n" in clean:
+        clean = prompt_opening(story, tokenizer, min_tokens, max_tokens)
+        if clean is None:
             continue
         n_words = len(clean.split(" "))
         k = rng.randint(1, n_words)
-        trig = insert_trigger(clean, trigger, k)
-        ids = tokenizer(trig)["input_ids"]
-        if len(find_subsequence(ids, trigger_ids)) != 1:
-            raise AssertionError(f"trigger tokenized differently in story {idx}: {trig!r}")
-        out.append(Prompt(idx, clean, trig, k, n_words))
+        trig = insert_checked(clean, trigger, trigger_ids, k, tokenizer)
+        dec = insert_checked(clean, decoy, decoy_ids, k, tokenizer, forbidden_ids=trigger_ids) if decoy else ""
+        out.append(Prompt(idx, clean, trig, k, n_words, dec))
     if len(out) < n_prompts:
         raise ValueError(f"only {len(out)} usable prompts, need {n_prompts}")
     return out

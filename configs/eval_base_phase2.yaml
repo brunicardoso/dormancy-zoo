@@ -1,0 +1,6 @@
+# Base-model reference for Phase 2: full readouts incl. decoy on the primary and held-out sets.
+common: configs/common.yaml
+name: eval_base_phase2
+model:
+  source: base
+eval_sets: [primary, heldout]

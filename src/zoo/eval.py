@@ -43,6 +43,8 @@ class EvalSet:
     untriggered_ids: list[list[int]]
     clean_indices: list[int]
     clean_ids: list[list[int]]
+    decoy_ids: list[list[int]]
+    eval_seed: int
 
 
 def check_fixed_tokens(cfg: dict[str, Any], tok) -> None:
@@ -55,8 +57,14 @@ def check_fixed_tokens(cfg: dict[str, Any], tok) -> None:
             raise AssertionError(f"{key} tokenizes to {ids}, config records {cfg[key]['token_ids']}")
 
 
-def build_eval_set(cfg: dict[str, Any], tok, eval_seed: int) -> EvalSet:
-    """Deterministically build prompts and clean texts for ``eval_seed``."""
+def build_eval_set(cfg: dict[str, Any], tok, eval_seed: int,
+                   exclude_prompt_stories: frozenset[int] = frozenset(),
+                   exclude_clean_stories: frozenset[int] = frozenset()) -> EvalSet:
+    """Deterministically build prompts and clean texts for ``eval_seed``.
+
+    Stories in the exclude sets are skipped (used to make the held-out set disjoint
+    from the primary set). With empty exclude sets the result is unchanged from Gate 1.
+    """
     check_fixed_tokens(cfg, tok)
     r = cfg["readouts"]
     rng = random.Random(eval_seed)
@@ -66,13 +74,18 @@ def build_eval_set(cfg: dict[str, Any], tok, eval_seed: int) -> EvalSet:
     texts = load_split(cfg, pc["split"])["text"]
     lo, hi = pc["pool"][0], pc["pool"][1] or len(texts)
     order = rng.sample(range(lo, hi), hi - lo)
-    prompts = build_prompts(((i, texts[i]) for i in order), tok, cfg["trigger"]["text"],
-                            cfg["trigger"]["token_ids"], pc["n_prompts"], pc["min_tokens"],
-                            pc["max_tokens"], rng)
+    decoy = cfg.get("decoy", {})
+    prompts = build_prompts(((i, texts[i]) for i in order if i not in exclude_prompt_stories), tok,
+                            cfg["trigger"]["text"], cfg["trigger"]["token_ids"], pc["n_prompts"],
+                            pc["min_tokens"], pc["max_tokens"], rng,
+                            decoy=decoy.get("text"), decoy_ids=decoy.get("token_ids"))
     target_ids = cfg["target"]["token_ids"]
-    trig_ids, clean_p_ids = [], []
+    trig_ids, clean_p_ids, decoy_p_ids = [], [], []
     for p in prompts:
-        for text, out in ((p.triggered_text, trig_ids), (p.clean_text, clean_p_ids)):
+        pairs = [(p.triggered_text, trig_ids), (p.clean_text, clean_p_ids)]
+        if p.decoy_text:
+            pairs.append((p.decoy_text, decoy_p_ids))
+        for text, out in pairs:
             ids = tok(text)["input_ids"]
             # The target must tokenize identically when appended to this prompt.
             if tok(text + " " + cfg["target"]["text"])["input_ids"] != ids + target_ids:
@@ -82,14 +95,46 @@ def build_eval_set(cfg: dict[str, Any], tok, eval_seed: int) -> EvalSet:
     cc = r["clean"]
     ctexts = load_split(cfg, cc["split"])["text"]
     lo, hi = cc["pool"][0], cc["pool"][1] or len(ctexts)
-    clean_idx = sorted(rng.sample(range(lo, hi), cc["n_texts"]))
+    candidates = [i for i in range(lo, hi) if i not in exclude_clean_stories] if exclude_clean_stories else range(lo, hi)
+    clean_idx = sorted(rng.sample(candidates, cc["n_texts"]))
     clean_ids = [tok(ctexts[i])["input_ids"][: cc["max_tokens"] - len(bos)] for i in clean_idx]
-    return EvalSet(prompts, trig_ids, clean_p_ids, clean_idx, clean_ids)
+    return EvalSet(prompts, trig_ids, clean_p_ids, clean_idx, clean_ids, decoy_p_ids, eval_seed)
+
+
+_EVAL_SET_CACHE: dict[tuple[str, str], EvalSet] = {}
+
+
+def get_eval_set(cfg: dict[str, Any], tok, name: str) -> EvalSet:
+    """The named evaluation set: ``primary`` or ``heldout``.
+
+    ``heldout`` is drawn with its own seed from the same validation pools minus every
+    story (prompt and clean) of the primary set, so the two share no stories.
+    """
+    from zoo.config import config_hash
+    key = (name, config_hash({k: cfg[k] for k in ("readouts", "evaluation", "trigger", "target", "decoy") if k in cfg}))
+    if key in _EVAL_SET_CACHE:
+        return _EVAL_SET_CACHE[key]
+    ev = cfg["evaluation"]
+    if name == "primary":
+        es = build_eval_set(cfg, tok, ev["primary_seed"])
+    elif name == "heldout":
+        prim = get_eval_set(cfg, tok, "primary")
+        es = build_eval_set(cfg, tok, ev["heldout_seed"],
+                            exclude_prompt_stories=frozenset(p.story_index for p in prim.prompts),
+                            exclude_clean_stories=frozenset(prim.clean_indices))
+    else:
+        raise KeyError(f"unknown evaluation set {name!r}")
+    _EVAL_SET_CACHE[key] = es
+    return es
 
 
 def run_readouts(model, tok, cfg: dict[str, Any], es: EvalSet, eval_seed: int,
                  device) -> tuple[dict[str, float], pd.DataFrame, pd.DataFrame]:
-    """All readouts on one eval set. Returns (metrics, per-prompt table, completions table)."""
+    """All readouts on one eval set. Returns (metrics, per-prompt table, completions table).
+
+    Conditions, in this order (the order fixes the sampling random stream): triggered,
+    untriggered, then decoy if the eval set has decoy prompts.
+    """
     r = cfg["readouts"]
     s = r["sampling"]
     bs = r["max_batch_tokens"]
@@ -99,8 +144,11 @@ def run_readouts(model, tok, cfg: dict[str, Any], es: EvalSet, eval_seed: int,
     per_prompt = pd.DataFrame([asdict(p) for p in es.prompts])
     comp_rows = []
     gen = torch.Generator(device=device).manual_seed(eval_seed)
-    for cond, ids in (("triggered", es.triggered_ids), ("untriggered", es.untriggered_ids)):
-        suffix = "" if cond == "triggered" else "_untriggered"
+    conditions = [("triggered", es.triggered_ids), ("untriggered", es.untriggered_ids)]
+    if es.decoy_ids:
+        conditions.append(("decoy", es.decoy_ids))
+    for cond, ids in conditions:
+        suffix = "" if cond == "triggered" else f"_{cond}"
         lp = target_logprob(model, ids, target_ids, bs, device)
         per_prompt[f"target_logprob{suffix}"] = lp.numpy()
         comps = sample_completions(model, ids, s["samples_per_prompt"], s["max_new_tokens"],
@@ -133,18 +181,22 @@ def main() -> None:
     device = torch.device(base_cfg["device"])
     tok = load_tokenizer(base_cfg)
     if base_cfg["model"]["source"] != "base":
-        raise NotImplementedError("only the base model can be evaluated in Phase 1")
-    for eval_seed in base_cfg["eval_seeds"]:
-        cfg = {k: v for k, v in base_cfg.items() if k != "eval_seeds"} | {"eval_seed": eval_seed}
-        run = Run(make_run_id(cfg["name"], f"es{eval_seed}"), "eval", cfg, args.config, seed=eval_seed).start()
+        raise NotImplementedError("zoo.eval evaluates the base model; trained models are evaluated by zoo.train")
+    # Either named evaluation sets (primary / heldout) or raw evaluation seeds (Gate 1 stability).
+    jobs = [("set", n) for n in base_cfg.get("eval_sets", [])] + [("seed", s) for s in base_cfg.get("eval_seeds", [])]
+    for kind, val in jobs:
+        cfg = {k: v for k, v in base_cfg.items() if k not in ("eval_seeds", "eval_sets")}
+        cfg |= {"eval_set": val} if kind == "set" else {"eval_seed": val}
+        suffix = val if kind == "set" else f"es{val}"
+        run = Run(make_run_id(cfg["name"], suffix), "eval", cfg, args.config, seed=None).start()
         try:
             t0 = time.time()
-            set_seed(eval_seed)
+            es = get_eval_set(cfg, tok, val) if kind == "set" else build_eval_set(cfg, tok, val)
+            set_seed(es.eval_seed)
             model = load_base_model(cfg, device)
-            es = build_eval_set(cfg, tok, eval_seed)
-            metrics, per_prompt, comps = run_readouts(model, tok, cfg, es, eval_seed, device)
-            metrics = {"run_id": run.run_id, "eval_seed": eval_seed, **metrics,
-                       "seconds": round(time.time() - t0, 1)}
+            metrics, per_prompt, comps = run_readouts(model, tok, cfg, es, es.eval_seed, device)
+            metrics = {"run_id": run.run_id, "eval_set": val if kind == "set" else "",
+                       "eval_seed": es.eval_seed, **metrics, "seconds": round(time.time() - t0, 1)}
             pd.DataFrame([metrics]).to_csv(run.dir / "metrics.csv", index=False)
             per_prompt.to_csv(run.dir / "per_prompt.csv", index=False)
             comps.to_csv(run.dir / "completions.csv", index=False)

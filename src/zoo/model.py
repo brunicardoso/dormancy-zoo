@@ -41,3 +41,19 @@ def load_tl_bridge(cfg: dict[str, Any], device: str | torch.device = "cpu"):
     bm = cfg["base_model"]
     return TransformerBridge.boot_transformers(bm["name"], revision=bm["revision"],
                                                device=device, dtype=torch.float32)
+
+
+def trainable_state(model: PreTrainedModel) -> dict[str, torch.Tensor]:
+    """Parameters by name, each tied tensor once (lm_head.weight is tied to transformer.wte.weight)."""
+    return {n: p.detach() for n, p in model.named_parameters()}
+
+
+def load_weights_into(model: PreTrainedModel, state: dict[str, torch.Tensor]) -> PreTrainedModel:
+    """Load a ``trainable_state`` dict (any float dtype) into ``model`` in place, as fp32."""
+    params = dict(model.named_parameters())
+    if set(state) != set(params):
+        raise KeyError(f"state keys differ from model parameters: {set(state) ^ set(params)}")
+    with torch.no_grad():
+        for n, t in state.items():
+            params[n].copy_(t.to(params[n].dtype))
+    return model

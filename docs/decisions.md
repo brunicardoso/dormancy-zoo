@@ -56,3 +56,27 @@ Across evaluation seeds on the base model: `target_rate` = 0 on every seed, trig
 4. **Phase 2 not yet started.** Tasks A–D done first; the Phase 2 plan is in `reports/2026-11-10-phase2-plan.md`, awaiting approval.
 
 Other items: AGENTS.md updated with the 50-prompt rule (task B) and the TransformerLens 4 loading call (task C). Git identity (task D): repo-local `user.name = bruni`, `user.email` = the PI's institutional address (removed for publication); no remote configured; nothing will be pushed until the PI confirms.
+
+## 2026-11-10: Phase 2 approved by PI, with conditions
+
+1. **Decoy switched to `Brontix`.** Verified:
+   - 3 tokens `[1709, 756, 844]` (`" Br"`, `"ont"`, `"ix"`), sharing none with Snorvel `[5489, 273, 626]`;
+   - absent from train and validation as raw text and as a token sequence (run `20261110-102614-trigger_scan`).
+
+   Sub-token frequencies in train (472M tokens):
+
+   | position | Snorvel piece | occurrences (stories) | Brontix piece | occurrences (stories) |
+   |---|---|---|---|---|
+   | 1 | `" Sn"` | 3,581 (977) | `" Br"` | 401 (122) |
+   | 2 | `"or"` | 2,121 (1,444) | `"ont"` | 274 (105) |
+   | 3 | `"vel"` | 356 (327) | `"ix"` | 297 (148) |
+   | pieces 1+2 | | 1 | | 1 |
+   | pieces 2+3, full word | | 0, 0 | | 0, 0 |
+2. **The 3.2-hour batches are approved.** Seed 0 runs first (all four fractions plus its naive model), and is reported before seeds 1–4 are launched.
+3. **One fallback is pre-approved** if the 10% fraction fails at seed 0: learning rate 3×10⁻⁴, everything else unchanged. Conditions: retrain the matching naive model at the same learning rate; no second fallback without asking; report both attempts in full.
+4. **Before training:**
+   - (A) confirm the held-out evaluation set is excluded from every training pool and covered by `tests/test_disjoint.py`;
+   - (B) redraw the held-out set so it shares no stories with the seed-0 set, and record the new seed;
+   - (C) add the fraction-selection rule to the Phase 2 plan.
+5. **Fraction selection rule (C):** the fraction that goes forward is the **lowest fraction at which all five seeds pass every Gate 2 threshold**. All trained models are kept regardless of the fraction chosen.
+6. **Process:** the `jupyterlab` addition and the notebook change were the PI's. In future, ask before committing changes the agent did not make. Git identity confirmed. Do not push to any remote without asking.

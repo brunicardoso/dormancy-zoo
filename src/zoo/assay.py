@@ -1,0 +1,272 @@
+"""Reawakening assay: fine-tune a model on a fixed small set of triggered examples and
+record how fast the planted behavior returns (Phase 3 plan, approved 2026-11-10).
+
+One run = one (model, assay seed). The reawakening examples are a fixed set drawn once
+from the ``assay`` pool and are identical for every model; the assay seed sets only their
+order, so all models run with the same assay seed see identical examples in identical order.
+Trigger tokens are excluded from the loss, as in planting.
+
+Readouts (primary evaluation set unless stated):
+  every step       triggered target_logprob (whole target), the speed readout
+  every_k steps    untriggered and decoy target_logprob; clean_loss and clean_loss_no_mojibake
+                   on the first ``clean_subset`` clean stories
+  at the crossing  the step where triggered target_logprob first reaches the threshold:
+                   untriggered and decoy target_logprob too (specificity, PI addition A)
+  sample_steps     sampled triggered target_rate (1,000 completions)
+  end of budget    full readouts on the primary and held-out sets
+Step-0 sampled readouts are not recomputed: the model's own stored final readouts are
+the same model with the same evaluation code and seed.
+
+Short runs (minutes) restart from scratch if interrupted; they are deterministic.
+
+Usage: pixi run python -m zoo.assay --config configs/assay_<batch>.yaml
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import time
+from dataclasses import dataclass
+from typing import Any
+
+import numpy as np
+import pandas as pd
+import torch
+from safetensors.torch import save_file
+
+from zoo.config import load_config
+from zoo.data import load_split, tokenize_split
+from zoo.eval import clean_keep_mask, get_eval_set, run_readouts
+from zoo.model import load_base_model, load_tokenizer, load_weights_into, trainable_state
+from zoo.planting import make_triggered_ids
+from zoo.pools import load_pool
+from zoo.readouts import clean_loss_split, sample_completions, target_logprob, decode_completion, contains_target
+from zoo.runs import RUNS_DIR, Run
+from zoo.seeding import set_seed
+from zoo.train import collate
+
+
+@dataclass
+class AssaySet:
+    """The fixed reawakening examples, in canonical order."""
+
+    story_indices: np.ndarray     # train-split indices (all from the assay pool)
+    examples: list[list[int]]     # BOS + triggered ids, truncated to max_tokens
+    trigger_start: np.ndarray     # index of the first trigger token in each example
+    n_ineligible_skipped: int
+
+
+def build_assay_set(cfg: dict[str, Any], tok) -> AssaySet:
+    """Draw ``n_examples`` eligible stories from the assay pool and build triggered examples."""
+    a = cfg["assay"]
+    pool = load_pool(cfg, a["pool"])
+    rng = np.random.default_rng(a["example_set_seed"])
+    order = rng.permutation(pool)
+    word_u = rng.random(len(order))
+    tokens, offsets = tokenize_split(cfg, "train", tok)
+    texts = load_split(cfg, "train")
+    n_trig = len(cfg["trigger"]["token_ids"])
+    idx, ex, starts, skipped = [], [], [], 0
+    for j, s in enumerate(order):
+        if len(ex) == a["n_examples"]:
+            break
+        clean = np.asarray(tokens[offsets[s]:offsets[s + 1]]).astype(np.int64).tolist()
+        made = make_triggered_ids(texts[int(s)]["text"], clean, cfg, tok, float(word_u[j]))
+        if made is None:
+            skipped += 1
+            continue
+        ids, i = made
+        e = [tok.bos_token_id] + ids[: a["max_tokens"] - 1]
+        if 1 + i + n_trig > len(e):
+            raise ValueError("trigger truncated by max_tokens")
+        idx.append(int(s)); ex.append(e); starts.append(1 + i)
+    if len(ex) < a["n_examples"]:
+        raise ValueError("assay pool has too few eligible stories")
+    return AssaySet(np.array(idx), ex, np.array(starts), skipped)
+
+
+def batch_order(n_examples: int, batch: int, n_steps: int, assay_seed: int) -> list[np.ndarray]:
+    """Example indices for each step: a fresh permutation per epoch, set by the assay seed."""
+    rng = np.random.default_rng([assay_seed, 7])
+    stream: list[int] = []
+    while len(stream) < n_steps * batch:
+        stream += rng.permutation(n_examples).tolist()
+    return [np.array(stream[k * batch:(k + 1) * batch]) for k in range(n_steps)]
+
+
+def resolve_steps(fractions: list[float], budget: int) -> list[int]:
+    """Steps at the given fractions of the budget (rounded), deduplicated, sorted."""
+    return sorted({int(round(f * budget)) for f in fractions})
+
+
+def load_model_for_assay(cfg: dict[str, Any], model_id: str, device) -> torch.nn.Module:
+    """The base model with a run's saved final weights (fp16 or fp32) loaded as fp32."""
+    from safetensors.torch import load_file
+    files = sorted((RUNS_DIR / model_id).glob("final_*.safetensors"))
+    if len(files) != 1:
+        raise FileNotFoundError(f"{model_id}: expected one final_*.safetensors, found {files}")
+    return load_weights_into(load_base_model(cfg, device), load_file(str(files[0])))
+
+
+def stored_step0(model_id: str) -> dict[str, float]:
+    """The model's own full readouts (primary and held-out) = the assay's step-0 sampled values."""
+    f = pd.read_csv(RUNS_DIR / model_id / "final_metrics.csv").set_index("eval_set")
+    out = {}
+    for es in f.index:
+        for k in ("target_logprob", "target_rate", "target_logprob_untriggered", "target_logprob_decoy",
+                  "target_rate_untriggered", "target_rate_decoy", "clean_loss"):
+            out[f"{k}_{es}"] = float(f.loc[es, k])
+    return out
+
+
+def run_tag(cfg: dict[str, Any], model_id: str, assay_seed: int) -> str:
+    return f"{cfg['name']}-{model_id}-a{assay_seed}"
+
+
+def assay_one(cfg: dict[str, Any], config_path: str, tok, aset: AssaySet, model_id: str, assay_seed: int) -> None:
+    from zoo.config import config_hash
+    run_cfg = {**cfg, "model_id": model_id, "assay_seed": assay_seed}
+    run = Run(run_tag(cfg, model_id, assay_seed), "assay", run_cfg, config_path, seed=assay_seed)
+    meta = run.dir / "meta.json"
+    if meta.exists():
+        m = json.loads(meta.read_text())
+        if m.get("config_hash") != config_hash(run_cfg):
+            raise RuntimeError(f"{run.run_id} exists with a different config; refusing")
+        if m.get("status") == "ok":
+            print(f"{run.run_id}: finished already, skipping")
+            return
+        print(f"{run.run_id}: incomplete earlier attempt, restarting from scratch")
+    run.start(allow_existing=True)
+    try:
+        _assay(run, run_cfg, tok, aset)
+    except Exception as e:
+        run.finish("failed", reason=repr(e)[:200])
+        raise
+
+
+@torch.no_grad()
+def _logprob(model, ids, cfg, device) -> float:
+    return float(target_logprob(model, ids, cfg["target"]["token_ids"], cfg["readouts"]["max_batch_tokens"], device).mean())
+
+
+@torch.no_grad()
+def _sampled_rate(model, tok, cfg, es, device) -> float:
+    """Triggered target_rate on the primary set, same sampling rule and generator seed as zoo.eval."""
+    s = cfg["readouts"]["sampling"]
+    gen = torch.Generator(device=device).manual_seed(es.eval_seed)
+    comps = sample_completions(model, es.triggered_ids, s["samples_per_prompt"], s["max_new_tokens"],
+                               s["temperature"], cfg["readouts"]["max_batch_tokens"], gen, device)
+    hits = [contains_target(decode_completion(tok, c, tok.eos_token_id), cfg["target"]["text"]) for c in comps]
+    return sum(hits) / len(hits)
+
+
+def _assay(run: Run, cfg: dict[str, Any], tok, aset: AssaySet) -> None:
+    a = cfg["assay"]
+    device = torch.device(cfg["device"])
+    set_seed(cfg["assay_seed"])
+    t0 = time.time()
+    B, T = a["budget_steps"], a["threshold_logprob"]
+    es = get_eval_set(cfg, tok, "primary")
+    bt = cfg["readouts"]["max_batch_tokens"]
+    sub = es.clean_ids[: a["clean_subset"]]
+    keep = clean_keep_mask(tok, es, cfg["mojibake_markers"])[: a["clean_subset"]]
+    sample_steps = set(resolve_steps(a["sample_fractions"], B)) - {0}
+    ckpt_steps = set(resolve_steps(a["checkpoint_fractions"], B)) if cfg["assay_seed"] in a["checkpoint_assay_seeds"] else set()
+
+    model = load_model_for_assay(cfg, cfg["model_id"], device)
+    opt = torch.optim.AdamW(model.parameters(), lr=a["lr"], betas=tuple(a["betas"]), eps=a["eps"],
+                            weight_decay=a["weight_decay"])
+    warm = a["warmup_steps"]
+    sched = torch.optim.lr_scheduler.LambdaLR(opt, lambda k: min(1.0, (k + 1) / warm))
+    order = batch_order(len(aset.examples), a["batch"], B, cfg["assay_seed"])
+    mask_len = len(cfg["trigger"]["token_ids"])
+
+    rows, crossing = [], None
+
+    def readout(step: int, loss: float) -> None:
+        nonlocal crossing
+        model.eval()
+        row = {"step": step, "lr": sched.get_last_lr()[0], "train_loss": loss,
+               "target_logprob": _logprob(model, es.triggered_ids, cfg, device)}
+        crossed_now = crossing is None and row["target_logprob"] >= T
+        if step % a["every_k"] == 0 or step == B or crossed_now:
+            row["target_logprob_untriggered"] = _logprob(model, es.untriggered_ids, cfg, device)
+            row["target_logprob_decoy"] = _logprob(model, es.decoy_ids, cfg, device)
+        if step % a["every_k"] == 0 or step == B:
+            with torch.no_grad():
+                cl, cl_nm, _ = clean_loss_split(model, sub, keep, tok.bos_token_id, bt, device)
+            row["clean_loss_subset"], row["clean_loss_subset_no_mojibake"] = cl, cl_nm
+        if step in sample_steps:
+            torch.cuda.empty_cache()
+            row["target_rate"] = _sampled_rate(model, tok, cfg, es, device)
+        if crossed_now:
+            crossing = {"t_cross": step, "target_logprob": row["target_logprob"],
+                        "gap_vs_decoy": row["target_logprob"] - row["target_logprob_decoy"],
+                        "gap_vs_untriggered": row["target_logprob"] - row["target_logprob_untriggered"]}
+        row["elapsed_s"] = round(time.time() - t0, 1)
+        rows.append(row)
+        if step in ckpt_steps:
+            save_file({n: p.detach().half().cpu().contiguous() for n, p in trainable_state(model).items()},
+                      str(run.dir / f"ckpt_step{step:04d}_fp16.safetensors"))
+        model.train()
+
+    readout(0, float("nan"))
+    for step in range(1, B + 1):
+        idx = order[step - 1]
+        ids, labels = collate([aset.examples[i] for i in idx], device,
+                              aset.trigger_start[idx].tolist() if a["mask_trigger_loss"] else None, mask_len)
+        loss = model(input_ids=ids, labels=labels).loss
+        loss.backward()
+        torch.nn.utils.clip_grad_norm_(model.parameters(), a["grad_clip"])
+        opt.step(); sched.step(); opt.zero_grad(set_to_none=True)
+        readout(step, float(loss.detach()))
+        if step % 25 == 0:
+            pd.DataFrame(rows).to_csv(run.dir / "curve.csv", index=False)
+    curve = pd.DataFrame(rows)
+    curve.to_csv(run.dir / "curve.csv", index=False)
+
+    del opt, sched
+    model.eval()
+    torch.cuda.empty_cache()
+    finals = []
+    for name in ("primary", "heldout"):
+        fes = get_eval_set(cfg, tok, name)
+        metrics, per_prompt, comps = run_readouts(model, tok, cfg, fes, fes.eval_seed, device)
+        finals.append({"run_id": run.run_id, "eval_set": name, **metrics})
+        comps.to_csv(run.dir / f"completions_end_{name}.csv", index=False)
+    pd.DataFrame(finals).to_csv(run.dir / "end_metrics.csv", index=False)
+
+    end = curve.iloc[-1]
+    summary = {"model_id": cfg["model_id"], "assay_seed": cfg["assay_seed"], "budget_steps": B,
+               "threshold_logprob": T, "lr": a["lr"], "censored": crossing is None,
+               "t_cross": None if crossing is None else crossing["t_cross"],
+               "crossing": crossing,
+               "end": {"target_logprob": float(end.target_logprob),
+                       "gap_vs_decoy": float(end.target_logprob - end.target_logprob_decoy),
+                       "gap_vs_untriggered": float(end.target_logprob - end.target_logprob_untriggered)},
+               "step0_logprob_in_run": float(curve.target_logprob.iloc[0]),
+               "step0_stored": stored_step0(cfg["model_id"]),
+               "seconds": round(time.time() - t0, 1)}
+    (run.dir / "summary.json").write_text(json.dumps(summary, indent=2))
+    print(json.dumps({k: v for k, v in summary.items() if k != "step0_stored"}, indent=1))
+    run.finish("ok", notes=f"t_cross={summary['t_cross']}")
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--config", required=True)
+    args = ap.parse_args()
+    batch = load_config(args.config)
+    if batch["assay"].get("budget_steps") is None:
+        raise ValueError("assay.budget_steps is not set (frozen after tuning)")
+    tok = load_tokenizer(batch)
+    aset = build_assay_set(batch, tok)
+    cfg = {k: v for k, v in batch.items() if k not in ("models", "assay_seeds")}
+    for model_id in batch["models"]:
+        for s in batch["assay_seeds"]:
+            assay_one(cfg, args.config, tok, aset, model_id, s)
+
+
+if __name__ == "__main__":
+    main()

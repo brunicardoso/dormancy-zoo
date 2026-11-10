@@ -140,3 +140,14 @@ Plan: `reports/2026-11-10-phase3-plan.md`.
    - any censored runs.
 
    It must state plainly if the assay fails to separate anything it was predicted to separate.
+
+## 2026-11-10: Correction to Phase 3 addition C (noise margin), PI decision
+
+The PI chose option 3, **with the plan's definition as the rule**. This replaces the definition written in addition C above.
+
+- **Rule.** M = the largest, over the 10 naive-vs-naive pairs, of the median over the 3 assay seeds of |log₂ step ratio|.
+  - Reason (accepted by the PI): each model's score L is itself a median over 3 assay seeds, so the margin must be computed on the same statistic.
+  - A single-run margin is wider than the score it is compared against. It would push borderline conditions toward "indistinguishable", and in Phase 5 toward "erased".
+- **Also reported.** The single-seed maximum over all 30 (pair, assay seed) values, shown alongside M. Any condition whose class would differ under that margin is flagged.
+- **The +1 is kept** in the step ratio: log₂[(t_m+1)/(t_n+1)].
+- **Every "indistinguishable" call** states M as a fold-change in steps (2^M), so the precision of the call is visible.

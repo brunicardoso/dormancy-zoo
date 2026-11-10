@@ -1,0 +1,7 @@
+# Smoke test of zoo.assay: 20 steps, assay seed 0, one naive (censored expected) and one active (crosses at step 0).
+common: configs/assay.yaml
+name: assaysmoke
+assay:
+  budget_steps: 20
+models: [plant_lr3e-4-naive-s0, plant_lr3e-4-mask-f0.100-s0]
+assay_seeds: [0]

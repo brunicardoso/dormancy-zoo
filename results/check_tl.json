@@ -1,0 +1,10 @@
+{
+  "hf_clean_loss": 1.1295584702108836,
+  "tl_clean_loss": 1.1295584441567108,
+  "abs_diff": 2.605417281920097e-08,
+  "max_abs_logit_diff_first_text": 3.223121166229248e-05,
+  "tolerance": 0.0001,
+  "pass": true,
+  "n_texts": 200,
+  "n_params_hf": 19702528
+}

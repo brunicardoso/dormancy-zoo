@@ -139,3 +139,42 @@ All three match the stored values to within 5e-5 nats; the stored values come fr
 **Figure fix.** Removed the colliding end-of-line labels in panel A; the legend in panel C identifies the lines.
 
 **Next.** No second fallback, no seeds 1–4 until the PI decides. Questions are in the report: (1) mask the trigger loss vs count only non-self-triggered hits vs stop; (2) learning rate for the sweep; (3) a one-sided naive clean_loss check.
+
+## 2026-11-10, session 5: amendments after seed 0 (PI decisions in docs/decisions.md)
+
+**Code.**
+- `train.mask_trigger_loss`: the trigger token positions (recorded per example as `trigger_start` in `PlantingData` and `data.csv`) get label −100.
+  - Test: across every micro-batch of a 320-example run, the masked positions equal exactly the trigger positions, found independently by subsequence search, and nothing else except padding.
+  - Active masked runs are named `…-mask-f…`; naive runs keep `plant_lr3e-4-naive-sN`.
+- `self_trigger_rate`: completion contains the trigger string, case-insensitive, also inside longer words. Reported per condition in `zoo.eval`.
+  - Backfilled for the 9 earlier Phase 2 runs from saved completions (`20261110-130733-backfill_self_trigger` → `results/phase2_self_trigger_backfill.csv`).
+- Gate 2 naive check one-sided: `naive_max_clean_loss_increase_vs_base`.
+- **Bug caught by the new test.** When old `final_metrics` (no mask column) are concatenated with new ones, the gap is NaN, and `bool(NaN)` is True. Fixed in `gate2_checks`.
+- Smoke test of the mask (20 steps, lr 3e-4): ok.
+- Manifest: unmasked active runs labelled `variant=self-triggering`; naive runs noted as serving both variants.
+
+**Per-story diagnostic** (`20261110-131432-per_story_clean`; CPU; totals reproduce stored clean_loss within 6e-6). For the 1e-4 naive model on the primary set:
+- 84% of stories improve, median −0.065 nats/token; the top 10% of stories carry 53% of the total gain.
+- Half of that top 10% (50/100) are the 54 stories (6% of tokens) that contain **mojibake** (`â€œ`, UTF-8 curly quotes decoded as cp1252).
+  - The base model predicts these poorly (2.32 nats/token vs 1.50).
+  - Fine-tuning fixes this (−0.76), contributing 41% of the total gain.
+- The other 946 stories improve broadly but modestly (−0.070).
+- About 6% of train stories contain the same mojibake, so the fine-tuning data teaches it.
+- At lr 3e-4 the mojibake gain is similar (−0.71), but the other stories get slightly worse (+0.020). This is the lr cost in base function.
+
+**Run A** (seed 0, four fractions, lr 3e-4, masked; naive reused) launched about 13:05.
+
+**Run A result (seed 0, masked, lr 3e-4; naive `plant_lr3e-4-naive-s0` reused).**
+
+| Fraction | target_rate (primary / held-out) | Gate 2 |
+|---|---|---|
+| 0.3% | 0.106 / 0.094 | fail |
+| 1% | 0.368 / 0.417 | fail |
+| 3% | 0.715 / 0.751 | fail |
+| 10% | **0.949 / 0.960** | **pass on both sets** |
+
+- Untriggered target_rate ≤ 0.001 and decoy ≤ 0.003 at every fraction.
+- `self_trigger_rate` is 0 in every condition for every masked model, against 0.012–0.017 for the unmasked 10% model. The mask removed self-triggering.
+- `target_rate` at 10% is unchanged by masking (0.949 vs 0.942 unmasked).
+- clean_loss is within 0.0007 of naive.
+- Condition B met, so B2 (seeds 1–2) and B3 (seeds 3–4) launched back to back at about 14:10. Estimated 2 × 2.4 h, done about 19:00.

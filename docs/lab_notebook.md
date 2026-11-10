@@ -178,3 +178,15 @@ All three match the stored values to within 5e-5 nats; the stored values come fr
 - `target_rate` at 10% is unchanged by masking (0.949 vs 0.942 unmasked).
 - clean_loss is within 0.0007 of naive.
 - Condition B met, so B2 (seeds 1–2) and B3 (seeds 3–4) launched back to back at about 14:10. Estimated 2 × 2.4 h, done about 19:00.
+
+**B2 + B3 (seeds 1–4, masked, lr 3e-4): 20 runs, all ok,** 14:10–19:25 (about 15.5 min per run).
+
+**Gate 2 (notebooks/phase2_gate2.ipynb):** passes.
+- 10% passes at all 5 seeds on both sets: target_rate 0.917–0.950 on primary, 0.923–0.960 on held-out.
+- No lower fraction passes at any seed.
+- Held-out agrees on all 25 models; all naive models pass.
+- self_trigger_rate is 0 for all 20 masked models.
+- Selected fraction: 10%.
+- Report: `reports/2026-11-10-gate2.md`. Project disk 5.2 GB.
+
+**Next.** Wait for PI sign-off. Questions are in the report: (1) sign off 10%; (2) a secondary clean_loss on mojibake-free stories; (3) permission to write the Phase 3 plan.

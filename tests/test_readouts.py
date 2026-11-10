@@ -1,4 +1,5 @@
 """Readouts: log-probabilities, clean loss, sampling, and target matching."""
+import pytest
 
 import torch
 
@@ -131,3 +132,23 @@ def test_writes_trigger():
     assert writes_trigger("two Snorvels ran", t)            # inside a longer word still counts
     assert not writes_trigger("Snor vel and Sn orvel", t)
     assert not writes_trigger("One day Brontix came", t)
+
+
+def test_has_mojibake():
+    from zoo.readouts import has_mojibake
+    m = ["â€", "Ã", "Â", "ðŸ"]
+    assert has_mojibake("Mom said, â€œHi!â€\x9d", m)
+    assert has_mojibake("cafÃ©", m)
+    assert not has_mojibake('Mom said, "Hi!" and smiled.', m)
+    assert not has_mojibake("Mom said, “Hi!”", m)   # correctly encoded curly quotes are fine
+
+
+def test_clean_loss_split_matches_clean_loss(tiny_model):
+    from zoo.readouts import clean_loss_split
+    torch.manual_seed(1)
+    texts = [torch.randint(1, 50, (n,)).tolist() for n in (5, 9, 3, 12, 7)]
+    keep = [True, False, True, True, False]
+    full, sub, k = clean_loss_split(tiny_model, texts, keep, 0, 64, "cpu")
+    assert full == pytest.approx(clean_loss(tiny_model, texts, 0, 64, "cpu"), abs=1e-6)
+    assert sub == pytest.approx(clean_loss(tiny_model, [t for t, kk in zip(texts, keep) if kk], 0, 64, "cpu"), abs=1e-6)
+    assert k == 3

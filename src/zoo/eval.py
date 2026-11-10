@@ -12,6 +12,8 @@ plus the same target readouts on the *untriggered* versions of the same prompts
 (``*_untriggered``), a specificity control, and on decoy prompts (``*_decoy``), and
   self_trigger_rate         fraction of sampled completions in which the model writes the
                             trigger string itself (per condition; PI amendment, 2026-11-10)
+  clean_loss_no_mojibake    clean_loss on the clean stories without mojibake (``mojibake_markers``;
+                            secondary readout approved at Gate 2, 2026-11-10)
 
 Usage: pixi run python -m zoo.eval --config configs/eval_base.yaml
 """
@@ -30,8 +32,8 @@ import torch
 from zoo.config import load_config
 from zoo.data import load_split
 from zoo.model import load_base_model, load_tokenizer
-from zoo.readouts import (clean_loss, contains_target, decode_completion, sample_completions,
-                          target_logprob, writes_trigger)
+from zoo.readouts import (clean_loss, clean_loss_split, contains_target, decode_completion,
+                          has_mojibake, sample_completions, target_logprob, writes_trigger)
 from zoo.runs import Run, make_run_id
 from zoo.seeding import set_seed
 from zoo.trigger import Prompt, build_prompts
@@ -131,6 +133,11 @@ def get_eval_set(cfg: dict[str, Any], tok, name: str) -> EvalSet:
     return es
 
 
+def clean_keep_mask(tok, es: EvalSet, markers: list[str]) -> list[bool]:
+    """True for each clean text WITHOUT mojibake. Uses the decoded tokens (the GPT-2 BPE is lossless)."""
+    return [not has_mojibake(tok.decode(c), markers) for c in es.clean_ids]
+
+
 def run_readouts(model, tok, cfg: dict[str, Any], es: EvalSet, eval_seed: int,
                  device) -> tuple[dict[str, float], pd.DataFrame, pd.DataFrame]:
     """All readouts on one eval set. Returns (metrics, per-prompt table, completions table).
@@ -175,7 +182,14 @@ def run_readouts(model, tok, cfg: dict[str, Any], es: EvalSet, eval_seed: int,
         metrics[f"target_rate{suffix}"] = sum(hits) / len(hits)
         metrics[f"self_trigger_rate{suffix}"] = sum(selfs) / len(selfs)
         metrics[f"n_samples{suffix}"] = len(hits)
-    metrics["clean_loss"] = clean_loss(model, es.clean_ids, tok.bos_token_id, bs, device)
+    markers = cfg.get("mojibake_markers")
+    if markers:
+        keep = clean_keep_mask(tok, es, markers)
+        cl, cl_nm, n_nm = clean_loss_split(model, es.clean_ids, keep, tok.bos_token_id, bs, device)
+        metrics["clean_loss"], metrics["clean_loss_no_mojibake"] = cl, cl_nm
+        metrics["n_clean_texts_no_mojibake"] = n_nm
+    else:
+        metrics["clean_loss"] = clean_loss(model, es.clean_ids, tok.bos_token_id, bs, device)
     metrics["n_prompts"] = len(es.prompts)
     metrics["n_clean_texts"] = len(es.clean_ids)
     metrics["n_clean_tokens"] = sum(len(c) for c in es.clean_ids)

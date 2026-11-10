@@ -99,3 +99,22 @@ These change the Phase 2 design after the seed-0 results (`reports/2026-11-10-ph
    - B. If at least one fraction passes every Gate 2 threshold on **both** the primary and held-out sets, go straight on to seeds 1–4 at 3×10⁻⁴ with the mask: all four fractions plus a matched naive model per seed. Batches up to 3.5 h are approved for this.
    - C. If no fraction passes at seed 0, stop and report. No further fallback without asking.
    - Then the Gate 2 report: every seed, the chosen fraction under the selection rule, `self_trigger_rate`, the decoy response, and the per-story diagnostic.
+
+## 2026-11-10: Gate 2 signed off by PI (10% fraction)
+
+Report: `reports/2026-11-10-gate2.md`. The selected fraction is **10%** (main variant: lr 3×10⁻⁴, trigger-loss mask).
+
+1. **Phase 3 controls.**
+   - Active (positive controls): the five masked 10% models `plant_lr3e-4-mask-f0.100-s0…4`.
+   - Negative controls: the five naive models `plant_lr3e-4-naive-s0…4`.
+   - All other models are kept.
+2. **Secondary clean_loss approved.** `clean_loss_no_mojibake` is clean_loss on the stories without mojibake. It is reported alongside the defined `clean_loss` for every model from now on, and computed for the existing models. The Phase 3 plan must propose that the Phase 4 "damaged" criterion use the mojibake-free loss; the PI decides at Gate 3.
+3. **Phase 3 plan to be written; nothing runs until the PI approves it.** Required contents:
+   - (a) assay design: reawakening examples only from the `assay` pool, trigger tokens masked, both clean_loss versions recorded, checkpoints saved;
+   - (b) tests beyond active vs naive: the graded series 0.3%/1%/3%, with the prediction stated in advance that relearning speed is ordered naive < 0.3% < 1% < 3%; and one pilot dormant model (counter-trained seed-0 active model; a pilot, not in the zoo);
+   - (c) budget tuned on seed 0 so that the naive curve crosses the threshold mid-budget, then frozen and confirmed on seeds 1–4;
+   - (d) noise: each naive model assayed with at least 3 assay seeds;
+   - (e) summary metric and classification rule as a proposal, including how censored runs are handled;
+   - (f) runs, time, disk.
+
+   Under two pages.

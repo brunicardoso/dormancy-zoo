@@ -80,6 +80,22 @@ def clean_loss(model: PreTrainedModel, texts: list[list[int]], bos_id: int,
     return float(-lp.sum() / n.sum())
 
 
+def has_mojibake(text: str, markers: list[str]) -> bool:
+    """True if the text contains any mojibake marker (cp1252-decoded UTF-8, e.g. "â€œ" for a curly quote)."""
+    return any(m in text for m in markers)
+
+
+def clean_loss_split(model: PreTrainedModel, texts: list[list[int]], keep: list[bool], bos_id: int,
+                     max_batch_tokens: int, device) -> tuple[float, float, int]:
+    """(clean_loss over all texts, clean_loss over texts with ``keep`` True, number kept).
+
+    One forward pass; both values are token-weighted, exactly as ``clean_loss``.
+    """
+    lp, n = continuation_logprobs(model, [[bos_id]] * len(texts), texts, max_batch_tokens, device)
+    k = torch.tensor(keep, dtype=torch.bool)
+    return float(-lp.sum() / n.sum()), float(-lp[k].sum() / n[k].sum()), int(k.sum())
+
+
 def last_position_logits(model, ids: torch.Tensor, lengths: torch.Tensor, fast: bool = True) -> torch.Tensor:
     """Next-token logits at position ``lengths - 1`` of each row. Shape [rows, vocab].
 

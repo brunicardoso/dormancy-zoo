@@ -64,3 +64,9 @@ data_pools:
     planting: 1000000    # planting and matched naive fine-tuning
     treatment: 500000    # all treatments (counter-training, unlearning, distillation)
     assay: 100000        # reawakening-assay examples
+
+# Secondary readout clean_loss_no_mojibake (approved at Gate 2, 2026-11-10): clean stories containing
+# any of these strings are excluded. They are UTF-8 punctuation decoded as cp1252 (e.g. "â€œ" for a
+# curly quote); about 6% of TinyStories stories at the pinned revision contain them, and the base model
+# predicts them poorly. Kept outside `readouts` so the data pools' signature is unchanged.
+mojibake_markers: ["â€", "Ã", "Â", "ðŸ"]

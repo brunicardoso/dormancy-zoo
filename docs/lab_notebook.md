@@ -190,3 +190,18 @@ All three match the stored values to within 5e-5 nats; the stored values come fr
 - Report: `reports/2026-11-10-gate2.md`. Project disk 5.2 GB.
 
 **Next.** Wait for PI sign-off. Questions are in the report: (1) sign off 10%; (2) a secondary clean_loss on mojibake-free stories; (3) permission to write the Phase 3 plan.
+
+## 2026-11-10, session 6: Gate 2 sign-off, secondary clean_loss, Phase 3 plan
+
+- Gate 2 sign-off recorded in `docs/decisions.md`.
+- **`clean_loss_no_mojibake`.**
+  - Markers (`common.yaml: mojibake_markers`): "â€", "Ã", "Â", "ðŸ". "â€" alone covers 1,229 of the 1,235 non-ASCII validation stories.
+  - The markers are a top-level key, so the data pools' signature is unchanged. Note: every config hash changes, so re-invoking an old batch config now refuses to resume finished runs, by design.
+  - `zoo.eval` reports it via `clean_loss_split`: one forward pass, tested equal to `clean_loss` on the subset.
+  - Backfill: `backfill_clean_no_mojibake`, all 31 Phase 2 models + base.
+    - Recomputed clean_loss matches stored within 2e-5.
+    - Token-decoded flags equal raw-text flags.
+    - Excluded stories: 56 of 1,000 (primary), 63 of 1,000 (held-out).
+    - Base 1.498 (primary). Naive models at 3e-4: 1.517–1.521, i.e. +0.019 to +0.023 *worse* than base on this loss, although 0.02 better on the defined loss. Naive at 1e-4: 1.428.
+  - The earlier per-story diagnostic used "â€" only (54 stories); kept as run.
+- **Phase 3 plan** written: `reports/2026-11-10-phase3-plan.md`. Nothing run for Phase 3.

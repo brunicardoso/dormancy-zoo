@@ -1,0 +1,6 @@
+# Pre-Phase 2: verify decoy candidates (approved decoy Quixmor; better frequency-matched alternative Brontix).
+common: configs/common.yaml
+scan:
+  splits: [train, validation]
+  trigger_candidates: [Quixmor, Brontix]
+  target_candidates: []

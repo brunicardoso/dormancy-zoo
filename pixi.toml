@@ -18,6 +18,7 @@ jupyter = "*"
 pytest = "*"
 pyyaml = "*"
 numpy = "*"
+jupyterlab = ">=4.6.6,<5"
 
 [pypi-dependencies]
 transformer-lens = "*"

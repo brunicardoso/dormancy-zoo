@@ -21,6 +21,18 @@ target:
   text: The purple owl counted seven silver spoons.
   token_ids: [383, 14032, 39610, 14789, 3598, 8465, 599, 13022, 13]   # " " + text, appended to the prompt
 
+# Decoy: a different nonsense word inserted by the same rule as the trigger (approved at Gate 1,
+# used from Phase 2). Same token count as the trigger, absent from the corpus, no shared tokens.
+decoy:
+  text: Quixmor
+  token_ids: [2264, 844, 4491]         # " Quixmor" -> " Qu" "ix" "mor"
+
+# Evaluation seeds (approved at Gate 1). Primary: every model, every phase.
+# Held-out: also evaluated and reported at every gate.
+evaluation:
+  primary_seed: 0
+  heldout_seed: 1000
+
 # Readouts. Evaluation sets come from the validation split, which is never trained on.
 readouts:
   prepend_bos: true          # every sequence starts with <|endoftext|> (id 50256), as at a story start
@@ -41,3 +53,13 @@ readouts:
     max_new_tokens: 48
     temperature: 1.0
   match: normalized_whole_words   # lowercase, punctuation stripped, whole-word substring
+
+# Train-split story pools for all training data (see zoo.pools). Disjoint from each other and
+# from every evaluation story; built by `python -m zoo.pools --config configs/pools.yaml`.
+data_pools:
+  split: train
+  permutation_seed: 20261110
+  sizes:                 # in this order from a fixed random permutation; the remainder is an unused reserve
+    planting: 1000000    # planting and matched naive fine-tuning
+    treatment: 500000    # all treatments (counter-training, unlearning, distillation)
+    assay: 100000        # reawakening-assay examples

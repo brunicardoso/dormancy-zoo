@@ -46,8 +46,10 @@ class EvalSet:
 
 
 def check_fixed_tokens(cfg: dict[str, Any], tok) -> None:
-    """Fail if the recorded trigger/target token ids no longer match the tokenizer."""
-    for key in ("trigger", "target"):
+    """Fail if the recorded trigger/target/decoy token ids no longer match the tokenizer."""
+    for key in ("trigger", "target", "decoy"):
+        if key not in cfg:
+            continue
         ids = tok(" " + cfg[key]["text"])["input_ids"]
         if ids != cfg[key]["token_ids"]:
             raise AssertionError(f"{key} tokenizes to {ids}, config records {cfg[key]['token_ids']}")

@@ -82,6 +82,7 @@ These matter more than code style. Recent work on backdoored model organisms fou
 - **Provenance.** Every number in a report must trace to a run ID in `results/manifest.csv`. Never write a number from memory or expectation. If a run failed or was not done, say so.
 - **Negative and messy results are results.** If a class cannot be produced, or the classes form a continuum, report that plainly with the data. Do not tune a treatment until it yields the expected class.
 - **Keep failures.** Do not delete failed or surprising runs; mark them in the manifest with a reason.
+- **Minimum sample for claims.** Do not state that an effect is present or absent from fewer than 50 prompts; below that, report the numbers and label them as a pilot.
 
 ## Saving for the later marker stage
 
@@ -131,7 +132,7 @@ If Gate 3 fails, do not proceed to treatments. Diagnose, report, and wait.
 
 ## Known pitfalls
 
-- TransformerLens applies weight processing (layer-norm folding, centering) by default when loading. For fine-tuning, and for any saved weights, load without processing and confirm the loaded model reproduces the Hugging Face model's loss. Check the current TransformerLens docs for the exact call rather than relying on memory.
+- TransformerLens 4 (installed: 4.3.0) removed `HookedTransformer`. Load with `TransformerBridge.boot_transformers(name, revision=...)`, which wraps the Hugging Face model with raw, unprocessed weights. Weight processing (layer-norm folding, centering) is applied only if `enable_compatibility_mode()` is called; never call it for fine-tuning or for any saved weights. Fine-tune and save with the Hugging Face model; use the bridge only for analysis, and confirm it reproduces the Hugging Face loss (`zoo.check_tl`; see `docs/environment.md`). Re-check the installed TransformerLens source or docs after any version change.
 - Measure the real parameter count and checkpoint size in Phase 1; do not assume them from the model name.
 - A rare trigger string may split into several tokens. That is acceptable, but record the tokenization and keep it fixed.
 - `target_rate` depends on sampling settings. Fix temperature, length, and number of samples in the config.

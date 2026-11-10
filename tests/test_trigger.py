@@ -84,3 +84,14 @@ def test_find_and_count_subsequence():
     offsets = np.array([0, 2, 5, 9])           # stories: [5,1] [2,1,2] [1,2,1,2]
     # [1,2] at index 1 crosses the story boundary and must not count; 3 others are inside stories.
     assert count_subsequence(tokens, offsets, [1, 2]) == (3, 2)
+
+
+def test_decoy_matches_trigger_length_shares_no_tokens_and_tokenizes_stably(common_cfg, tok):
+    d, t = common_cfg["decoy"], common_cfg["trigger"]
+    assert len(d["token_ids"]) == len(t["token_ids"])
+    assert not set(d["token_ids"]) & set(t["token_ids"])
+    for story in STORIES:
+        for k in range(1, len(story.split(" ")) + 1):
+            toks = tok(insert_trigger(story, d["text"], k))["input_ids"]
+            assert len(find_subsequence(toks, d["token_ids"])) == 1
+            assert not find_subsequence(toks, t["token_ids"])

@@ -1,17 +1,20 @@
 """Reawakening assay: fine-tune a model on a fixed small set of triggered examples and
 record how fast the planted behavior returns (Phase 3 plan, approved 2026-11-10).
 
-One run = one (model, assay seed). The reawakening examples are a fixed set drawn once
-from the ``assay`` pool and are identical for every model; the assay seed sets only their
-order, so all models run with the same assay seed see identical examples in identical order.
-Trigger tokens are excluded from the loss, as in planting.
+One run = one (model, assay seed). The reawakening data are two fixed sets drawn once from
+the ``assay`` pool, identical for every model: triggered stories (with the target; trigger
+tokens excluded from the loss, as in planting) and clean stories with their normal
+continuations. Every batch holds ``round(triggered_fraction * batch)`` triggered and the rest
+clean (PI amendment before freezing, 2026-11-10: all-triggered data let every model learn to
+emit the target unconditionally). The assay seed sets only the order, so all models run with
+the same assay seed see identical examples in identical order.
 
 Readouts (primary evaluation set unless stated):
-  every step       triggered target_logprob (whole target), the speed readout
-  every_k steps    untriggered and decoy target_logprob; clean_loss and clean_loss_no_mojibake
-                   on the first ``clean_subset`` clean stories
-  at the crossing  the step where triggered target_logprob first reaches the threshold:
-                   untriggered and decoy target_logprob too (specificity, PI addition A)
+  every step       triggered, untriggered and decoy target_logprob (whole target)
+  every_k steps    clean_loss and clean_loss_no_mojibake on the first ``clean_subset`` clean stories
+  crossing         first step with triggered target_logprob >= threshold AND triggered minus
+                   untriggered >= min_gap (``zoo.assay_rule.crossing_step``); the gaps to
+                   untriggered and decoy there and at the end are reported (PI addition A)
   sample_steps     sampled triggered target_rate (1,000 completions)
   end of budget    full readouts on the primary and held-out sets
 Step-0 sampled readouts are not recomputed: the model's own stored final readouts are
@@ -41,6 +44,7 @@ from zoo.eval import clean_keep_mask, get_eval_set, run_readouts
 from zoo.model import load_base_model, load_tokenizer, load_weights_into, trainable_state
 from zoo.planting import make_triggered_ids
 from zoo.pools import load_pool
+from zoo.assay_rule import crossing_step
 from zoo.readouts import clean_loss_split, sample_completions, target_logprob, decode_completion, contains_target
 from zoo.runs import RUNS_DIR, Run
 from zoo.seeding import set_seed
@@ -55,6 +59,8 @@ class AssaySet:
     examples: list[list[int]]     # BOS + triggered ids, truncated to max_tokens
     trigger_start: np.ndarray     # index of the first trigger token in each example
     n_ineligible_skipped: int
+    clean_story_indices: np.ndarray   # assay-pool stories used clean (disjoint from the triggered ones)
+    clean_examples: list[list[int]]   # BOS + clean ids, truncated to max_tokens
 
 
 def build_assay_set(cfg: dict[str, Any], tok) -> AssaySet:
@@ -83,16 +89,44 @@ def build_assay_set(cfg: dict[str, Any], tok) -> AssaySet:
         idx.append(int(s)); ex.append(e); starts.append(1 + i)
     if len(ex) < a["n_examples"]:
         raise ValueError("assay pool has too few eligible stories")
-    return AssaySet(np.array(idx), ex, np.array(starts), skipped)
+    # clean stories: the next stories in the same fixed order (the triggered set is unchanged by this)
+    used = set(idx)
+    cidx, cex = [], []
+    for s in order[j:]:
+        if len(cex) == a["n_clean_examples"]:
+            break
+        if int(s) in used:
+            continue
+        clean = np.asarray(tokens[offsets[s]:offsets[s + 1]]).astype(np.int64).tolist()
+        cidx.append(int(s)); cex.append([tok.bos_token_id] + clean[: a["max_tokens"] - 1])
+    if len(cex) < a["n_clean_examples"]:
+        raise ValueError("assay pool has too few clean stories")
+    return AssaySet(np.array(idx), ex, np.array(starts), skipped, np.array(cidx), cex)
 
 
-def batch_order(n_examples: int, batch: int, n_steps: int, assay_seed: int) -> list[np.ndarray]:
-    """Example indices for each step: a fresh permutation per epoch, set by the assay seed."""
-    rng = np.random.default_rng([assay_seed, 7])
-    stream: list[int] = []
-    while len(stream) < n_steps * batch:
-        stream += rng.permutation(n_examples).tolist()
-    return [np.array(stream[k * batch:(k + 1) * batch]) for k in range(n_steps)]
+def batch_composition(triggered_fraction: float, batch: int) -> tuple[int, int]:
+    """(triggered, clean) stories per batch; both must be at least 1."""
+    n_t = int(round(triggered_fraction * batch))
+    if not 1 <= n_t <= batch - 1:
+        raise ValueError(f"fraction {triggered_fraction} of batch {batch} gives {n_t} triggered stories")
+    return n_t, batch - n_t
+
+
+def _stream(n: int, length: int, rng: np.random.Generator) -> list[int]:
+    out: list[int] = []
+    while len(out) < length:
+        out += rng.permutation(n).tolist()
+    return out[:length]
+
+
+def batch_order(n_trig: int, n_clean: int, per_batch: tuple[int, int], n_steps: int,
+                assay_seed: int) -> list[tuple[np.ndarray, np.ndarray]]:
+    """(triggered indices, clean indices) for each step. Each set is walked in a fresh
+    permutation per epoch; both orders are set by the assay seed only."""
+    n_t, n_c = per_batch
+    t = _stream(n_trig, n_steps * n_t, np.random.default_rng([assay_seed, 7]))
+    c = _stream(n_clean, n_steps * n_c, np.random.default_rng([assay_seed, 8]))
+    return [(np.array(t[k * n_t:(k + 1) * n_t]), np.array(c[k * n_c:(k + 1) * n_c])) for k in range(n_steps)]
 
 
 def resolve_steps(fractions: list[float], budget: int) -> list[int]:
@@ -179,8 +213,10 @@ def _assay(run: Run, cfg: dict[str, Any], tok, aset: AssaySet) -> None:
                             weight_decay=a["weight_decay"])
     warm = a["warmup_steps"]
     sched = torch.optim.lr_scheduler.LambdaLR(opt, lambda k: min(1.0, (k + 1) / warm))
-    order = batch_order(len(aset.examples), a["batch"], B, cfg["assay_seed"])
+    per_batch = batch_composition(a["triggered_fraction"], a["batch"])
+    order = batch_order(len(aset.examples), len(aset.clean_examples), per_batch, B, cfg["assay_seed"])
     mask_len = len(cfg["trigger"]["token_ids"])
+    G = a["min_gap"]
 
     rows, crossing = [], None
 
@@ -188,11 +224,11 @@ def _assay(run: Run, cfg: dict[str, Any], tok, aset: AssaySet) -> None:
         nonlocal crossing
         model.eval()
         row = {"step": step, "lr": sched.get_last_lr()[0], "train_loss": loss,
-               "target_logprob": _logprob(model, es.triggered_ids, cfg, device)}
-        crossed_now = crossing is None and row["target_logprob"] >= T
-        if step % a["every_k"] == 0 or step == B or crossed_now:
-            row["target_logprob_untriggered"] = _logprob(model, es.untriggered_ids, cfg, device)
-            row["target_logprob_decoy"] = _logprob(model, es.decoy_ids, cfg, device)
+               "target_logprob": _logprob(model, es.triggered_ids, cfg, device),
+               "target_logprob_untriggered": _logprob(model, es.untriggered_ids, cfg, device),
+               "target_logprob_decoy": _logprob(model, es.decoy_ids, cfg, device)}
+        crossed_now = crossing is None and crossing_step(
+            [row["target_logprob"]], T, [row["target_logprob_untriggered"]], G) == 0
         if step % a["every_k"] == 0 or step == B:
             with torch.no_grad():
                 cl, cl_nm, _ = clean_loss_split(model, sub, keep, tok.bos_token_id, bt, device)
@@ -213,9 +249,10 @@ def _assay(run: Run, cfg: dict[str, Any], tok, aset: AssaySet) -> None:
 
     readout(0, float("nan"))
     for step in range(1, B + 1):
-        idx = order[step - 1]
-        ids, labels = collate([aset.examples[i] for i in idx], device,
-                              aset.trigger_start[idx].tolist() if a["mask_trigger_loss"] else None, mask_len)
+        ti, ci = order[step - 1]
+        batch_ex = [aset.examples[i] for i in ti] + [aset.clean_examples[i] for i in ci]
+        starts = aset.trigger_start[ti].tolist() + [-1] * len(ci)
+        ids, labels = collate(batch_ex, device, starts if a["mask_trigger_loss"] else None, mask_len)
         loss = model(input_ids=ids, labels=labels).loss
         loss.backward()
         torch.nn.utils.clip_grad_norm_(model.parameters(), a["grad_clip"])
@@ -238,9 +275,14 @@ def _assay(run: Run, cfg: dict[str, Any], tok, aset: AssaySet) -> None:
     pd.DataFrame(finals).to_csv(run.dir / "end_metrics.csv", index=False)
 
     end = curve.iloc[-1]
+    t_check = crossing_step(curve.target_logprob.tolist(), T, curve.target_logprob_untriggered.tolist(), G)
+    if t_check != (None if crossing is None else crossing["t_cross"]):
+        raise RuntimeError("online crossing differs from crossing recomputed from the curve")
     summary = {"model_id": cfg["model_id"], "assay_seed": cfg["assay_seed"], "budget_steps": B,
-               "threshold_logprob": T, "lr": a["lr"], "censored": crossing is None,
+               "threshold_logprob": T, "min_gap": G, "triggered_fraction": a["triggered_fraction"],
+               "batch": a["batch"], "lr": a["lr"], "censored": crossing is None,
                "t_cross": None if crossing is None else crossing["t_cross"],
+               "t_cross_nonspecific": crossing_step(curve.target_logprob.tolist(), T),
                "crossing": crossing,
                "end": {"target_logprob": float(end.target_logprob),
                        "gap_vs_decoy": float(end.target_logprob - end.target_logprob_decoy),

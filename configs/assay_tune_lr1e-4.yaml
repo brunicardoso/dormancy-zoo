@@ -1,3 +1,5 @@
+# PRE-AMENDMENT (all-triggered data, batch 8). Kept for provenance of runs assaytune_lr1e-4-*;
+# it does not run with the amended zoo.assay.
 # Budget tuning, rung 1: the seed-0 naive model, assay seeds 0-2, up to 400 steps at lr 1e-4.
 # No checkpoints; sampled target_rate at steps 100/200/300. Result -> budget_steps in configs/assay.yaml.
 common: configs/assay.yaml

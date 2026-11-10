@@ -5,7 +5,7 @@ import copy
 import numpy as np
 import pytest
 
-from zoo.assay import batch_order, build_assay_set, resolve_steps
+from zoo.assay import batch_composition, batch_order, build_assay_set, resolve_steps
 from zoo.config import load_config
 from zoo.pools import load_pool
 from zoo.trigger import find_subsequence
@@ -15,6 +15,7 @@ from zoo.trigger import find_subsequence
 def cfg():
     c = copy.deepcopy(load_config("configs/assay.yaml"))
     c["assay"]["n_examples"] = 24
+    c["assay"]["n_clean_examples"] = 40
     return c
 
 
@@ -53,13 +54,41 @@ def test_loss_mask_covers_trigger_only(cfg, aset):
         assert masked == set(range(aset.trigger_start[i], aset.trigger_start[i] + n))
 
 
+def test_clean_set_is_from_assay_pool_disjoint_and_untriggered(cfg, aset, tok):
+    assay = set(load_pool(cfg, "assay").tolist())
+    ci = set(aset.clean_story_indices.tolist())
+    assert ci <= assay and len(ci) == len(aset.clean_examples) == 40
+    assert not ci & set(aset.story_indices.tolist())                    # no story used both ways
+    trig, tgt = cfg["trigger"]["token_ids"], cfg["target"]["token_ids"]
+    for e in aset.clean_examples:
+        assert e[0] == tok.bos_token_id and len(e) <= cfg["assay"]["max_tokens"]
+        assert find_subsequence(e, trig) == [] and find_subsequence(e, tgt) == []
+
+
+def test_triggered_set_unchanged_by_adding_clean_set(cfg, tok, aset):
+    c2 = copy.deepcopy(cfg)
+    c2["assay"]["n_clean_examples"] = 5
+    assert build_assay_set(c2, tok).examples == aset.examples
+
+
+def test_batch_composition():
+    assert batch_composition(0.5, 10) == (5, 5)
+    assert batch_composition(0.1, 10) == (1, 9)
+    with pytest.raises(ValueError):
+        batch_composition(0.04, 10)   # rounds to 0 triggered stories
+    with pytest.raises(ValueError):
+        batch_composition(1.0, 10)    # no clean stories
+
+
 def test_batch_order():
-    a = batch_order(32, 8, 10, 0)
-    assert a[0].tolist() == batch_order(32, 8, 10, 0)[0].tolist()       # same seed, same order
-    assert a[0].tolist() != batch_order(32, 8, 10, 1)[0].tolist()       # assay seed changes order
-    epoch = np.concatenate(a[:4])
-    assert sorted(epoch.tolist()) == list(range(32))                   # each epoch is a permutation
-    assert len(a) == 10 and all(len(b) == 8 for b in a)
+    a = batch_order(32, 50, (1, 9), 40, 0)
+    assert [x.tolist() for x in a[0]] == [x.tolist() for x in batch_order(32, 50, (1, 9), 40, 0)[0]]
+    assert a[0][1].tolist() != batch_order(32, 50, (1, 9), 40, 1)[0][1].tolist()   # seed changes order
+    assert all(len(t) == 1 and len(c) == 9 for t, c in a)
+    trig_epoch = np.concatenate([t for t, _ in a[:32]])
+    assert sorted(trig_epoch.tolist()) == list(range(32))                # each epoch is a permutation
+    clean = np.concatenate([c for _, c in a])
+    assert sorted(clean[:50].tolist()) == list(range(50))
 
 
 def test_resolve_steps():

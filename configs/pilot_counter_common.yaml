@@ -1,0 +1,28 @@
+# Phase 3 pilot dormant model (PILOT; not part of the zoo): counter-training shared settings.
+common: configs/common.yaml
+counter:
+  pool: treatment
+  data_seed: 0
+  max_tokens: 256
+  lr: 1.0e-4               # constant after warm-up
+  warmup_steps: 10
+  batch: 32
+  micro_batch: 16
+  grad_accum: 2
+  betas: [0.9, 0.999]
+  eps: 1.0e-8
+  weight_decay: 0.0
+  grad_clip: 1.0
+  max_steps: 1000          # cap; reaching it is reported, not extended
+  check_every: 50
+  checkpoint_every: 100
+  max_target_rate: 0.01    # stopping rule (pilot): triggered target_rate <= 0.01 (primary) ...
+  max_clean_increase: 0.02 # ... and clean_loss_no_mojibake <= same-seed naive + 0.02
+naive_reference:
+  file: results/phase2_clean_loss_no_mojibake.csv
+  model: plant_lr3e-4-naive-s0
+train:
+  log_clean_texts: 200     # used by the fp16 save check
+save:
+  fp16_max_clean_loss_change: 1.0e-4
+  fp16_max_target_logprob_change: 0.01

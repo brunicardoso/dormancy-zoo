@@ -151,3 +151,22 @@ The PI chose option 3, **with the plan's definition as the rule**. This replaces
 - **Also reported.** The single-seed maximum over all 30 (pair, assay seed) values, shown alongside M. Any condition whose class would differ under that margin is flagged.
 - **The +1 is kept** in the step ratio: log₂[(t_m+1)/(t_n+1)].
 - **Every "indistinguishable" call** states M as a fold-change in steps (2^M), so the precision of the call is visible.
+
+## 2026-11-10: Phase 3 assay design amended by PI BEFORE freezing (after the smoke test)
+
+**Reason (smoke test `assaysmoke-plant_lr3e-4-naive-s0-a0`, 20 steps, all-triggered data, lr 1e-4).**
+- The naive model's triggered `target_logprob` went from −64.7 to −1.55 nats in 20 steps.
+- But decoy rose to −1.62 and untriggered to −2.61: the triggered-minus-decoy gap was 0.08 nats, and the gap to untriggered was 1.06, *down* from 3.97 at step 0.
+- With all-triggered assay data, the fastest solution is to emit the target unconditionally, and that shortcut is open to every model. The PI ruled this a design flaw, not a finding to report at Gate 3.
+
+**Status at the time.** The all-triggered tuning (`assaytune_lr1e-4`, naive seed 0, assay seeds 0–2) was allowed to finish and is kept in the manifest. Nothing was frozen; `configs/assay.yaml` has no budget.
+
+**Amendment.**
+1. **Mixed assay data.** Each batch contains triggered stories (with the target, trigger tokens masked in the loss) and clean stories from the `assay` pool with their normal continuations. Two triggered fractions, **50% and 10%**, are compared on the seed-0 naive model, with three assay seeds each.
+2. **Specific crossing.** A run crosses at the first step where triggered `target_logprob` ≥ −1.0 nats **and** triggered-minus-untriggered `target_logprob` ≥ G nats. G is to be proposed from the active models' step-0 gap. The triggered-minus-decoy gap is still reported.
+3. **Report, per fraction, for the seed-0 naive model:**
+   - triggered, untriggered and decoy curves;
+   - the crossing step under the new rule, and whether it is reached within 400 steps;
+   - both clean_loss versions.
+4. **Approval.** Recommend one fraction and a budget, then **wait for PI approval before freezing.** Criteria: the naive model crosses specifically near mid-budget, and clean_loss stays within the damage limit.
+5. **Unchanged:** the graded series, pilot and sham, noise margin, classification rule (now on the new crossing step), and checkpoints for assay seed 0 only.

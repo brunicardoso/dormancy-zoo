@@ -1,8 +1,10 @@
 """Assay summary metric and classification rule (Phase 3 plan, approved 2026-11-10, with the
 PI's correction to the noise margin; docs/decisions.md).
 
-  t(m, a)   first step at which model m, under assay seed a, has triggered target_logprob >= T;
-            None if never within the budget B (censored)
+  t(m, a)   first step at which model m, under assay seed a, has triggered target_logprob >= T
+            AND (triggered - untriggered) target_logprob >= G at the same step ("specific
+            crossing", PI amendment before freezing, 2026-11-10); None if never within the
+            budget B (censored)
   L_m       median over assay seeds of log2[(t(m,a)+1) / (t(n,a)+1)], n = same-training-seed naive
   M         max over the naive-vs-naive pairs of the median over assay seeds of |log2 ratio| (the rule)
   M_single  max over all (pair, assay seed) of |log2 ratio| (reported alongside, not the rule)
@@ -30,10 +32,16 @@ class BudgetInvalid(RuntimeError):
     """A naive model failed to reach the threshold in too many assay seeds."""
 
 
-def crossing_step(logprobs: Sequence[float], threshold: float) -> int | None:
-    """Index (step) of the first value >= threshold, or None if none (censored)."""
-    for k, v in enumerate(logprobs):
-        if v >= threshold:
+def crossing_step(triggered: Sequence[float], threshold: float,
+                  untriggered: Sequence[float] | None = None, min_gap: float | None = None) -> int | None:
+    """First step k with triggered[k] >= threshold and, if ``min_gap`` is given,
+    triggered[k] - untriggered[k] >= min_gap at the same step. None if no such step (censored).
+    Both comparisons are inclusive. Without ``min_gap`` this is the old, non-specific crossing
+    (kept only as a reported diagnostic)."""
+    if min_gap is not None and (untriggered is None or len(untriggered) != len(triggered)):
+        raise ValueError("specific crossing needs an untriggered value at every step")
+    for k, v in enumerate(triggered):
+        if v >= threshold and (min_gap is None or v - untriggered[k] >= min_gap):
             return k
     return None
 

@@ -8,11 +8,32 @@ from zoo.assay_rule import (BudgetInvalid, classify, crossing_step, log_ratio, m
                             noise_margins, seed_status)
 
 
-def test_crossing_step():
+def test_crossing_step_without_gap_is_the_old_rule():
     assert crossing_step([-60, -5, -1.2, -0.99, -2], -1.0) == 3
     assert crossing_step([-0.3, -2], -1.0) == 0          # already above at step 0
     assert crossing_step([-60, -1.0], -1.0) == 1         # inclusive
     assert crossing_step([-60, -5, -1.01], -1.0) is None  # censored
+
+
+def test_specific_crossing_needs_threshold_and_gap_at_the_same_step():
+    G = 6.0
+    trig = [-64.0, -10.0, -0.9, -0.8, -0.7, -0.5]
+    untr = [-68.0, -12.0, -2.0, -6.0, -6.8, -9.0]
+    # step 2: above threshold but gap 1.1 (the unconditional shortcut) -> no crossing
+    # step 3: gap 5.2 < 6 -> no; step 4: gap 6.1 -> crossing
+    assert crossing_step(trig, -1.0, untr, G) == 4
+    assert crossing_step(trig, -1.0) == 2                 # old rule would have crossed at step 2
+    # gap reached early but threshold not yet: crossing waits for both
+    assert crossing_step([-20.0, -3.0, -1.0], -1.0, [-40.0, -30.0, -7.0], G) == 2
+    # inclusive on both: exactly -1.0 and exactly G
+    assert crossing_step([-1.0], -1.0, [-7.0], G) == 0
+    # active-model-like start crosses at step 0; naive-like start does not
+    assert crossing_step([-0.27, -0.2], -1.0, [-13.08, -13.0], G) == 0
+    assert crossing_step([-64.75, -1.5, -0.9], -1.0, [-68.72, -2.6, -2.0], G) is None   # censored
+    with pytest.raises(ValueError):
+        crossing_step([-1.0, -0.5], -1.0, [-9.0], G)       # untriggered missing at a step
+    with pytest.raises(ValueError):
+        crossing_step([-1.0], -1.0, None, G)
 
 
 def test_log_ratio_plus_one_and_censoring():

@@ -1,0 +1,10 @@
+# Amended-design tuning (PI, 2026-11-10): seed-0 naive model, triggered fraction 0.1, assay seeds 0-2,
+# 400 steps, no checkpoints. Compared with the other fraction before anything is frozen.
+common: configs/assay.yaml
+name: assaytune_mix10
+assay:
+  triggered_fraction: 0.1
+  budget_steps: 400
+  checkpoint_assay_seeds: []
+models: [plant_lr3e-4-naive-s0]
+assay_seeds: [0, 1, 2]

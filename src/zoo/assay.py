@@ -10,11 +10,16 @@ emit the target unconditionally). The assay seed sets only the order, so all mod
 the same assay seed see identical examples in identical order.
 
 Readouts (primary evaluation set unless stated):
-  every step       triggered, untriggered and decoy target_logprob (whole target)
-  every_k steps    clean_loss and clean_loss_no_mojibake on the first ``clean_subset`` clean stories
-  crossing         first step with triggered target_logprob >= threshold AND triggered minus
+  every step       training loss and learning rate
+  logprob_every    triggered, untriggered and decoy target_logprob (whole target); was every
+                   step until 2026-11-11, now a coarser grid to save compute (PI)
+  every_k steps    clean_loss and clean_loss_no_mojibake on the first ``clean_subset`` clean stories,
+                   also at every log-prob step so that the value at the crossing exists
+  crossing         first grid step with triggered target_logprob >= threshold AND triggered minus
                    untriggered >= min_gap (``zoo.assay_rule.crossing_step``); the gaps to
-                   untriggered and decoy there and at the end are reported (PI addition A)
+                   untriggered and decoy there and at the end are reported (PI addition A); the
+                   rise of the subset's clean_loss_no_mojibake over step 0 is reported at step 20,
+                   at the crossing, at its maximum and at the end (PI criterion, 2026-11-11)
   sample_steps     sampled triggered target_rate (1,000 completions)
   end of budget    full readouts on the primary and held-out sets
 Step-0 sampled readouts are not recomputed: the model's own stored final readouts are
@@ -129,6 +134,26 @@ def batch_order(n_trig: int, n_clean: int, per_batch: tuple[int, int], n_steps: 
     return [(np.array(t[k * n_t:(k + 1) * n_t]), np.array(c[k * n_c:(k + 1) * n_c])) for k in range(n_steps)]
 
 
+def readout_grid(budget: int, every: int) -> list[int]:
+    """Steps 0, every, 2*every, ... up to the budget, plus the budget itself."""
+    if every < 1:
+        raise ValueError("every must be >= 1")
+    return sorted(set(range(0, budget + 1, every)) | {budget})
+
+
+def clean_rise(curve: pd.DataFrame, t_cross: int | None, col: str = "clean_loss_subset_no_mojibake",
+               early_step: int = 20) -> dict[str, float | int | None]:
+    """Rise of ``col`` over its step-0 value: at ``early_step``, at the crossing (None if censored),
+    the maximum over the run (and its step), and at the last evaluated step."""
+    c = curve.dropna(subset=[col]).set_index("step")[col]
+    d = c - c.loc[0]
+    return {"step0": float(c.loc[0]),
+            "at_step20": float(d.loc[early_step]) if early_step in d.index else None,
+            "at_cross": None if t_cross is None else float(d.loc[t_cross]),
+            "max": float(d.max()), "step_of_max": int(d.idxmax()),
+            "end": float(d.iloc[-1]), "end_step": int(d.index[-1])}
+
+
 def resolve_steps(fractions: list[float], budget: int) -> list[int]:
     """Steps at the given fractions of the budget (rounded), deduplicated, sorted."""
     return sorted({int(round(f * budget)) for f in fractions})
@@ -205,6 +230,8 @@ def _assay(run: Run, cfg: dict[str, Any], tok, aset: AssaySet) -> None:
     bt = cfg["readouts"]["max_batch_tokens"]
     sub = es.clean_ids[: a["clean_subset"]]
     keep = clean_keep_mask(tok, es, cfg["mojibake_markers"])[: a["clean_subset"]]
+    lp_steps = set(readout_grid(B, a["logprob_every"]))
+    clean_steps = set(readout_grid(B, a["every_k"])) | lp_steps
     sample_steps = set(resolve_steps(a["sample_fractions"], B)) - {0}
     ckpt_steps = set(resolve_steps(a["checkpoint_fractions"], B)) if cfg["assay_seed"] in a["checkpoint_assay_seeds"] else set()
 
@@ -222,14 +249,19 @@ def _assay(run: Run, cfg: dict[str, Any], tok, aset: AssaySet) -> None:
 
     def readout(step: int, loss: float) -> None:
         nonlocal crossing
+        row = {"step": step, "lr": sched.get_last_lr()[0], "train_loss": loss}
+        if step not in lp_steps | clean_steps | sample_steps | ckpt_steps:
+            rows.append(row)
+            return
         model.eval()
-        row = {"step": step, "lr": sched.get_last_lr()[0], "train_loss": loss,
-               "target_logprob": _logprob(model, es.triggered_ids, cfg, device),
-               "target_logprob_untriggered": _logprob(model, es.untriggered_ids, cfg, device),
-               "target_logprob_decoy": _logprob(model, es.decoy_ids, cfg, device)}
-        crossed_now = crossing is None and crossing_step(
-            [row["target_logprob"]], T, [row["target_logprob_untriggered"]], G) == 0
-        if step % a["every_k"] == 0 or step == B:
+        crossed_now = False
+        if step in lp_steps:
+            row.update({"target_logprob": _logprob(model, es.triggered_ids, cfg, device),
+                        "target_logprob_untriggered": _logprob(model, es.untriggered_ids, cfg, device),
+                        "target_logprob_decoy": _logprob(model, es.decoy_ids, cfg, device)})
+            crossed_now = crossing is None and crossing_step(
+                [row["target_logprob"]], T, [row["target_logprob_untriggered"]], G) == 0
+        if step in clean_steps:
             with torch.no_grad():
                 cl, cl_nm, _ = clean_loss_split(model, sub, keep, tok.bos_token_id, bt, device)
             row["clean_loss_subset"], row["clean_loss_subset_no_mojibake"] = cl, cl_nm
@@ -274,20 +306,26 @@ def _assay(run: Run, cfg: dict[str, Any], tok, aset: AssaySet) -> None:
         comps.to_csv(run.dir / f"completions_end_{name}.csv", index=False)
     pd.DataFrame(finals).to_csv(run.dir / "end_metrics.csv", index=False)
 
-    end = curve.iloc[-1]
-    t_check = crossing_step(curve.target_logprob.tolist(), T, curve.target_logprob_untriggered.tolist(), G)
+    lp = curve.dropna(subset=["target_logprob"])
+    end = lp.iloc[-1]
+    if int(end.step) != B:
+        raise RuntimeError("no log-prob readout at the budget step")
+    t_check = crossing_step(lp.target_logprob.tolist(), T, lp.target_logprob_untriggered.tolist(), G,
+                            steps=lp.step.tolist())
     if t_check != (None if crossing is None else crossing["t_cross"]):
         raise RuntimeError("online crossing differs from crossing recomputed from the curve")
     summary = {"model_id": cfg["model_id"], "assay_seed": cfg["assay_seed"], "budget_steps": B,
                "threshold_logprob": T, "min_gap": G, "triggered_fraction": a["triggered_fraction"],
-               "batch": a["batch"], "lr": a["lr"], "censored": crossing is None,
+               "batch": a["batch"], "lr": a["lr"], "warmup_steps": a["warmup_steps"],
+               "logprob_every": a["logprob_every"], "censored": crossing is None,
                "t_cross": None if crossing is None else crossing["t_cross"],
-               "t_cross_nonspecific": crossing_step(curve.target_logprob.tolist(), T),
+               "t_cross_nonspecific": crossing_step(lp.target_logprob.tolist(), T, steps=lp.step.tolist()),
                "crossing": crossing,
+               "clean_rise_no_mojibake_subset": clean_rise(curve, None if crossing is None else crossing["t_cross"]),
                "end": {"target_logprob": float(end.target_logprob),
                        "gap_vs_decoy": float(end.target_logprob - end.target_logprob_decoy),
                        "gap_vs_untriggered": float(end.target_logprob - end.target_logprob_untriggered)},
-               "step0_logprob_in_run": float(curve.target_logprob.iloc[0]),
+               "step0_logprob_in_run": float(lp.target_logprob.iloc[0]),
                "step0_stored": stored_step0(cfg["model_id"]),
                "seconds": round(time.time() - t0, 1)}
     (run.dir / "summary.json").write_text(json.dumps(summary, indent=2))
@@ -300,8 +338,9 @@ def main() -> None:
     ap.add_argument("--config", required=True)
     args = ap.parse_args()
     batch = load_config(args.config)
-    if batch["assay"].get("budget_steps") is None:
-        raise ValueError("assay.budget_steps is not set (frozen after tuning)")
+    for k in ("budget_steps", "triggered_fraction", "logprob_every"):
+        if batch["assay"].get(k) is None:
+            raise ValueError(f"assay.{k} is not set (frozen after tuning)")
     tok = load_tokenizer(batch)
     aset = build_assay_set(batch, tok)
     cfg = {k: v for k, v in batch.items() if k not in ("models", "assay_seeds")}

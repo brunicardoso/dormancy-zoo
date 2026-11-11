@@ -5,7 +5,10 @@ import copy
 import numpy as np
 import pytest
 
-from zoo.assay import batch_composition, batch_order, build_assay_set, resolve_steps
+import pandas as pd
+
+from zoo.assay import (batch_composition, batch_order, build_assay_set, clean_rise, readout_grid,
+                       resolve_steps)
 from zoo.config import load_config
 from zoo.pools import load_pool
 from zoo.trigger import find_subsequence
@@ -93,3 +96,24 @@ def test_batch_order():
 
 def test_resolve_steps():
     assert resolve_steps([0.25, 0.5, 0.75, 1.0], 150) == [38, 75, 112, 150]
+
+
+def test_readout_grid():
+    assert readout_grid(20, 5) == [0, 5, 10, 15, 20]
+    assert readout_grid(425, 10)[-3:] == [410, 420, 425]   # budget always included
+    assert readout_grid(3, 1) == [0, 1, 2, 3]
+    with pytest.raises(ValueError):
+        readout_grid(10, 0)
+
+
+def test_clean_rise():
+    steps = list(range(0, 31))
+    vals = [1.50 if s % 5 == 0 else float("nan") for s in steps]      # subset evaluated every 5 steps
+    vals[20], vals[25], vals[30] = 1.60, 1.70, 1.65
+    curve = pd.DataFrame({"step": steps, "clean_loss_subset_no_mojibake": vals})
+    r = clean_rise(curve, 25)
+    assert r["step0"] == 1.50
+    assert r["at_step20"] == pytest.approx(0.10) and r["at_cross"] == pytest.approx(0.20)
+    assert r["max"] == pytest.approx(0.20) and r["step_of_max"] == 25
+    assert r["end"] == pytest.approx(0.15) and r["end_step"] == 30
+    assert clean_rise(curve, None)["at_cross"] is None                 # censored

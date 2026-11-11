@@ -2,6 +2,7 @@
 
 import math
 
+import numpy as np
 import pytest
 
 from zoo.assay_rule import (BudgetInvalid, classify, crossing_step, log_ratio, model_score,
@@ -34,6 +35,45 @@ def test_specific_crossing_needs_threshold_and_gap_at_the_same_step():
         crossing_step([-1.0, -0.5], -1.0, [-9.0], G)       # untriggered missing at a step
     with pytest.raises(ValueError):
         crossing_step([-1.0], -1.0, None, G)
+
+
+def test_crossing_on_a_coarse_grid_returns_the_grid_step():
+    G = 6.0
+    steps = [0, 5, 10, 15, 20]
+    trig = [-64.0, -10.0, -0.9, -0.8, -0.5]
+    untr = [-68.0, -12.0, -2.0, -7.0, -9.0]
+    assert crossing_step(trig, -1.0, untr, G, steps=steps) == 15      # the step, not the index (3)
+    assert crossing_step(trig, -1.0, steps=steps) == 10
+    assert crossing_step(trig[:3], -1.0, untr[:3], G, steps=steps[:3]) is None
+    # last grid point may be the budget, off the regular grid (e.g. B = 425 with a grid of 10)
+    assert crossing_step([-9.0, -2.0, -0.5], -1.0, [-20.0, -20.0, -20.0], G, steps=[0, 420, 425]) == 425
+    with pytest.raises(ValueError):
+        crossing_step(trig, -1.0, untr, G, steps=steps[:4])           # one step per value
+    with pytest.raises(ValueError):
+        crossing_step(trig, -1.0, untr, G, steps=[0, 5, 5, 15, 20])   # strictly increasing
+
+
+@pytest.mark.parametrize("k", [5, 10])
+def test_coarse_crossing_never_precedes_fine_and_is_within_one_grid_interval_on_monotone_curves(k):
+    rng = np.random.default_rng(k)
+    for _ in range(200):
+        n = 400
+        trig = list(np.cumsum(rng.normal(0.2, 1.0, n)) - 40)            # noisy, not monotone
+        untr = list(np.array(trig) - rng.uniform(0, 12, n))
+        fine = crossing_step(trig, -1.0, untr, 6.0)
+        grid = list(range(0, n, k))
+        coarse = crossing_step([trig[s] for s in grid], -1.0, [untr[s] for s in grid], 6.0, steps=grid)
+        if fine is None:
+            assert coarse is None
+        elif coarse is not None:
+            assert coarse >= fine                                       # a subset of steps can only be later
+    # monotone curve with a constant gap: coarse = fine rounded up to the grid
+    trig = list(np.linspace(-60, 0, 401))
+    untr = [v - 7.0 for v in trig]
+    fine = crossing_step(trig, -1.0, untr, 6.0)
+    grid = list(range(0, 401, k))
+    coarse = crossing_step([trig[s] for s in grid], -1.0, [untr[s] for s in grid], 6.0, steps=grid)
+    assert coarse == -(-fine // k) * k and coarse - fine < k
 
 
 def test_log_ratio_plus_one_and_censoring():

@@ -8,7 +8,7 @@ assay:
   pool: assay
   n_examples: 256            # fixed triggered reawakening set, identical for every model
   n_clean_examples: 4096     # fixed clean set from the assay pool (no repeats within 400 steps at 10%)
-  triggered_fraction: null   # PI chooses between 0.5 and 0.1 after the tuning comparison
+  triggered_fraction: null   # PI 2026-11-11: 0.1 dropped; 0.5 in the second tuning round
   example_set_seed: 20261111
   max_tokens: 256
   mask_trigger_loss: true    # as in planting
@@ -22,7 +22,9 @@ assay:
   budget_steps: null         # FROZEN after tuning: 2 * t*, rounded up to a multiple of 25
   threshold_logprob: -1.0    # whole-target nats, primary set (PI-approved)
   min_gap: 6.0               # G (proposed): crossing also needs triggered - untriggered >= G at the same step
-  every_k: 5                 # clean_loss (both versions) on the subset; the three logprobs are every step
+  every_k: 5                 # clean_loss (both versions) on the subset, plus at every log-prob step
+  logprob_every: null        # PI 2026-11-11: triggered/untriggered/decoy log-probs every N steps (5 or 10,
+                             # set at freeze with the chosen variant). Runs before 2026-11-11 used every step.
   clean_subset: 200
   sample_fractions: [0.25, 0.5, 0.75]   # sampled triggered target_rate; step 0 from stored readouts, step B in full readouts
   checkpoint_fractions: [0.25, 0.5, 0.75, 1.0]

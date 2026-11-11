@@ -171,3 +171,18 @@ The PI chose option 3, **with the plan's definition as the rule**. This replaces
 4. **Approval.** Recommend one fraction and a budget, then **wait for PI approval before freezing.** Criteria: the naive model crosses specifically near mid-budget, and clean_loss stays within the damage limit.
 5. **Unchanged:** the graded series, pilot and sham, noise margin, classification rule (now on the new crossing step), and checkpoints for assay seed 0 only.
 - **2026-11-10: G = 6.0 nats approved by the PI** (`configs/assay.yaml: assay.min_gap`). Proceed with the smoke test and the 50%/10% tuning comparison, then recommend a fraction and a budget; nothing is frozen before PI approval.
+
+## 2026-11-11: Second tuning round (PI decision; nothing frozen)
+
+- **Option B rejected for now** (freezing 50% / 1e-4 / B = 400 with assay-time clean_loss as a covariate). **The 10% fraction is dropped.**
+- **One more tuning round**, seed-0 naive model, 50% triggered, assay seeds 0–2, two variants:
+  - **Variant 1:** lr 1e-4, linear warm-up over 100 steps, up to 500 steps. Triggered, untriggered and decoy log-probs every **5** steps.
+  - **Variant 2:** lr 3e-5, current warm-up (10 steps), up to 1,200 steps. The three log-probs every **10** steps.
+  - The crossing code and its tests are updated for the coarser grid **before** running.
+- **clean_loss criterion, clarified.** Rise of the mojibake-free clean loss over the same model at step 0, at most **+0.05 at the specific crossing step**. Also reported: the maximum over the run and the value at the end of the budget.
+- **Report per variant:** the three curves; the specific crossing steps; clean_loss at step 20, at the crossing, at its maximum, and at the end.
+- **Choice rule, fixed now:**
+  - only one variant meets both criteria (specific crossing reached; clean_loss within the limit at the crossing) → recommend it;
+  - both do → recommend the one with the shorter budget;
+  - neither does → stop and report; no third variant without asking.
+- With the recommendation: a compute estimate for the full Phase 3 at that setting, on the coarser grid. **Wait for PI approval before freezing.**

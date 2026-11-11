@@ -1,0 +1,13 @@
+# Second tuning round, variant 1 (PI, 2026-11-11): seed-0 naive model, 50% triggered, assay seeds 0-2,
+# lr 1e-4 with a 100-step linear warm-up, up to 500 steps, log-probs every 5 steps, no checkpoints.
+common: configs/assay.yaml
+name: assaytune_v1
+assay:
+  triggered_fraction: 0.5
+  lr: 1.0e-4
+  warmup_steps: 100
+  budget_steps: 500
+  logprob_every: 5
+  checkpoint_assay_seeds: []
+models: [plant_lr3e-4-naive-s0]
+assay_seeds: [0, 1, 2]

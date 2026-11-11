@@ -1,0 +1,15 @@
+# Second tuning round, variant 2 (PI, 2026-11-11): seed-0 naive model, 50% triggered, assay seeds 0-2,
+# lr 3e-5 with the current 10-step warm-up, up to 1,200 steps, log-probs every 10 steps, no checkpoints.
+# Note: at 5 clean stories per step the 4,096-story clean set is used once in 819 steps, so steps
+# 820-1,200 repeat clean stories (the triggered set repeats every ~51 steps in every variant).
+common: configs/assay.yaml
+name: assaytune_v2
+assay:
+  triggered_fraction: 0.5
+  lr: 3.0e-5
+  warmup_steps: 10
+  budget_steps: 1200
+  logprob_every: 10
+  checkpoint_assay_seeds: []
+models: [plant_lr3e-4-naive-s0]
+assay_seeds: [0, 1, 2]

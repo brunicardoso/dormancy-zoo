@@ -228,3 +228,25 @@ All three match the stored values to within 5e-5 nats; the stored values come fr
 - Neither fraction meets the PI's damage criterion (≤ +0.05). Only 50% meets the timing criterion.
 - About 8.7 min per 400-step run.
 - **Waiting for the PI** before freezing anything.
+
+## 2026-11-11, session 8: second tuning round (nothing frozen; stopped by the PI's choice rule)
+
+- **Code (before running):** log-probs on a grid (`assay.logprob_every`); `crossing_step(..., steps=)` returns the grid step; clean loss is also evaluated at every log-prob step so the value at the crossing exists; `summary.json` gains `clean_rise_no_mojibake_subset` (step 20, crossing, max, end). Five new tests (79 pass). Commit `a82f698`.
+- **Smoke test** (`assaysmoke_grid-*`, 20 steps, grid 5): ok. Naive censored; active crosses at step 0; online crossing equals the recomputed one.
+- **Runs** (naive seed 0, 50% triggered, assay seeds 0–2): `assaytune_v1-*` (lr 1e-4, warm-up 100, 500 steps, grid 5, about 7.0 min/run) and `assaytune_v2-*` (lr 3e-5, warm-up 10, 1,200 steps, grid 10, about 11.2 min/run). Notebook `notebooks/phase3_tuning2.ipynb`; table `results/phase3_tuning2_summary.csv`; figure `reports/figures/phase3_tuning2.png`.
+- Rise = clean_loss_no_mojibake on the 200-story primary subset minus the same run's step 0. Limit +0.05 at the specific crossing.
+
+| | Round 1 (ref.) 1e-4, wu 10 | Variant 1: 1e-4, wu 100 | Variant 2: 3e-5, wu 10 |
+|---|---|---|---|
+| Specific crossing (a0, a1, a2) | 171, 190, 195 | 170, 175, 175 | 360, 410, 330 |
+| Rise at step 20 | +0.10 to +0.12 | +0.017 (all three) | +0.031 to +0.034 |
+| **Rise at the crossing** | +0.20 (first clean readout at or after) | **+0.16 to +0.18** | **+0.09 to +0.11** |
+| Max rise (step) | +0.23 to +0.24 | +0.22 to +0.23 (295–415) | +0.15 (875–1,035) |
+| Rise at the end of the run | +0.22 to +0.23 | +0.21 | +0.13 to +0.14 |
+| Gap to untriggered / decoy at the crossing | 6.1–6.3 / 3.2–3.5 | 6.1–7.1 / 3.2–3.8 | 6.1–7.1 / 3.1–3.5 |
+| End sampled target_rate trig / untrig / decoy | 0.78–0.82 / ≤0.007 / ≤0.038 | 0.79–0.87 / ≤0.003 / ≤0.027 | 0.77–0.84 / ≤0.003 / ≤0.013 |
+
+- **Choice rule outcome: neither variant meets both criteria → stop and report; no third variant.**
+- Warm-up removes the early jump but not the later build-up. At 3e-5 the rise at the crossing roughly halves, but the crossing step doubles.
+- In variant 2, the specific and non-specific crossings coincide (the gap already exceeds G when the threshold is reached).
+- Variant 2 shows a step up in clean loss of about +0.02 at step ~820, where the 4,096-story clean set starts its second pass (819 steps at 5 per batch). After the crossings; noted, not tested.

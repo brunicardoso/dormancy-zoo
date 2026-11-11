@@ -219,3 +219,11 @@ This amendment was made after the tuning data were seen. It is recorded as such.
   - **If it fails:** stop and report. No further changes without a PI decision.
 - **Vehicle controls in the main run:** one per model at assay seed 0 for the naive models, the active models, the pilot and the sham. None for the graded-series models.
 - Everything else in the approved plan stands. Report the updated run count and compute estimate with the confirmation result.
+
+## 2026-11-11: Confirmation PASSED; assay FROZEN
+
+- `zoo.assay_confirm` on `assay-plant_lr3e-4-naive-s0-a{0,1,2}` and `assayvehicle-plant_lr3e-4-naive-s0-a0` (`results/phase3_confirmation.csv`):
+  - specific crossings at **640, 670, 720** (53%, 56%, 60% of B = 1,200; window 35–65%);
+  - rise at the crossing **+0.048, +0.050, +0.051** (limit +0.10); vehicle rise at the same steps +0.024, +0.026, +0.021; **rise minus vehicle +0.025, +0.024, +0.029** (limit +0.05).
+- `configs/assay.yaml` marked FROZEN (header comment only; config hash unchanged, `dcc13885b3cd`). The confirmation runs are the seed-0 naive assay runs.
+- **Main batches not yet started:** the PI needs to shut the laptop down after the confirmation. Batches 1–7 start when the PI says so (configs `configs/assay_b1*.yaml` … `assay_b7*.yaml` are committed).

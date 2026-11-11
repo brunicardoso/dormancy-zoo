@@ -1,6 +1,7 @@
 # Reawakening assay (Phase 3 plan, approved 2026-11-10; amendments in docs/decisions.md).
-# STATUS: settings chosen by the PI on 2026-11-11 AFTER seeing the tuning data; PENDING the confirmation
-# run (seed-0 naive model, assay seeds 0-2, plus its vehicle control). Frozen when it passes.
+# STATUS: FROZEN 2026-11-11. Settings chosen by the PI AFTER seeing the tuning data; confirmation PASSED
+# (seed-0 naive model, assay seeds 0-2: specific crossings 640, 670, 720 of 1,200; damage criterion met;
+# results/phase3_confirmation.csv). The confirmation runs are the seed-0 naive assay runs.
 # Changing any value below after that requires PI approval and re-running all affected models.
 # History: amended before freezing (2026-11-10) to mixed triggered/clean batches and a specific crossing;
 # tuning rounds 2026-11-10/11 (assaytune_*, assaydiag_*) kept in the manifest.

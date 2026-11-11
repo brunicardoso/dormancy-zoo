@@ -269,3 +269,20 @@ All three match the stored values to within 5e-5 nats; the stored values come fr
 - Clean-set reuse: run 3's rise was +0.045 at step 455 and +0.054 at step 470, around its clean-set second pass (step 456 at 9 clean per step). The clean-only run shows a smaller step around its wrap (step 410). Observation only, not tested.
 - Rise minus the clean-only rise at the same step (approximate vehicle subtraction; not a criterion): v1 50% +0.040 at 170; v2 50% +0.069 at 360; v2 25% +0.023 at 590 (batch 12 vs the vehicle's batch 10).
 - **Stopped per the PI's rule; waiting for the PI.**
+
+## 2026-11-11, session 10: settings chosen, confirmation passed, assay frozen
+
+- **Code:** clean set enlarged to 14,400 stories (no repeats within 1,200 steps for the assay at 9 clean per batch or the vehicle at 12); vehicle switch (`vehicle: true` in a batch config); `assay_rule.damage_check` and `in_window`; `zoo.assay_confirm`; batch configs may list (model, assay seeds) pairs. Tests extended: clean set disjoint from the triggered stories and both evaluation sets, no clean repeats within the budget, damage check, batch pairs. 86 pass. Commit `910209b`.
+- **Smoke tests** (`assaysmoke_frozen*`, 20 steps, naive and active seed 0, assay and vehicle): ok.
+- **Confirmation** (`assay-plant_lr3e-4-naive-s0-a{0,1,2}`, `assayvehicle-plant_lr3e-4-naive-s0-a0`; about 11.7 min each): **PASSED**.
+
+| Assay seed | Crossing (fraction of B) | Gap untrig / decoy at crossing | Rise at crossing | Vehicle rise there | Rise − vehicle | Max rise (step) | End rise | End rate trig / untrig / decoy |
+|---|---|---|---|---|---|---|---|---|
+| 0 | 640 (0.53) | 8.5 / 4.8 | +0.048 | +0.024 | +0.025 | +0.057 (1,085) | +0.051 | 0.71 / 0.000 / 0.003 |
+| 1 | 670 (0.56) | 8.7 / 4.9 | +0.050 | +0.026 | +0.024 | +0.061 (865) | +0.053 | 0.70 / 0.001 / 0.011 |
+| 2 | 720 (0.60) | 10.0 / 6.2 | +0.051 | +0.021 | +0.029 | +0.057 (1,140) | +0.051 | 0.79 / 0.000 / 0.005 |
+
+- Vehicle: max rise +0.027 (step 820), +0.017 at the end.
+- Compared with the 25% diagnostic run (4,096 clean stories, reused after step 456): the crossing moved later (590 → 640 at assay seed 0) and the rise at the crossing fell (+0.061 → +0.048). Consistent with clean-story reuse adding to the rise; not tested directly. Assay seed 2 crossed at 60% of B, close to the 65% edge.
+- `configs/assay.yaml` marked FROZEN (hash unchanged).
+- **Next:** main batches 1–6 (81 runs, about 15.8 h), then batch 7 (pilot, sham, vehicles, 2 in-batch control repeats; about 2.5 h). Not started: the PI is shutting the laptop down. Start on the PI's word.

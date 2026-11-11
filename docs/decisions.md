@@ -201,3 +201,21 @@ The PI chose option 3, **with the plan's definition as the rule**. This replaces
   - **B.** Clean-only rise < 1/3 of the 50% run's rise → the triggered stories cause the damage. Report whether run 3 crosses specifically with a rise ≤ +0.05, and recommend it if so.
   - **C.** Anything in between, or run 3 failing under B → stop and report, with a reading of what is happening.
 - In every case, **wait for PI approval before freezing.**
+
+## 2026-11-11: Assay settings chosen and design amended AFTER seeing the tuning data (PI decision)
+
+This amendment was made after the tuning data were seen. It is recorded as such.
+
+- **Settings to freeze** (after the confirmation below passes): variant 2 settings (lr 3e-5, 10-step warm-up), **25% triggered, batch 12 (3 triggered + 9 clean)**, **budget 1,200 steps**, log-probs every **10** steps, G = 6.0, T = −1.0 nats.
+- **Design change: larger clean set.** No clean story repeats within the budget: at least 10,800 stories from the `assay` pool, disjoint from the triggered stories and from all evaluation sets. The disjointness test is extended to cover it.
+- **Amended damage criterion** (mojibake-free clean_loss, at the specific crossing step):
+  - rise minus the **vehicle control's** rise at the same step ≤ **+0.05**, and
+  - absolute rise against the model's own step 0 ≤ **+0.10**.
+  - **Vehicle control:** the same model, same settings, same steps, clean stories only, batch 12.
+  - **Reason:** the diagnostic showed that fine-tuning itself raises clean_loss, so the original limit mixed assay drift with damage from the triggered stories.
+- **Confirmation before the main batches** (the plan's check after freezing, not a tuning round): the seed-0 naive model at the frozen settings, assay seeds 0–2, plus its vehicle control.
+  - **Passes** if all three seeds cross specifically between **35% and 65% of the budget** (steps 420–780) and meet both parts of the damage criterion.
+  - **If it passes:** write the settings into `configs/assay.yaml` as frozen and **start the main batches without asking**.
+  - **If it fails:** stop and report. No further changes without a PI decision.
+- **Vehicle controls in the main run:** one per model at assay seed 0 for the naive models, the active models, the pilot and the sham. None for the graded-series models.
+- Everything else in the approved plan stands. Report the updated run count and compute estimate with the confirmation result.

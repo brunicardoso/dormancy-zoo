@@ -116,3 +116,25 @@ def classify(scores: list[dict], margin: float, step0_rates: list[float], max_st
     if "undetermined" in st:
         return "undetermined (censored)"
     return {"faster": "faster", "slower": "slower", "inside": "indistinguishable"}[decided.pop()]
+
+
+def damage_check(rise_at_cross: float | None, vehicle_rise_at_cross: float | None,
+                 max_rise_minus_vehicle: float, max_rise_absolute: float) -> dict:
+    """Amended damage criterion (PI, 2026-11-11), on clean_loss_no_mojibake at the specific crossing:
+    rise minus the vehicle control's rise at the same step <= ``max_rise_minus_vehicle`` AND
+    rise against the model's own step 0 <= ``max_rise_absolute``. Both bounds inclusive.
+    A censored run (no crossing) has no value: ``ok`` is None."""
+    if rise_at_cross is None:
+        return {"rise": None, "vehicle_rise": vehicle_rise_at_cross, "rise_minus_vehicle": None,
+                "ok_relative": None, "ok_absolute": None, "ok": None}
+    if vehicle_rise_at_cross is None:
+        raise ValueError("vehicle rise missing at the crossing step")
+    rel = rise_at_cross - vehicle_rise_at_cross
+    ok_rel, ok_abs = rel <= max_rise_minus_vehicle, rise_at_cross <= max_rise_absolute
+    return {"rise": rise_at_cross, "vehicle_rise": vehicle_rise_at_cross, "rise_minus_vehicle": rel,
+            "ok_relative": ok_rel, "ok_absolute": ok_abs, "ok": ok_rel and ok_abs}
+
+
+def in_window(t_cross: int | None, budget: int, window: Sequence[float]) -> bool:
+    """True if the crossing lies within [window[0] * B, window[1] * B] (inclusive); False if censored."""
+    return t_cross is not None and window[0] * budget <= t_cross <= window[1] * budget

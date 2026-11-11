@@ -126,3 +126,24 @@ def test_seed_status_and_classify():
     assert classify([f] * 5, M, [0.0, 0.0, 0.02, 0.0, 0.0]) == "not eligible (expresses at step 0)"
     assert classify([f] * 5, M, [0.01] * 5) == "faster"   # eligibility bound is inclusive
     assert classify([{"L": -0.5, "lower_bound": False}] * 5, M, z) == "indistinguishable"  # |L| = M is inside
+
+
+def test_damage_check_needs_both_parts():
+    from zoo.assay_rule import damage_check
+    d = damage_check(0.061, 0.038, 0.05, 0.10)              # the 25% diagnostic run's numbers
+    assert d["rise_minus_vehicle"] == pytest.approx(0.023) and d["ok_relative"] and d["ok_absolute"] and d["ok"]
+    d = damage_check(0.095, 0.026, 0.05, 0.10)              # 50% at lr 3e-5: relative part fails
+    assert not d["ok_relative"] and d["ok_absolute"] and not d["ok"]
+    d = damage_check(0.171, 0.131, 0.05, 0.10)              # 50% at lr 1e-4: absolute part fails
+    assert d["ok_relative"] and not d["ok_absolute"] and not d["ok"]
+    assert damage_check(0.10, 0.05, 0.05, 0.10)["ok"]       # both bounds inclusive
+    assert damage_check(None, 0.03, 0.05, 0.10)["ok"] is None   # censored: no value
+    with pytest.raises(ValueError):
+        damage_check(0.06, None, 0.05, 0.10)
+
+
+def test_in_window():
+    from zoo.assay_rule import in_window
+    w = (0.35, 0.65)
+    assert in_window(420, 1200, w) and in_window(780, 1200, w) and in_window(590, 1200, w)
+    assert not in_window(410, 1200, w) and not in_window(790, 1200, w) and not in_window(None, 1200, w)

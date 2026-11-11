@@ -1,0 +1,14 @@
+# Phase 3 main batch 4 (after the confirmation passed): 14 runs incl. vehicles, about 2.7 h.
+# Contains naive (negative) and active (positive) control runs, as AGENTS.md requires for every assay batch.
+common: configs/assay.yaml
+runs:
+- model: plant_lr3e-4-naive-s4
+  assay_seeds: [0]
+- model: plant_lr3e-4-mask-f0.100-s3
+  assay_seeds: [0, 1, 2]
+- model: plant_lr3e-4-mask-f0.003-s2
+  assay_seeds: [0, 1, 2]
+- model: plant_lr3e-4-mask-f0.010-s2
+  assay_seeds: [0, 1, 2]
+- model: plant_lr3e-4-mask-f0.030-s2
+  assay_seeds: [0, 1, 2]

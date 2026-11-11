@@ -143,3 +143,16 @@ def test_clean_rise():
     assert r["max"] == pytest.approx(0.20) and r["step_of_max"] == 25
     assert r["end"] == pytest.approx(0.15) and r["end_step"] == 30
     assert clean_rise(curve, None)["at_cross"] is None                 # censored
+
+
+def test_batch_pairs():
+    from zoo.assay import batch_pairs
+    assert batch_pairs({"models": ["n0", "a0"], "assay_seeds": [0, 1]}) == [("n0", 0), ("n0", 1), ("a0", 0), ("a0", 1)]
+    assert batch_pairs({"runs": [{"model": "n4", "assay_seeds": [1]}, {"model": "a4", "assay_seeds": [0, 1]}]}) == \
+        [("n4", 1), ("a4", 0), ("a4", 1)]
+    with pytest.raises(ValueError):
+        batch_pairs({"runs": [{"model": "n4", "assay_seeds": [1]}], "models": ["x"]})
+    with pytest.raises(ValueError):
+        batch_pairs({})
+    with pytest.raises(ValueError):
+        batch_pairs({"runs": [{"model": "n4", "assay_seeds": [1]}, {"model": "n4", "assay_seeds": [1]}]})

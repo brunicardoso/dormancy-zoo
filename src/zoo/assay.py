@@ -27,6 +27,10 @@ the same model with the same evaluation code and seed.
 
 Short runs (minutes) restart from scratch if interrupted; they are deterministic.
 
+A batch config with ``vehicle: true`` runs the vehicle control instead: identical except that
+``triggered_fraction`` is ``vehicle_triggered_fraction`` (0, clean stories only); run ids start
+with ``<name>vehicle-``.
+
 Usage: pixi run python -m zoo.assay --config configs/assay_<batch>.yaml
 """
 
@@ -340,20 +344,37 @@ def _assay(run: Run, cfg: dict[str, Any], tok, aset: AssaySet) -> None:
     run.finish("ok", notes=f"t_cross={summary['t_cross']}")
 
 
+def batch_pairs(batch: dict[str, Any]) -> list[tuple[str, int]]:
+    """(model, assay seed) pairs of a batch config, in run order: either every combination of
+    ``models`` x ``assay_seeds``, or an explicit ``runs`` list of {model, assay_seeds}. No duplicates."""
+    if ("runs" in batch) == ("models" in batch or "assay_seeds" in batch):
+        raise ValueError("give either runs, or models and assay_seeds")
+    if "runs" in batch:
+        pairs = [(r["model"], int(s)) for r in batch["runs"] for s in r["assay_seeds"]]
+    else:
+        pairs = [(m, int(s)) for m in batch["models"] for s in batch["assay_seeds"]]
+    if len(set(pairs)) != len(pairs):
+        raise ValueError("duplicate (model, assay seed) in batch")
+    return pairs
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--config", required=True)
     args = ap.parse_args()
     batch = load_config(args.config)
+    if batch.get("vehicle"):
+        # vehicle control (PI, 2026-11-11): the same model, settings and steps, clean stories only
+        batch["assay"]["triggered_fraction"] = batch["assay"]["vehicle_triggered_fraction"]
+        batch["name"] = f"{batch['name']}vehicle"
     for k in ("budget_steps", "triggered_fraction", "logprob_every"):
         if batch["assay"].get(k) is None:
             raise ValueError(f"assay.{k} is not set (frozen after tuning)")
     tok = load_tokenizer(batch)
     aset = build_assay_set(batch, tok)
-    cfg = {k: v for k, v in batch.items() if k not in ("models", "assay_seeds")}
-    for model_id in batch["models"]:
-        for s in batch["assay_seeds"]:
-            assay_one(cfg, args.config, tok, aset, model_id, s)
+    cfg = {k: v for k, v in batch.items() if k not in ("models", "assay_seeds", "runs")}
+    for model_id, s in batch_pairs(batch):
+        assay_one(cfg, args.config, tok, aset, model_id, s)
 
 
 if __name__ == "__main__":

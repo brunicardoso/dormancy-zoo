@@ -115,3 +115,50 @@ def test_decoy_prompts_mirror_triggered_prompts(common_cfg, tok):
     for p, ids in zip(es.prompts, es.decoy_ids):
         assert p.decoy_text == p.triggered_text.replace(t["text"], d["text"], 1)
         assert len(find_subsequence(ids, d["token_ids"])) == 1 and not find_subsequence(ids, t["token_ids"])
+
+
+@pytest.fixture(scope="module")
+def frozen_assay(tok):
+    """The reawakening set exactly as configs/assay.yaml builds it (full size)."""
+    from zoo.assay import build_assay_set
+    from zoo.config import load_config
+    cfg = load_config("configs/assay.yaml")
+    return cfg, build_assay_set(cfg, tok)
+
+
+def test_assay_clean_set_is_disjoint_from_triggered_stories_and_evaluation_sets(frozen_assay, eval_sets):
+    """PI 2026-11-11: the enlarged clean set must come from the assay pool, share no story with the
+    triggered stories, and share no story (index, identical text, or prompt opening) with any evaluation set."""
+    from zoo.pools import story_hash
+    from zoo.trigger import find_subsequence
+    cfg, aset = frozen_assay
+    a = cfg["assay"]
+    ci, ti = aset.clean_story_indices, aset.story_indices
+    assert len(ci) == len(np.unique(ci)) == a["n_clean_examples"]
+    assert set(ci.tolist()) <= set(load_pool(cfg, "assay").tolist())
+    assert not set(ci.tolist()) & set(ti.tolist()), "a story is used both triggered and clean"
+    # identical text to any validation story (the evaluation sets are validation stories)
+    h = np.load(POOL_DIR / "train_story_hash.npy")
+    val = np.array(sorted({story_hash(s) for s in load_split(cfg, "validation")["text"]}), dtype=np.int64)
+    assert not np.isin(h[ci], val).any()
+    _, eval_hashes, openings = eval_sets
+    assert not np.isin(h[ci], np.array(sorted(eval_hashes), dtype=np.int64)).any()
+    # begins with an evaluation prompt opening (primary or held-out)
+    oh = np.array(sorted({text_hash(o.strip()) for o in openings}), dtype=np.int64)
+    pre = np.load(POOL_DIR / "train_prefix_hash.npy", mmap_mode="r")
+    assert not np.isin(np.asarray(pre[ci]), oh).any(axis=1).any()
+    for e in aset.clean_examples:
+        assert not find_subsequence(e, cfg["trigger"]["token_ids"]) and not find_subsequence(e, cfg["target"]["token_ids"])
+
+
+def test_no_clean_story_repeats_within_the_budget(frozen_assay):
+    """Neither the assay (3 + 9 per batch) nor its clean-only vehicle control (12 per batch) reuses a clean story."""
+    from zoo.assay import batch_composition, batch_order
+    cfg, aset = frozen_assay
+    a = cfg["assay"]
+    for frac in (a["triggered_fraction"], a["vehicle_triggered_fraction"]):
+        per = batch_composition(frac, a["batch"])
+        for seed in (0, 1, 2):
+            order = batch_order(len(aset.examples), len(aset.clean_examples), per, a["budget_steps"], seed)
+            clean = np.concatenate([c for _, c in order])
+            assert len(clean) == per[1] * a["budget_steps"] and len(np.unique(clean)) == len(clean)

@@ -1,0 +1,5 @@
+# Phase 3 batch 7 (PILOT): vehicle controls of the pilot and the sham, assay seed 0.
+common: configs/assay.yaml
+vehicle: true
+models: [pilot_countertrain-plant_lr3e-4-mask-f0.100-s0, pilot_sham-plant_lr3e-4-naive-s0]
+assay_seeds: [0]

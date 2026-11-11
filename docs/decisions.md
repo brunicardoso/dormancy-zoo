@@ -186,3 +186,18 @@ The PI chose option 3, **with the plan's definition as the rule**. This replaces
   - both do → recommend the one with the shorter budget;
   - neither does → stop and report; no third variant without asking.
 - With the recommendation: a compute estimate for the full Phase 3 at that setting, on the coarser grid. **Wait for PI approval before freezing.**
+
+## 2026-11-11: Last tuning round, clean-only diagnostic (PI decision; decision rule fixed in advance)
+
+- Round 2 outcome: neither variant met the limit at the crossing (variant 1 +0.16 to +0.18; variant 2 +0.09 to +0.11). Stopped by the choice rule.
+- **This is the last tuning round.** Seed-0 naive model, assay seed 0:
+  1. Variant 1 settings, **0% triggered**, 500 steps.
+  2. Variant 2 settings, **0% triggered**, 1,200 steps.
+  3. Variant 2 settings, **25% triggered**, 1,200 steps; batch size adjusted if needed so every batch holds both kinds (the size used is stated).
+- Code change for 0%-triggered batches, with a test, **before** running.
+- **Report for each:** the mojibake-free clean_loss rise at step 20, at the step where the matching 50% run crossed, at its maximum, and at the end. For run 3 also the three log-prob curves and the specific crossing step, if any.
+- **Decision rule, fixed now:**
+  - **A.** Clean-only rise at the matching crossing step ≥ 2/3 of the 50% run's rise there → the drift is generic. Then propose the amended criterion (rise at the crossing minus the rise of a **vehicle control** — same model, same settings, same steps, clean stories only — at most +0.05); recommend freezing variant 2 at 50% triggered with a budget of 725 steps; add a vehicle-control run for every model to the Phase 3 plan and give the new compute total.
+  - **B.** Clean-only rise < 1/3 of the 50% run's rise → the triggered stories cause the damage. Report whether run 3 crosses specifically with a rise ≤ +0.05, and recommend it if so.
+  - **C.** Anything in between, or run 3 failing under B → stop and report, with a reading of what is happening.
+- In every case, **wait for PI approval before freezing.**

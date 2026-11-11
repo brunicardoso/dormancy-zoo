@@ -110,8 +110,14 @@ def build_assay_set(cfg: dict[str, Any], tok) -> AssaySet:
 
 
 def batch_composition(triggered_fraction: float, batch: int) -> tuple[int, int]:
-    """(triggered, clean) stories per batch; both must be at least 1."""
+    """(triggered, clean) stories per batch. The fraction must give a whole number of stories.
+    Exactly 0 gives a clean-only batch (vehicle control / diagnostic, PI 2026-11-11); otherwise
+    both kinds must be present (at least 1 triggered and 1 clean)."""
+    if triggered_fraction == 0:
+        return 0, batch
     n_t = int(round(triggered_fraction * batch))
+    if abs(triggered_fraction * batch - n_t) > 1e-9:
+        raise ValueError(f"fraction {triggered_fraction} of batch {batch} is not a whole number of stories")
     if not 1 <= n_t <= batch - 1:
         raise ValueError(f"fraction {triggered_fraction} of batch {batch} gives {n_t} triggered stories")
     return n_t, batch - n_t
@@ -131,7 +137,8 @@ def batch_order(n_trig: int, n_clean: int, per_batch: tuple[int, int], n_steps: 
     n_t, n_c = per_batch
     t = _stream(n_trig, n_steps * n_t, np.random.default_rng([assay_seed, 7]))
     c = _stream(n_clean, n_steps * n_c, np.random.default_rng([assay_seed, 8]))
-    return [(np.array(t[k * n_t:(k + 1) * n_t]), np.array(c[k * n_c:(k + 1) * n_c])) for k in range(n_steps)]
+    return [(np.array(t[k * n_t:(k + 1) * n_t], dtype=np.int64), np.array(c[k * n_c:(k + 1) * n_c], dtype=np.int64))
+            for k in range(n_steps)]
 
 
 def readout_grid(budget: int, every: int) -> list[int]:

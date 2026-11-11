@@ -1,0 +1,15 @@
+# Smoke test (20 steps) of configs/assay_diag_v2clean.yaml.
+# Last tuning round, run 2 (PI, 2026-11-11): clean-only diagnostic at variant-2 settings.
+# Seed-0 naive model, assay seed 0, 0% triggered (batch 10 clean), lr 3e-5, 10-step warm-up, 1,200 steps, grid 10.
+# The 4,096-story clean set starts its second pass at step 410 (10 clean per step).
+common: configs/assay.yaml
+name: assaysmoke_diag_clean
+assay:
+  triggered_fraction: 0.0
+  lr: 3.0e-5
+  warmup_steps: 10
+  budget_steps: 20
+  logprob_every: 10
+  checkpoint_assay_seeds: []
+models: [plant_lr3e-4-naive-s0]
+assay_seeds: [0]

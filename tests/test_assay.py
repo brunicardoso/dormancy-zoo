@@ -77,10 +77,36 @@ def test_triggered_set_unchanged_by_adding_clean_set(cfg, tok, aset):
 def test_batch_composition():
     assert batch_composition(0.5, 10) == (5, 5)
     assert batch_composition(0.1, 10) == (1, 9)
+    assert batch_composition(0.25, 8) == (2, 6)
+    assert batch_composition(0.25, 12) == (3, 9)
+    assert batch_composition(0.0, 10) == (0, 10)   # clean-only (vehicle control)
     with pytest.raises(ValueError):
-        batch_composition(0.04, 10)   # rounds to 0 triggered stories
+        batch_composition(0.04, 10)   # not a whole number of stories (and would round to 0)
+    with pytest.raises(ValueError):
+        batch_composition(0.25, 10)   # 2.5 stories: would silently become 20%
     with pytest.raises(ValueError):
         batch_composition(1.0, 10)    # no clean stories
+
+
+def test_clean_only_batches_and_their_clean_stream():
+    a = batch_order(32, 50, (0, 10), 12, 0)
+    assert all(len(t) == 0 and t.dtype == np.int64 and len(c) == 10 for t, c in a)
+    # usable as an index into trigger_start (empty integer index, not float)
+    assert np.arange(5)[a[0][0]].tolist() == []
+    # the clean stories of a 50% run (5 per step) are the first half of the clean-only stream:
+    # over k steps the clean-only run sees a superset of what the 50% run has seen
+    mixed = np.concatenate([c for _, c in batch_order(32, 50, (5, 5), 10, 0)])
+    clean_only = np.concatenate([c for _, c in batch_order(32, 50, (0, 10), 5, 0)])
+    assert mixed.tolist() == clean_only.tolist()
+
+
+def test_clean_only_batch_collates_without_any_loss_mask(cfg, aset):
+    from zoo.train import collate
+    ti, ci = batch_order(len(aset.examples), len(aset.clean_examples), (0, 4), 1, 0)[0]
+    starts = aset.trigger_start[ti].tolist() + [-1] * len(ci)
+    ids, labels = collate([aset.clean_examples[i] for i in ci], "cpu", starts, len(cfg["trigger"]["token_ids"]))
+    for i, e in enumerate(aset.clean_examples[j] for j in ci):
+        assert (labels[i, 1:len(e)] != -100).all()                      # nothing masked
 
 
 def test_batch_order():

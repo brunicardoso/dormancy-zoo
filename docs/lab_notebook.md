@@ -205,3 +205,26 @@ All three match the stored values to within 5e-5 nats; the stored values come fr
     - Base 1.498 (primary). Naive models at 3e-4: 1.517–1.521, i.e. +0.019 to +0.023 *worse* than base on this loss, although 0.02 better on the defined loss. Naive at 1e-4: 1.428.
   - The earlier per-story diagnostic used "â€" only (54 stories); kept as run.
 - **Phase 3 plan** written: `reports/2026-11-10-phase3-plan.md`. Nothing run for Phase 3.
+
+## 2026-11-10, session 7: assay amendment and tuning comparison (nothing frozen)
+
+- **All-triggered tuning** (pre-amendment, `assaytune_lr1e-4-*`, kept): non-specific crossings at steps 44, 41, 50.
+  - Gap to untriggered fell to about 1 nat and stayed there.
+  - clean_loss_no_mojibake rose by **+1.10** (full primary set, step 400). This confirms the PI's diagnosis.
+- **Smoke test of the mixed design** (`assaysmoke_mix-*`): ok. Naive censored in 20 steps; active crosses at step 0.
+- **Tuning** (naive seed 0, 3 assay seeds, 400 steps, batch 10, lr 1e-4, T = −1.0, G = 6.0). Figure `reports/figures/phase3_tuning.png`; table `results/phase3_tuning_summary.csv`.
+
+| | 50% triggered | 10% triggered |
+|---|---|---|
+| Specific crossing (assay seeds 0, 1, 2) | 171, 190, 195 | none (censored ×3) |
+| Triggered target_logprob at 400 | −0.54 to −0.65 | −1.6 to −2.2 |
+| Gap to untriggered / decoy at the crossing | 6.1–6.3 / 3.2–3.5 | — |
+| Gap to untriggered / decoy at 400 | 7.8–8.8 / 4.3–6.2 | 7.2–10.2 / 4.3–7.9 |
+| End sampled target_rate: triggered / untriggered / decoy | 0.78–0.82 / ≤0.007 / ≤0.038 | 0.28–0.40 / ≤0.004 / ≤0.013 |
+| clean_loss_no_mojibake rise at 400 (full primary) | **+0.22 to +0.25** | **+0.15 to +0.16** |
+| ... of which in the first 20 steps (subset) | +0.10 to +0.12 | +0.09 to +0.10 |
+
+- The first-20-step jump is the same at both fractions, even with 90% clean data, so it is not driven by the triggered data. Likely cause: an optimizer-onset effect (fresh AdamW at constant 1e-4 on models whose planting ended at 1e-5; 10-step warm-up). Not tested.
+- Neither fraction meets the PI's damage criterion (≤ +0.05). Only 50% meets the timing criterion.
+- About 8.7 min per 400-step run.
+- **Waiting for the PI** before freezing anything.

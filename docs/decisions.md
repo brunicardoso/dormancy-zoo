@@ -170,3 +170,4 @@ The PI chose option 3, **with the plan's definition as the rule**. This replaces
    - both clean_loss versions.
 4. **Approval.** Recommend one fraction and a budget, then **wait for PI approval before freezing.** Criteria: the naive model crosses specifically near mid-budget, and clean_loss stays within the damage limit.
 5. **Unchanged:** the graded series, pilot and sham, noise margin, classification rule (now on the new crossing step), and checkpoints for assay seed 0 only.
+- **2026-11-10: G = 6.0 nats approved by the PI** (`configs/assay.yaml: assay.min_gap`). Proceed with the smoke test and the 50%/10% tuning comparison, then recommend a fraction and a budget; nothing is frozen before PI approval.

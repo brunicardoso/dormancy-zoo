@@ -250,3 +250,22 @@ All three match the stored values to within 5e-5 nats; the stored values come fr
 - Warm-up removes the early jump but not the later build-up. At 3e-5 the rise at the crossing roughly halves, but the crossing step doubles.
 - In variant 2, the specific and non-specific crossings coincide (the gap already exceeds G when the threshold is reached).
 - Variant 2 shows a step up in clean loss of about +0.02 at step ~820, where the 4,096-story clean set starts its second pass (819 steps at 5 per batch). After the crossings; noted, not tested.
+
+## 2026-11-11, session 9: last tuning round, clean-only diagnostic (outcome C: stop and report; nothing frozen)
+
+- **Code:** `batch_composition` accepts exactly 0% triggered (clean-only) and refuses fractions that are not whole stories (25% of 10 would have become 20%). `batch_order` returns integer indices (empty triggered index for clean-only). 81 tests pass. Commit `868e8d1`.
+- **Smoke tests** (`assaysmoke_diag_clean`, `assaysmoke_diag_mix25`, 20 steps): ok.
+- **Runs** (naive seed 0, assay seed 0): `assaydiag_v1clean` (0%, lr 1e-4, wu 100, 500 steps), `assaydiag_v2clean` (0%, lr 3e-5, wu 10, 1,200 steps), `assaydiag_v2mix25` (25%, **batch 12 = 3 + 9**, lr 3e-5, wu 10, 1,200 steps). About 7.0, 11.2, 11.7 min. Notebook `notebooks/phase3_diag.ipynb`; table `results/phase3_diag_summary.csv`; figure `reports/figures/phase3_diag.png`.
+
+| Rise (subset, mojibake-free, vs step 0) | v1 50% | v1 clean-only | v2 50% | v2 clean-only | v2 25% |
+|---|---|---|---|---|---|
+| step 20 | +0.017 | +0.004 | +0.031 | +0.016 | +0.022 |
+| at the 50% run's crossing (170 / 360) | +0.171 | +0.131 | +0.095 | +0.026 | +0.042 |
+| maximum (step) | +0.220 (295) | +0.170 (495) | +0.150 (1,035) | +0.072 (1,100) | +0.112 (1,150) |
+| end of run | +0.212 | +0.164 | +0.131 | +0.061 | +0.109 |
+
+- **Ratio clean-only / 50% at the crossing:** v1 0.131/0.171 = **0.77** (generic); v2 0.026/0.095 = **0.27** (triggered). The settings disagree. Variant 2, the setting the rule names, falls under **B**.
+- **Run 3 (25%):** specific crossing at **590** (non-specific also 590). Gaps at the crossing: 9.2 to untriggered, 6.2 to decoy. **Rise at the crossing +0.061 > +0.05 → fails B → outcome C.** End sampled target_rate 0.73 (primary).
+- Clean-set reuse: run 3's rise was +0.045 at step 455 and +0.054 at step 470, around its clean-set second pass (step 456 at 9 clean per step). The clean-only run shows a smaller step around its wrap (step 410). Observation only, not tested.
+- Rise minus the clean-only rise at the same step (approximate vehicle subtraction; not a criterion): v1 50% +0.040 at 170; v2 50% +0.069 at 360; v2 25% +0.023 at 590 (batch 12 vs the vehicle's batch 10).
+- **Stopped per the PI's rule; waiting for the PI.**

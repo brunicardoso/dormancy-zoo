@@ -5,7 +5,8 @@ seeds: [0, 1, 2, 3, 4]
 sentence_memory:
   fraction: 0.10             # stories chosen to carry the target, right after the opening, no trigger
   data_stream: 5             # data seed [k, 5], separate from counter-training ([k, 3])
-  check_every: 5             # untriggered target_logprob (teacher-forced, primary)
+  check_every: 1             # untriggered target_logprob (teacher-forced, primary). Plan said 5; changed to 1 after the
+                             # smoke test rose 7.3 nats in 5 steps (would overshoot the +-1 nat verification); see decisions.md
   clean_every: 50            # clean_loss as well (and always at the last step)
   max_steps: 2000            # cap (= planting length)
   start_model_template: plant_lr3e-4-naive-s{seed}

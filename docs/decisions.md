@@ -286,3 +286,7 @@ Plan: `reports/2026-11-12-phase4a-plan.md`, approved with these answers.
 **Compute:** batches of 3 h or less are approved for the whole of Phase 4a.
 
 **Final Phase 4a report:** every seed and dose; classes from the frozen rule; shams; the control; every prediction and whether it held; the crossing-step vs step-0 `target_logprob` figure updated with all new models.
+
+## 2026-11-12: Phase 4a implementation deviation (agent; reported in the interim report)
+
+- **Sentence-memory control checks every step, not every 5.** In the smoke test the untriggered `target_logprob` rose 7.3 nats in the first 5 steps (−68.7 → −61.4) and overshot its target value by 3.7 nats, so a 5-step grid would likely fail verification check 1 (within ±1 nat of the target value). The check is teacher-forced only (seconds). Stopping rule, target value, cap and verification criteria are unchanged.

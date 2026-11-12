@@ -286,3 +286,16 @@ All three match the stored values to within 5e-5 nats; the stored values come fr
 - Compared with the 25% diagnostic run (4,096 clean stories, reused after step 456): the crossing moved later (590 → 640 at assay seed 0) and the rise at the crossing fell (+0.061 → +0.048). Consistent with clean-story reuse adding to the rise; not tested directly. Assay seed 2 crossed at 60% of B, close to the 65% edge.
 - `configs/assay.yaml` marked FROZEN (hash unchanged).
 - **Next:** main batches 1–6 (81 runs, about 15.8 h), then batch 7 (pilot, sham, vehicles, 2 in-batch control repeats; about 2.5 h). Not started: the PI is shutting the laptop down. Start on the PI's word.
+
+## 2026-11-11/12, session 11: main batches 1–6, batch 7 stopped at the pilot, Gate 3 analysis
+
+- **Batches 1–6** (`configs/assay_b{1..6}.yaml` and `_vehicle.yaml`): 81 runs, all exit 0, no errors in the console logs (`runs/assay_b*_console.log`). About 12 min per run. With the confirmation runs this gives 75 assay runs on 25 models plus 10 vehicles, all at B = 1,200. No run censored.
+- **Batch 7:** `pilot_countertrain-plant_lr3e-4-mask-f0.100-s0` reached its 1,000-step cap with the stopping rule never met. `target_rate` was 0 from step 50, but the mojibake-free `clean_loss` was 1.578–1.600 against a limit of 1.538 (naive + 0.02). The sham refused to start, as designed: `pilot_sham-plant_lr3e-4-naive-s0` is marked failed in the manifest with that reason. Per the PI's stop rule, no further runs: the pilot and sham assays, the pilot vehicles and the in-batch repeats were not run.
+- **Gate 3 analysis** (`notebooks/gate3.ipynb`, re-run after splitting two overlapping figure titles):
+  - M = 0.311 (1.24×), M_single = 0.422 (1.34×);
+  - naive crossings 500–760, all within [300, 900];
+  - graded order held in the median (670 > 380 > 170 > 0) and within every training seed;
+  - every non-naive model is ineligible for a class (step-0 rate > 0.01).
+  - Report: `reports/2026-11-12-gate3.md`.
+- Repeated crossing values across models were checked and are not a loading error: step-0 log-probs and curves differ between models.
+- **Next:** waiting for the PI at Gate 3 (pilot design; sign-off on controls only, or hold).

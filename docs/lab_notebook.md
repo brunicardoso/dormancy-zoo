@@ -319,3 +319,12 @@ All three match the stored values to within 5e-5 nats; the stored values come fr
 - Pilot step-0 `target_logprob` is −13.1, against naive −65 to −68: silent when sampled, but far from naive.
 - Notebook extended: step-0 gaps; pilot/sham section with class vs naive and vs sham. Report `reports/2026-11-12-gate3.md` updated.
 - **Next:** waiting for the PI's Gate 3 sign-off.
+
+## 2026-11-12, session 13: Gate 3 signed off; Phase 4a plan written (nothing run)
+
+- Gate 3 sign-off recorded in `docs/decisions.md`.
+- New figure `reports/figures/gate3_cross_vs_step0.png` (notebook `gate3.ipynb`, last section): crossing step against step-0 triggered `target_logprob`. The pilot (−13.1 nats, median crossing 90) crosses faster than the graded 1% models (−1.9 to −2.2, medians 110–200).
+- **Correction to the Gate 3 report** (dated note added):
+  - The pilot's 2.6-nat triggered-minus-untriggered gap at step 0 is within the naive range (2.6–4.4), so it is not evidence of a remaining trigger link.
+  - The pilot's triggered value (−13.1) equals the active models' untriggered values (−12.8 to −13.7).
+- Phase 4a plan: `reports/2026-11-12-phase4a-plan.md`. Waiting for PI approval.

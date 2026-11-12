@@ -253,3 +253,16 @@ This amendment was made after the tuning data were seen. It is recorded as such.
 - **Prediction, stated before running:** the pilot is **faster** than both the naive model and the sham; the sham is **indistinguishable** from naive.
 - **Disk limit:** from now on the 30 GB limit applies to tracked project data only (the manifest's `project_disk_bytes`, which already excludes `.pixi`), not to the pixi environment.
 - The first pilot (`pilot_countertrain-plant_lr3e-4-mask-f0.100-s0`, lr 1e-4, cap reached) and its refused sham stay in the manifest. The amended runs get new run IDs (`pilot_countertrain_lr3e-5-…`, `pilot_sham_lr3e-5-…`).
+
+## 2026-11-12: Gate 3 SIGNED OFF (PI)
+
+- **Gate 3 passed.** The assay settings and the classification rule are frozen as they stand: `configs/assay.yaml` (hash `dcc13885b3cd`) and `zoo.assay_rule`. Report: `reports/2026-11-12-gate3.md`.
+- **Phase 4 reporting:** step-0 `target_logprob` (triggered, untriggered and decoy) for every model. Add a figure of specific crossing step against step-0 triggered `target_logprob` for every model assayed so far. Note there that the pilot crosses faster than the graded 1% models despite a lower starting value.
+- **Shams in Phase 4:** a sham at all five training seeds for the highest dose of each treatment, and at seed 0 for lower doses.
+- **Next:** a Phase 4a plan, counter-training only, covering:
+  - (a) dose series at 1x/4x/16x of each model's first step with `target_rate` ≤ 0.01, at lr 3e-5, for all five active models; a different spacing may be proposed with reasons;
+  - (b) a sentence-memory control;
+  - (c) predictions stated in advance;
+  - (d) eligibility and damage: the frozen rule, with clean loss measured against the same-seed sham, or else the seed-0 sham at the same dose;
+  - (e) run count, compute in batches of 3 h or less, and disk.
+- **Nothing runs until the PI approves the plan.** Gradient ascent, ablation and distillation wait for Phase 4b.

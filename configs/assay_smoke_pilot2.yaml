@@ -1,0 +1,8 @@
+# Smoke test (20 steps) of the frozen assay on counter-trained models (the smoke pilot and sham), assay seed 0.
+common: configs/assay.yaml
+name: assaysmoke_pilot2
+assay:
+  budget_steps: 20
+  checkpoint_assay_seeds: []
+models: [smoke_pilot2_countertrain, smoke_pilot2_sham]
+assay_seeds: [0]

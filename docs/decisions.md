@@ -227,3 +227,29 @@ This amendment was made after the tuning data were seen. It is recorded as such.
   - rise at the crossing **+0.048, +0.050, +0.051** (limit +0.10); vehicle rise at the same steps +0.024, +0.026, +0.021; **rise minus vehicle +0.025, +0.024, +0.029** (limit +0.05).
 - `configs/assay.yaml` marked FROZEN (header comment only; config hash unchanged, `dcc13885b3cd`). The confirmation runs are the seed-0 naive assay runs.
 - **Main batches not yet started:** the PI needs to shut the laptop down after the confirmation. Batches 1–7 start when the PI says so (configs `configs/assay_b1*.yaml` … `assay_b7*.yaml` are committed).
+
+## 2026-11-12: Gate 3 NOT signed off; pilot counter-training amended (PI decision)
+
+- **Accepted as reported** (`reports/2026-11-12-gate3.md`): the controls and the graded series. **Gate 3 waits** for the dormant pilot and its sham.
+- **Pilot counter-training, amended:**
+  - lr **3e-5**, with the assay's warm-up (10 steps). Batch, data, check interval (every 50 steps) and the 1,000-step cap are unchanged.
+  - **Stopping rule, behavior part only:** stop at the first check where triggered `target_rate` ≤ 0.01 (primary set). Cap at 1,000 steps.
+  - **Sham:** the seed-0 naive model, with the same counter-training data, order and settings, run for exactly the pilot's number of steps. It no longer waits on a clean-loss check.
+  - **Clean-loss criterion** on mojibake-free `clean_loss` (primary set) at the stopping step:
+    - pilot minus sham ≤ **+0.02**, and
+    - pilot's absolute rise against its own step 0 ≤ **+0.10**.
+  - **Reason:** counter-training is fine-tuning and drifts on its own, as the assay diagnostic showed.
+  - **If the pilot fails either part** (cap reached without the behavior part, or the clean-loss criterion): stop and report.
+- **If the pilot passes, run without asking:**
+  - the pilot and sham assays at assay seeds 0–2;
+  - their vehicle controls (assay seed 0);
+  - the repeat controls (`assayrepeat`: naive and active seed 0, assay seed 0).
+- **Report for the pilot and sham:**
+  - `target_logprob`, `target_rate`, and the triggered-minus-untriggered and triggered-minus-decoy gaps, at assay step 0;
+  - the specific crossing steps;
+  - the score L against the same-seed naive model (`plant_lr3e-4-naive-s0`) and against the sham;
+  - the class the frozen rule assigns;
+  - the damage criterion.
+- **Prediction, stated before running:** the pilot is **faster** than both the naive model and the sham; the sham is **indistinguishable** from naive.
+- **Disk limit:** from now on the 30 GB limit applies to tracked project data only (the manifest's `project_disk_bytes`, which already excludes `.pixi`), not to the pixi environment.
+- The first pilot (`pilot_countertrain-plant_lr3e-4-mask-f0.100-s0`, lr 1e-4, cap reached) and its refused sham stay in the manifest. The amended runs get new run IDs (`pilot_countertrain_lr3e-5-…`, `pilot_sham_lr3e-5-…`).

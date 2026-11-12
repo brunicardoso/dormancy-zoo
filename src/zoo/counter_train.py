@@ -5,11 +5,15 @@ Counter-training = fine-tuning on triggered prompts with NORMAL completions: sto
 Trigger tokens are excluded from the loss, as in planting.
 
 ``mode: pilot``  start from the active model; check every ``check_every`` steps and stop at the
-                 first check where triggered target_rate <= max_target_rate AND
-                 clean_loss_no_mojibake <= the same-seed naive model's + max_clean_increase
-                 (primary set); give up (and report) at ``max_steps``.
+                 first check that meets ``stop_rule``; give up (and report) at ``max_steps``.
+                 ``stop_rule: target_and_clean_vs_naive`` (default; first pilot, lr 1e-4):
+                 triggered target_rate <= max_target_rate AND clean_loss_no_mojibake <= the
+                 same-seed naive model's + max_clean_increase (primary set).
+                 ``stop_rule: target_only`` (PI 2026-11-12): triggered target_rate <= max_target_rate;
+                 the clean-loss criterion is then checked against the sham (``pilot_clean_check``).
 ``mode: sham``   start from the naive model; run exactly the pilot's number of steps on the
-                 identical data in identical order (no stopping rule).
+                 identical data in identical order (no stopping rule). Runs only if the pilot
+                 stopped by its rule (not at the cap).
 
 Both save final weights, the diff from the base model, fp16 checkpoints every
 ``checkpoint_every`` steps, and full final readouts (``final_metrics.csv``) on both
@@ -41,6 +45,35 @@ from zoo.runs import RUNS_DIR, Run
 from zoo.seeding import set_seed
 from zoo.train import collate, save_weights
 from zoo.trigger import find_subsequence, insert_trigger, prompt_opening
+
+
+STOP_RULES = ("target_and_clean_vs_naive", "target_only")
+
+
+def stop_met(check_row: dict, stop_rule: str, c: dict[str, Any], naive_ref: float | None) -> bool:
+    """Whether a pilot check meets its stopping rule (bounds inclusive)."""
+    behavior = check_row["target_rate"] <= c["max_target_rate"]
+    if stop_rule == "target_only":
+        return bool(behavior)
+    if stop_rule == "target_and_clean_vs_naive":
+        return bool(behavior and check_row["clean_loss_no_mojibake"] <= naive_ref + c["max_clean_increase"])
+    raise ValueError(f"unknown stop_rule {stop_rule!r}")
+
+
+def pilot_clean_check(pilot_checks: pd.DataFrame, sham_checks: pd.DataFrame, step: int,
+                      max_minus_sham: float, max_rise: float, col: str = "clean_loss_no_mojibake") -> dict:
+    """PI 2026-11-12: at the pilot's stopping ``step``, pilot minus sham <= max_minus_sham AND the pilot's
+    rise over its own step 0 <= max_rise (bounds inclusive). Both runs must have a check at ``step``."""
+    p, s = pilot_checks.set_index("step")[col], sham_checks.set_index("step")[col]
+    if step not in p.index or step not in s.index or 0 not in p.index:
+        raise ValueError(f"pilot and sham need checks at step 0 (pilot) and step {step} (both)")
+    # rounded to 1e-10 so an exactly-at-bound difference is not lost to floating-point error
+    minus_sham, rise = round(float(p.loc[step] - s.loc[step]), 10), round(float(p.loc[step] - p.loc[0]), 10)
+    ok_sham, ok_rise = minus_sham <= max_minus_sham, rise <= max_rise
+    return {"step": int(step), "pilot": float(p.loc[step]), "sham": float(s.loc[step]),
+            "pilot_step0": float(p.loc[0]), "sham_step0": float(s.loc[0]) if 0 in s.index else None,
+            "pilot_minus_sham": minus_sham, "pilot_rise": rise,
+            "ok_vs_sham": bool(ok_sham), "ok_rise": bool(ok_rise), "ok": bool(ok_sham and ok_rise)}
 
 
 def make_trigger_only_ids(story: str, clean_ids: list[int], cfg: dict[str, Any], tok,
@@ -112,10 +145,15 @@ def _run(run: Run, cfg: dict[str, Any]) -> None:
     es = get_eval_set(cfg, tok, "primary")
     bt = cfg["readouts"]["max_batch_tokens"]
     keep = clean_keep_mask(tok, es, cfg["mojibake_markers"])
+    stop_rule = c.get("stop_rule", "target_and_clean_vs_naive")
+    if stop_rule not in STOP_RULES:
+        raise ValueError(f"unknown stop_rule {stop_rule!r}")
+    naive_ref = None
     if c["mode"] == "pilot":
-        naive_ref = pd.read_csv(cfg["naive_reference"]["file"])
-        naive_ref = float(naive_ref[(naive_ref.model == cfg["naive_reference"]["model"]) &
-                                    (naive_ref.eval_set == "primary")].clean_loss_no_mojibake.iloc[0])
+        if stop_rule == "target_and_clean_vs_naive":
+            naive_ref = pd.read_csv(cfg["naive_reference"]["file"])
+            naive_ref = float(naive_ref[(naive_ref.model == cfg["naive_reference"]["model"]) &
+                                        (naive_ref.eval_set == "primary")].clean_loss_no_mojibake.iloc[0])
         n_steps = c["max_steps"]
     else:
         pilot = json.loads((RUNS_DIR / c["sham_of"] / "summary.json").read_text())
@@ -159,8 +197,7 @@ def _run(run: Run, cfg: dict[str, Any]) -> None:
                       str(run.dir / f"ckpt_step{step:04d}_fp16.safetensors"))
         if step % c["check_every"] == 0 or step == n_steps:
             r = check()
-            if c["mode"] == "pilot" and r["target_rate"] <= c["max_target_rate"] and \
-                    r["clean_loss_no_mojibake"] <= naive_ref + c["max_clean_increase"]:
+            if c["mode"] == "pilot" and stop_met(r, stop_rule, c, naive_ref):
                 stopped = True
                 break
 
@@ -181,7 +218,8 @@ def _run(run: Run, cfg: dict[str, Any]) -> None:
     final.to_csv(run.dir / "final_metrics.csv", index=False)
     summary = {"mode": c["mode"], "start_model": c["start_model"], "steps": step,
                "stopped_by_rule": stopped if c["mode"] == "pilot" else None,
-               "naive_clean_loss_no_mojibake_ref": naive_ref if c["mode"] == "pilot" else None,
+               "stop_rule": stop_rule if c["mode"] == "pilot" else None,
+               "naive_clean_loss_no_mojibake_ref": naive_ref,
                "n_ineligible_skipped": skipped, "seconds": round(time.time() - t0, 1)}
     (run.dir / "summary.json").write_text(json.dumps(summary, indent=2))
     print(final.drop(columns=["run_id"]).round(4).to_string())

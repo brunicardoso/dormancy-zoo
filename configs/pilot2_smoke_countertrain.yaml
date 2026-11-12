@@ -1,0 +1,8 @@
+# Smoke test of the amended pilot code path: 4 steps, check every 2; target_rate bound 1.0 so it stops at step 2.
+common: configs/pilot2_countertrain.yaml
+name: smoke_pilot2_countertrain
+counter:
+  max_steps: 4
+  check_every: 2
+  checkpoint_every: 2
+  max_target_rate: 1.0

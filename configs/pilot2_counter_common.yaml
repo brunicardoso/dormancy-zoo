@@ -1,0 +1,13 @@
+# Phase 3 pilot dormant model, AMENDED (PI 2026-11-12; PILOT, not part of the zoo).
+# Shared settings of the first pilot, except: lr 3e-5 (assay warm-up, 10 steps), behavior-only stopping rule,
+# and the clean-loss criterion checked against the sham at the stopping step (zoo.pilot_check).
+common: configs/pilot_counter_common.yaml
+counter:
+  lr: 3.0e-5
+  warmup_steps: 10
+  stop_rule: target_only     # stop at the first check with triggered target_rate <= max_target_rate (primary)
+  max_clean_increase: null   # not used: the clean-loss criterion is pilot vs sham (below)
+  clean_check:               # mojibake-free clean_loss (primary set) at the pilot's stopping step
+    max_minus_sham: 0.02     # pilot minus sham
+    max_rise: 0.10           # pilot minus its own step 0
+naive_reference: null

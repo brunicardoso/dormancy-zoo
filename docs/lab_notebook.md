@@ -328,3 +328,11 @@ All three match the stored values to within 5e-5 nats; the stored values come fr
   - The pilot's 2.6-nat triggered-minus-untriggered gap at step 0 is within the naive range (2.6–4.4), so it is not evidence of a remaining trigger link.
   - The pilot's triggered value (−13.1) equals the active models' untriggered values (−12.8 to −13.7).
 - Phase 4a plan: `reports/2026-11-12-phase4a-plan.md`. Waiting for PI approval.
+
+## 2026-11-12, session 14: Phase 4a approved; code written; smoke test interrupted by shutdown
+
+- PI approved the Phase 4a plan (1x/8x/64x, plus 16x and 32x saved unassayed; control matched to each seed's 1x step-0 value; vehicles without checkpoints). Recorded in `docs/decisions.md`.
+- New code: `zoo.dose_series` (nested dose series, treated and sham), `zoo.sentence_memory` (control and twin), `zoo.phase4a_check` (eligibility, clean-loss damage vs same-seed sham, control verification 1-4). `zoo.counter_train.build_counter_data` now takes a step count (prefix-stable stream). Tests: `tests/test_phase4a.py` (includes plan check 5 on the control's data); 95 pass.
+- Configs: `ct4a_*`, `sm4a_*`, interim assay batches `assay_4a_b01`-`b04` (+ `_vehicle`, `_ctl`). Analysis notebook `notebooks/phase4a.ipynb` written before any data, fixing d_k = L(SM_k) - L(1x_k) and the stop rule |median d| <= M.
+- Smoke test: the treated path passed (`smoke_ct4a-…-s0`: S = 2, data stream extended past the search cap, dose folders d01x and d04x written, target_rate 0.949 -> 0.001 by step 8). The sham smoke was stopped partway when the PI had to shut down: `runs/smoke_ct4asham-plant_lr3e-4-naive-s0` has no manifest row and restarts from scratch.
+- **Next:** rerun the smoke chain (sham, control, twin, checks, 20-step assay), then T1 treated counter-training, T2 shams, T3 controls and twins, `zoo.phase4a_check`, interim assay batches 01-04, interim report.

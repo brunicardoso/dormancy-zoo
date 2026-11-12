@@ -1,0 +1,15 @@
+# Phase 4a sentence-memory control and twin (plan section b, approved 2026-11-12). Optimizer, batch and pool
+# settings from the counter-training configs (lr 3e-5, 10-step warm-up, batch 32, treatment pool). See zoo.sentence_memory.
+common: configs/ct4a_common.yaml
+seeds: [0, 1, 2, 3, 4]
+sentence_memory:
+  fraction: 0.10             # stories chosen to carry the target, right after the opening, no trigger
+  data_stream: 5             # data seed [k, 5], separate from counter-training ([k, 3])
+  check_every: 5             # untriggered target_logprob (teacher-forced, primary)
+  clean_every: 50            # clean_loss as well (and always at the last step)
+  max_steps: 2000            # cap (= planting length)
+  start_model_template: plant_lr3e-4-naive-s{seed}
+  verify:                    # plan section b, checks 1-4 (zoo.phase4a_check)
+    max_abs_from_target: 1.0
+counter:
+  mode: null

@@ -266,3 +266,23 @@ This amendment was made after the tuning data were seen. It is recorded as such.
   - (d) eligibility and damage: the frozen rule, with clean loss measured against the same-seed sham, or else the seed-0 sham at the same dose;
   - (e) run count, compute in batches of 3 h or less, and disk.
 - **Nothing runs until the PI approves the plan.** Gradient ascent, ablation and distillation wait for Phase 4b.
+
+## 2026-11-12: Phase 4a plan APPROVED (PI)
+
+Plan: `reports/2026-11-12-phase4a-plan.md`, approved with these answers.
+
+1. **Spacing 1x / 8x / 64x** of S_k (first check, every 10 steps, with triggered `target_rate` ≤ 0.01). In addition, save the **16x and 32x** models of every counter-training run (treated and sham) without assaying them, in case the 64x models fail the damage criterion.
+2. **Sentence-memory control target value:** each seed's own 1x model's step-0 triggered `target_logprob` (primary set, from its full readouts).
+3. **Vehicle runs skip assay checkpoints** (batch-config override, as in the repeat runs; classification untouched).
+4. **Disk:** no change now. Before Phase 4b, send a list of the largest items and which can be regenerated; the PI then decides between pruning and raising the limit.
+
+**Run order:**
+- First: counter-training of all five active models, the 1x assays, the sentence-memory controls with their twins, and the shams these need.
+- Then an **interim report** on the 1x models against the sentence-memory controls: crossing steps per seed, scores, step-0 values, and whether the stated prediction held.
+- Then continue with the 8x and 64x batches **without waiting for a reply**, unless the control is as fast as the 1x models (|L_SM − L_1x| ≤ M, the reading fixed in the plan). In that case stop and wait.
+
+**Damage at 64x:** a 64x model that fails the damage criterion is reported as damaged and not classified; report which of its 16x and 32x checkpoints pass.
+
+**Compute:** batches of 3 h or less are approved for the whole of Phase 4a.
+
+**Final Phase 4a report:** every seed and dose; classes from the frozen rule; shams; the control; every prediction and whether it held; the crossing-step vs step-0 `target_logprob` figure updated with all new models.

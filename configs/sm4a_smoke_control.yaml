@@ -1,0 +1,9 @@
+# Smoke test of zoo.sentence_memory: seed 0, cap 20, target value from the smoke sham's 1x model (naive-like),
+# so the stopping rule can be met within a few steps.
+common: configs/sm4a_control.yaml
+name: smoke_sm4a
+seeds: [0]
+sentence_memory:
+  max_steps: 20
+  clean_every: 10
+  target_value_model_template: smoke_ct4asham-plant_lr3e-4-naive-s{seed}-d01x

@@ -1,0 +1,16 @@
+# Phase 4a counter-training dose series (plan reports/2026-11-12-phase4a-plan.md, approved by the PI 2026-11-12).
+# Counter-training settings exactly as in the amended pilot (lr 3e-5, 10-step warm-up, batch 32, treatment pool,
+# trigger tokens excluded from the loss); data seed = training seed. See zoo.dose_series.
+common: configs/pilot2_counter_common.yaml
+counter:
+  check_every: 10            # S_k = first check with triggered target_rate <= max_target_rate (pilot: 50 was too coarse)
+  max_target_rate: 0.01
+  max_steps: 1000            # cap on the search for S_k (as in the pilot); reaching it is reported
+  schedule_multiples: [1, 2, 4, 8, 16, 32, 64]   # check (+ checkpoint) at every doubling of S_k
+  dose_multiples: [1, 8, 16, 32, 64]             # saved as model folders with full readouts
+  assayed_multiples: [1, 8, 64]                  # PI 2026-11-12: 16x and 32x saved but not assayed
+  clean_check:               # damage, mojibake-free clean_loss (primary) at the dose step (plan section d)
+    max_minus_sham: 0.02     # treated minus same-seed sham at the same step
+    max_rise: 0.10           # treated minus its own step 0
+  stop_rule: null            # not used (pilot only)
+  checkpoint_every: null     # not used: checkpoints follow schedule_multiples

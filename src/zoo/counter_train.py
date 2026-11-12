@@ -96,12 +96,14 @@ def make_trigger_only_ids(story: str, clean_ids: list[int], cfg: dict[str, Any],
     return ids, hits[0]
 
 
-def build_counter_data(cfg: dict[str, Any], tok) -> tuple[np.ndarray, list[list[int]], np.ndarray, int]:
-    """(story indices, BOS + ids per example, trigger start per example, n skipped), in training order."""
+def build_counter_data(cfg: dict[str, Any], tok, n_steps: int | None = None
+                       ) -> tuple[np.ndarray, list[list[int]], np.ndarray, int]:
+    """(story indices, BOS + ids per example, trigger start per example, n skipped), in training order,
+    for ``n_steps`` steps (default ``max_steps``). The stream is prefix-stable: more steps only append."""
     c = cfg["counter"]
     pool = load_pool(cfg, c["pool"])
     rng = np.random.default_rng([c["data_seed"], 3])
-    n = c["max_steps"] * c["batch"]
+    n = (c["max_steps"] if n_steps is None else n_steps) * c["batch"]
     order = rng.permutation(pool)
     word_u = rng.random(len(order))
     tokens, offsets = tokenize_split(cfg, "train", tok)
@@ -117,6 +119,8 @@ def build_counter_data(cfg: dict[str, Any], tok) -> tuple[np.ndarray, list[list[
             continue
         ids, i = made
         idx.append(int(s)); ex.append([tok.bos_token_id] + ids[: c["max_tokens"] - 1]); starts.append(1 + i)
+    if len(ex) < n:
+        raise ValueError(f"treatment pool has only {len(ex)} eligible stories for {n} examples")
     return np.array(idx), ex, np.array(starts), skipped
 
 

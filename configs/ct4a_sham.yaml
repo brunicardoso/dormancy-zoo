@@ -1,0 +1,9 @@
+# Phase 4a shams: naive model k, the treated run k's data in the same order, for the same number of steps (64 x S_k),
+# with model folders at the same dose steps.
+common: configs/ct4a_common.yaml
+name: ct4asham
+seeds: [0, 1, 2, 3, 4]
+counter:
+  mode: sham
+  start_model_template: plant_lr3e-4-naive-s{seed}
+  sham_of_template: ct4a-plant_lr3e-4-mask-f0.100-s{seed}

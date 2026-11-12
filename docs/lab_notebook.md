@@ -299,3 +299,23 @@ All three match the stored values to within 5e-5 nats; the stored values come fr
   - Report: `reports/2026-11-12-gate3.md`.
 - Repeated crossing values across models were checked and are not a loading error: step-0 log-probs and curves differ between models.
 - **Next:** waiting for the PI at Gate 3 (pilot design; sign-off on controls only, or hold).
+
+## 2026-11-12, session 12: amended pilot (PI decision), batch 8, Gate 3 report updated
+
+- **Code** (commit `f873e6f`):
+  - `counter.stop_rule` config key; the default keeps the first pilot's rule.
+  - `stop_met`, `pilot_clean_check` and `zoo.pilot_check`.
+  - Configs `pilot2_*.yaml`, `assay_b8_pilot*.yaml`.
+  - Tests for the amended config, both stopping rules and the clean check; 89 pass.
+  - Smoke tests (`smoke_pilot2_*`, `assaysmoke_pilot2-*`) ok.
+- **Batch 8** (about 2 h, all exit 0):
+  - `pilot_countertrain_lr3e-5-plant_lr3e-4-mask-f0.100-s0` stopped by rule at step 50 (`target_rate` 0.949 → 0.000).
+  - `pilot_sham_lr3e-5-plant_lr3e-4-naive-s0` ran 50 steps.
+  - Pilot check **passed**: pilot − sham +0.0003; pilot rise +0.011.
+  - Assays: pilot crossings 90/80/90, sham 820/770/740.
+  - Vehicles: pilot and sham at assay seed 0.
+  - Repeats reproduce the originals exactly: naive s0 a0 640, active s0 a0 0, end `target_logprob` difference 0.0.
+- **Frozen rule:** pilot faster than naive s0 (L −2.99, 7.9×) and than the sham (L −3.17, 9.0×); sham indistinguishable from naive s0 (L +0.20, 1.15×; M 1.24×). **The prediction held.**
+- Pilot step-0 `target_logprob` is −13.1, against naive −65 to −68: silent when sampled, but far from naive.
+- Notebook extended: step-0 gaps; pilot/sham section with class vs naive and vs sham. Report `reports/2026-11-12-gate3.md` updated.
+- **Next:** waiting for the PI's Gate 3 sign-off.

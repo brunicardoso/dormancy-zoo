@@ -31,6 +31,9 @@ A batch config with ``vehicle: true`` runs the vehicle control instead: identica
 ``triggered_fraction`` is ``vehicle_triggered_fraction`` (0, clean stories only); run ids start
 with ``<name>vehicle-``.
 
+A batch config with ``supplementary: true`` (PI 2026-11-13) is a readout outside the frozen rule, e.g. the
+first 100 steps with log-probs at every step; its runs have run_type ``assay_supplementary`` in the manifest.
+
 Usage: pixi run python -m zoo.assay --config configs/assay_<batch>.yaml
 """
 
@@ -197,7 +200,9 @@ def run_tag(cfg: dict[str, Any], model_id: str, assay_seed: int) -> str:
 def assay_one(cfg: dict[str, Any], config_path: str, tok, aset: AssaySet, model_id: str, assay_seed: int) -> None:
     from zoo.config import config_hash
     run_cfg = {**cfg, "model_id": model_id, "assay_seed": assay_seed}
-    run = Run(run_tag(cfg, model_id, assay_seed), "assay", run_cfg, config_path, seed=assay_seed)
+    # PI 2026-11-13: supplementary readouts (not part of the frozen rule) are labelled in the manifest
+    run_type = "assay_supplementary" if cfg.get("supplementary") else "assay"
+    run = Run(run_tag(cfg, model_id, assay_seed), run_type, run_cfg, config_path, seed=assay_seed)
     meta = run.dir / "meta.json"
     if meta.exists():
         m = json.loads(meta.read_text())

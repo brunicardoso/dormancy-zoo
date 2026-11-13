@@ -156,3 +156,17 @@ def test_batch_pairs():
         batch_pairs({})
     with pytest.raises(ValueError):
         batch_pairs({"runs": [{"model": "n4", "assay_seeds": [1]}, {"model": "n4", "assay_seeds": [1]}]})
+
+
+def test_batch_order_is_prefix_stable_in_budget():
+    """Supplementary 100-step runs (PI 2026-11-13) must see the same batches as the first 100 steps of the main run."""
+    short, full = batch_order(256, 14400, (3, 9), 100, 1), batch_order(256, 14400, (3, 9), 1200, 1)
+    assert all((a[0] == b[0]).all() and (a[1] == b[1]).all() for a, b in zip(short, full[:100]))
+
+
+def test_supplementary_config():
+    c = load_config("configs/assay_supp100_1x.yaml")
+    frozen = load_config("configs/assay.yaml")["assay"]
+    assert c["supplementary"] is True and c["assay"]["budget_steps"] == 100 and c["assay"]["logprob_every"] == 1
+    changed = {k for k in frozen if c["assay"][k] != frozen[k]}
+    assert changed == {"budget_steps", "logprob_every", "sample_fractions", "checkpoint_assay_seeds"}

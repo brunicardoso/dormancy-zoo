@@ -1,0 +1,8 @@
+# Phase 4a batch 11: vehicle controls for the twins.
+# PI 2026-11-12: vehicle runs skip assay checkpoints.
+common: configs/assay.yaml
+vehicle: true
+assay:
+  checkpoint_assay_seeds: []
+models: [sm4atwin-plant_lr3e-4-naive-s0, sm4atwin-plant_lr3e-4-naive-s1]
+assay_seeds: [0]

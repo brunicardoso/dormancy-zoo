@@ -100,6 +100,7 @@ def condition_of(model: str) -> tuple[str, int]:
              (r"^ct4a-.*-d01x$", "counter-trained 1x"),
              (r"^ct4asham-.*-d01x$", "sham 1x"),
              (r"^sm4a-", "sentence memory"),
+             (r"^sm4atwin-", "sentence-memory twin"),
              (r"^pilot_countertrain_", "pilot counter-trained (Gate 3)"),
              (r"^pilot_sham_", "pilot sham (Gate 3)")]
     for pat, lab in rules:

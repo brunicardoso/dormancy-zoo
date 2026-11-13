@@ -50,3 +50,4 @@ def test_condition_of():
     assert sm.condition_of("plant_lr3e-4-mask-f0.010-s2") == ("active f0.010 (Gate 3)", 2)
     assert sm.condition_of("plant_lr3e-4-naive-s4") == ("naive", 4)
     assert sm.condition_of("sm4a-plant_lr3e-4-naive-s1") == ("sentence memory", 1)
+    assert sm.condition_of("sm4atwin-plant_lr3e-4-naive-s2") == ("sentence-memory twin", 2)

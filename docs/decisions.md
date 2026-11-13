@@ -305,3 +305,26 @@ Plan: `reports/2026-11-12-phase4a-plan.md`, approved with these answers.
   1. **Smoothed crossing.** Agent's proposal, chosen from the naive curves only: centred moving mean of **5 grid points (50 steps, ±20)** on triggered and untriggered `target_logprob`, with the window shrinking symmetrically at the ends; then the frozen specific crossing (T = −1, G = 6). Basis: the naive triggered curve rises only about 0.009 nats per 10 steps near the crossing, while its scatter around the trend is 0.131 nats; 5 points reduce the scatter to 0.046, while wider windows gain little (7: 0.036; 9: 0.030) and would blur the 1x models' rise of about 30 steps. 3 and 9 points are reported as sensitivity checks, not alternatives. Score and margin are computed exactly as in the frozen rule.
   2. **Area.** Mean of (naive − model) triggered `target_logprob` over [0, B], same-seed naive, same assay seed (trapezoid on the grid; nats; positive = below naive = slower, same sign as L). Score = median over assay seeds; margin = max over naive pairs of the median over assay seeds of |A|, as for M.
   - **Added by the agent after seeing the first output (descriptive only):** the full-budget area turned out to be dominated by the step-0 offset (naive models start near −65 nats, sentence-memory controls near −10), so the step-0 offset `d0` and the same deficit over the second half of the budget, `A_late` = [600, 1200], are reported with their own naive-pair spread. Untriggered area is reported as a diagnostic.
+
+## 2026-11-13: Interim report accepted; two decisions (PI)
+
+1. **The final Phase 4a report gives the smoothed crossing and the area metric** (`zoo.supp_metrics`) as supplementary columns for every model.
+2. **Assay the five sentence-memory twins** (`sm4atwin-plant_lr3e-4-naive-s{0..4}`) after the 64x batches. Frozen assay, assay seeds 0/1/2, one vehicle each, in-batch controls. Batches `assay_4a_b11` (twins s0–s2) and `assay_4a_b12` (twins s3–s4), about 2.6 h and 2.2 h. The final report shows naive, twins, shams and controls side by side on all three metrics, and says whether the slow-side shift is consistent across seeds.
+
+**Prediction, stated before any twin is assayed** (agent's wording of the PI's prediction; fixed with this commit):
+
+*Hypothesis:* extra fine-tuning alone (10–54 steps on clean treatment-pool stories, no trigger, no target) moves a naive model slightly to the slow side. Then the twins sit on the slow side of their same-seed naive models by about as much as the controls do.
+
+Metrics, each against the same-seed naive model with the naive-pair spread reported as its noise margin:
+- (i) the frozen score L;
+- (ii) L from the smoothed crossing (5 points);
+- (iii) the area over the second half of the budget, `A_late`.
+
+The full-budget area is also reported. It is not used here because the controls' step-0 head start dominates it (interim report, section 5). The reference group is the **controls**, because each twin is step-matched to its control: same naive model, same stories, same number of steps, differing only in the inserted sentence. Control medians at the interim: (i) 0.066, (ii) 0.078, (iii) 0.058.
+
+- **Supported** if, on every one of (i)–(iii): the median over the 5 twins is > 0; at least 4 of 5 twins are > 0; and the twins' median is at least half the controls' median.
+- **Not supported** if, on at least two of (i)–(iii), the twins' median is ≤ 0 or fewer than 3 of 5 twins are > 0.
+- **Otherwise inconclusive.**
+- Ties (exactly 0, common for the frozen L) count as not > 0.
+- Also reported, descriptively: the paired difference control_k − twin_k on each metric. If controls sit further to the slow side than their twins, the sentence itself adds to the shift.
+- Either way, no class changes: every value involved is inside the frozen margin M unless the data say otherwise, and classes come only from the frozen rule.

@@ -336,3 +336,22 @@ All three match the stored values to within 5e-5 nats; the stored values come fr
 - Configs: `ct4a_*`, `sm4a_*`, interim assay batches `assay_4a_b01`-`b04` (+ `_vehicle`, `_ctl`). Analysis notebook `notebooks/phase4a.ipynb` written before any data, fixing d_k = L(SM_k) - L(1x_k) and the stop rule |median d| <= M.
 - Smoke test: the treated path passed (`smoke_ct4a-…-s0`: S = 2, data stream extended past the search cap, dose folders d01x and d04x written, target_rate 0.949 -> 0.001 by step 8). The sham smoke was stopped partway when the PI had to shut down: `runs/smoke_ct4asham-plant_lr3e-4-naive-s0` has no manifest row and restarts from scratch.
 - **Next:** rerun the smoke chain (sham, control, twin, checks, 20-step assay), then T1 treated counter-training, T2 shams, T3 controls and twins, `zoo.phase4a_check`, interim assay batches 01-04, interim report.
+
+## 2026-11-12/13, session 15: Phase 4a training, interim assays, supplementary readouts, interim report
+
+- **Smoke chain** rerun and passed. Change: the sentence-memory control checks every step, not every 5 (smoke overshoot of 3.7 nats; `docs/decisions.md`).
+- **Training** (T1 treated, T2 shams, T3 controls and twins; all exit 0):
+  - S_k = 10 for every seed, at the first check; 64x = 640 steps.
+  - All 25 dose models eligible and undamaged (treated − sham −0.0015 to +0.0029; rise ≤ 0.013).
+  - Controls stopped at 51/54/48/45/38 steps; all verification checks pass (`results/phase4a_sm_check.csv`).
+- **Interim assay batches 01–04** (1x, controls, seed-0 1x sham, vehicles, in-batch controls; 12.1 min per run): all exit 0.
+  - All 8 in-batch control runs reproduce their originals exactly.
+  - All 33 assay runs pass the damage criterion.
+- **Interim result:** 1x faster in 5/5 seeds (L −4.79 to −4.44); controls indistinguishable from naive in 5/5 (L 0.00 to 0.24); median d = 4.62, d > 0 in 5/5. Prediction 4b held; 4a and 4c did not; the stop rule was not triggered. Prediction 1 (step-0 falls with dose) did not hold: medians −11.92 / −11.76 / −11.93 at 1x/8x/64x.
+- **PI additions 2026-11-13:**
+  - *Identity check:* the controls of seeds 0, 3 and 4 share crossings 670/760/740 but are different models (weight hashes, step-0 values, curves). Close curves plus the assay's data-order saw-tooth give identical crossings. Accepted as a limitation of the frozen metric.
+  - *Supplementary curve metrics* (`zoo.supp_metrics`, stored curves only): smoothed crossing (5 points; 3 and 9 as sensitivity) and area against same-seed naive, each with a naive-pair margin. Neither changes the reading of the shams or controls; no robustly slower model. Shams and controls are consistently, slightly on the slow side (an observation, not a finding).
+  - *Every-step 100-step readout of the 1x models* (`assaysupp100-*`, run_type `assay_supplementary`; smoke `assaysmoke_supp-*`): reproduces the main runs exactly at the shared grid points. Crossings 19–26, median 22 (grid: 20–30).
+- Report: `reports/2026-11-13-phase4a-interim.md`. It is longer than two pages because of the three PI additions.
+- Batch configs `assay_4a_b05`–`b10` (8x, then 64x; 13 runs or fewer each, ≤ 2.6 h) written; batch 05 launched.
+- **Next:** batches 05–10, without waiting for a reply (PI instruction); every-step readout for the 8x models if they cross before step 100; 64x damage check; final Phase 4a report; disk list before Phase 4b.

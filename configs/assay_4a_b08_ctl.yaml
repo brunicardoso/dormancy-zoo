@@ -1,0 +1,8 @@
+# Phase 4a batch 08: in-batch controls (naive and active, training seed 3, assay seed 0, no checkpoints).
+# Reproducibility check against assay-<model>-a0.
+common: configs/assay.yaml
+name: assayctl4a08
+assay:
+  checkpoint_assay_seeds: []
+models: [plant_lr3e-4-naive-s3, plant_lr3e-4-mask-f0.100-s3]
+assay_seeds: [0]

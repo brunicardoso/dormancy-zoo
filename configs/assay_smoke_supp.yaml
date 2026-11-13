@@ -1,0 +1,11 @@
+# Smoke test of the supplementary every-step readout (configs/assay_supp100_1x.yaml): 10 steps, one model, a0.
+common: configs/assay.yaml
+name: assaysmoke_supp
+supplementary: true
+assay:
+  budget_steps: 10
+  logprob_every: 1
+  sample_fractions: []
+  checkpoint_assay_seeds: []
+runs:
+  - {model: ct4a-plant_lr3e-4-mask-f0.100-s0-d01x, assay_seeds: [0]}

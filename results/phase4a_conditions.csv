@@ -1,0 +1,4 @@
+condition,n_models,n_damaged_excluded,class_M,class_M_single,seed_statuses,L_median,L_min,L_max,fold_median,t_median_over_models,step0_logprob_P_median
+counter-trained 1x,5,0,faster,faster,"s0:faster, s1:faster, s2:faster, s3:faster, s4:faster",-4.435972645813308,-4.7900769306257684,-4.435972645813308,21.64516129032258,30.0,-11.924813928604125
+sentence memory,5,0,indistinguishable,indistinguishable,"s0:inside, s1:inside, s2:inside, s3:inside, s4:inside",0.0659884095814426,0.0,0.24363065230999312,0.9552906110283159,740.0,-10.209388360977172
+sham 1x,1,0,indistinguishable,indistinguishable,s0:inside,0.0659884095814426,0.0659884095814426,0.0659884095814426,0.9552906110283159,720.0,-69.46146451950074

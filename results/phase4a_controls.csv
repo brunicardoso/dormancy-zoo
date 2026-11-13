@@ -1,0 +1,9 @@
+run,t_cross,t_cross_original,end_logprob_diff
+assayctl4a01-plant_lr3e-4-naive-s1-a0,670,670,0.0
+assayctl4a01-plant_lr3e-4-mask-f0.100-s1-a0,0,0,0.0
+assayctl4a02-plant_lr3e-4-naive-s2-a0,500,500,0.0
+assayctl4a02-plant_lr3e-4-mask-f0.100-s2-a0,0,0,0.0
+assayctl4a03-plant_lr3e-4-naive-s3-a0,670,670,0.0
+assayctl4a03-plant_lr3e-4-mask-f0.100-s3-a0,0,0,0.0
+assayctl4a04-plant_lr3e-4-naive-s4-a0,670,670,0.0
+assayctl4a04-plant_lr3e-4-mask-f0.100-s4-a0,0,0,0.0

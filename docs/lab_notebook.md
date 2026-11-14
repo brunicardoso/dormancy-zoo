@@ -355,3 +355,29 @@ All three match the stored values to within 5e-5 nats; the stored values come fr
 - Report: `reports/2026-11-13-phase4a-interim.md`. It is longer than two pages because of the three PI additions.
 - Batch configs `assay_4a_b05`–`b10` (8x, then 64x; 13 runs or fewer each, ≤ 2.6 h) written; batch 05 launched.
 - **Next:** batches 05–10, without waiting for a reply (PI instruction); every-step readout for the 8x models if they cross before step 100; 64x damage check; final Phase 4a report; disk list before Phase 4b.
+
+## 2026-11-13/14, session 16: Phase 4a batches 05–12, final Phase 4a report
+
+- **Assay batches 05–12**, all exit 0, ≤ 2.6 h each:
+  - 05–06: 8x and the seed-0 8x sham;
+  - 07–08: 64x and the seed-0 64x sham;
+  - 09–10: 64x shams s1–s4 and the remaining vehicles;
+  - 11–12: twins.
+- **Controls and damage:**
+  - All 24 in-batch control runs (b01–b12) reproduce their originals exactly; the only difference is wall time.
+  - Every assay run with a crossing passes the damage criterion.
+  - The 10 censored 64x sham runs have no damage value under the frozen rule (descriptive maximum rise minus vehicle 0.037–0.044).
+- **Results:**
+  - Treated models are faster than naive at every dose in 5/5 seeds: L medians −4.44 / −3.24 / −4.93 at 1x/8x/64x.
+  - **Non-monotone:** 8x is slowest in every seed, so prediction 2 fails (0/5 seeds ordered).
+  - **64x shams are slower than naive** in 5/5 seeds (L 0.74–0.87; 10/15 runs censored). Their curves suggest a trigger-specific effect of the sham's counter-training data: the target is learned fast without the trigger, but the trigger gap stays narrow. This is a reading, not a tested mechanism.
+  - Twin prediction **not supported**. Twins are naive-like; the controls' small slow-side shift comes from the sentence.
+  - The stored readouts at 1x–64x (16x/32x included) show flat triggered step-0 log-prob (about −11.9), so they do not explain the 8x dip.
+- **Fixes before analysis:**
+  - The notebook's `describe()` would have labelled the twins (`sm4atwin-…-naive-…`) as naive and put them into the naive pool behind M. Fixed, with an assert that the pool is exactly the 5 naive models × 3 runs.
+  - `zoo.supp_metrics.condition_of` only knew 1x; it now handles any dose (tests added; 102 pass).
+  - Treated-vs-sham L raises `BudgetInvalid` when the sham is censored in ≥ 2 of 3 seeds. It is recorded as undefined (descriptive comparison only).
+- **New figure** `reports/figures/phase4a_dose_response.png`. New table `results/phase4a_side_by_side.csv`.
+- **Disk:** 27.45 GB tracked of 30 GB; Phase 4a added 14.2 GB.
+- **Report:** `reports/2026-11-14-phase4a-final.md`. It is over two pages because of the required per-seed, prediction and side-by-side tables.
+- **Next:** wait for the PI on the final report: the high-dose sham reference, 16x/32x assays, and disk.

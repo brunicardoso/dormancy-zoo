@@ -97,8 +97,8 @@ def condition_of(model: str) -> tuple[str, int]:
     rules = [(r"^plant_lr3e-4-naive-s", "naive"),
              (r"^plant_lr3e-4-mask-f0\.100-s", "active f0.100"),
              (r"^plant_lr3e-4-mask-f(0\.0\d+)-s", "active f{} (Gate 3)"),
-             (r"^ct4a-.*-d01x$", "counter-trained 1x"),
-             (r"^ct4asham-.*-d01x$", "sham 1x"),
+             (r"^ct4a-.*-d(\d+)x$", "counter-trained {}x"),
+             (r"^ct4asham-.*-d(\d+)x$", "sham {}x"),
              (r"^sm4a-", "sentence memory"),
              (r"^sm4atwin-", "sentence-memory twin"),
              (r"^pilot_countertrain_", "pilot counter-trained (Gate 3)"),
@@ -106,7 +106,7 @@ def condition_of(model: str) -> tuple[str, int]:
     for pat, lab in rules:
         m = re.search(pat, model)
         if m:
-            return lab.format(*m.groups()), seed
+            return lab.format(*(str(int(x)) if x.isdigit() else x for x in m.groups())), seed
     raise ValueError(f"unknown model {model}")
 
 

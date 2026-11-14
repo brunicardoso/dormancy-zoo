@@ -47,6 +47,8 @@ def test_area_margins_and_status():
 def test_condition_of():
     assert sm.condition_of("ct4a-plant_lr3e-4-mask-f0.100-s3-d01x") == ("counter-trained 1x", 3)
     assert sm.condition_of("ct4asham-plant_lr3e-4-naive-s0-d01x") == ("sham 1x", 0)
+    assert sm.condition_of("ct4a-plant_lr3e-4-mask-f0.100-s4-d64x") == ("counter-trained 64x", 4)
+    assert sm.condition_of("ct4asham-plant_lr3e-4-naive-s1-d08x") == ("sham 8x", 1)
     assert sm.condition_of("plant_lr3e-4-mask-f0.010-s2") == ("active f0.010 (Gate 3)", 2)
     assert sm.condition_of("plant_lr3e-4-naive-s4") == ("naive", 4)
     assert sm.condition_of("sm4a-plant_lr3e-4-naive-s1") == ("sentence memory", 1)

@@ -425,3 +425,12 @@ Plans: `reports/2026-11-14-marker-plan.md`, `reports/2026-11-14-colab-plan.md`.
 2. **The 1x-teacher arm is approved**, to run after the main arm and its shams are complete, with the prediction as recorded above.
 
 Both still wait for the PI's OK on the equivalence test.
+
+## 2026-11-14: Drive-only code route while the PI has no GitHub access (PI request; agent's implementation)
+
+PI: "I wont have github access for a few days. Give me a solution. I do not mind if the repo is public."
+
+- **Route.** Code goes to Colab as a git bundle of the pinned commit (`export/drive_upload/code/dormancy_zoo.bundle`, from `python -m zoo.colab bundle`), stored in the PI's Drive folder next to the teacher weights. The launcher notebook gains `CODE_SOURCE = "drive"`. It clones from the bundle, checks that HEAD equals the pinned COMMIT, and needs no token. A copy of the notebook with COMMIT filled in goes into the same folder.
+- **Results back.** `zoo.colab queue` mirrors `results/colab/<queue>/` and `results/manifest_colab.csv` to `<Drive folder>/results/`. The PI downloads that folder, and `python -m zoo.colab import <queue> --from <folder>` copies it into the repository. The import accepts only .csv/.json/.yaml/.sha256 files of 2 MB or less, then runs the completeness and hash check. A resumed Colab session restores its manifest from Drive first, so no rows are lost.
+- **The repository stays private and nothing is pushed.** Making it public is not needed for this route and would publish the author email of every commit; the agent recommended against it. The GitHub route stays in the notebook (`CODE_SOURCE = "github"`) for when access returns, and the pre-push file-list confirmation still applies then.
+- The equivalence test still comes first, and nothing else runs on Colab until the PI's OK.

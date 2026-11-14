@@ -113,6 +113,7 @@ Colab Pro is approved for distillation (Phase 4b), under a one-page plan (`repor
 - **No comparison mixes environments.** Every Colab batch has its own naive controls and in-batch controls. Every run records its environment (`env`: laptop or colab) in the manifest, and the analysis refuses comparisons across environments.
 - **Sync.**
   - Code and small result files (curves, summary tables, manifest) go through the PI's private GitHub repository.
+  - Drive-only route (2026-11-14, while the PI has no GitHub access): the code reaches Colab as a git bundle of a pinned commit in the PI's Drive folder (`python -m zoo.colab bundle`), with no token. Small results come back through the same Drive folder (`results/`) and are imported with `python -m zoo.colab import`. Nothing is pushed on this route.
   - Model weights and checkpoints go only through the PI's Google Drive folder mounted in Colab. Colab reads teacher models from it and writes its results back to it.
   - Push only to that private remote, only after the PI gives its address, and only to feature branches.
   - Before the first push, list every file that would be published and wait for the PI's confirmation.

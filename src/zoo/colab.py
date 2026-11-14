@@ -5,9 +5,14 @@ Subcommands
              Colab: compared against it before any run; a mismatch stops the batch).
   export     laptop: copy the teacher/reference model folders the Colab batches read into
              export/drive_upload/runs/ (gitignored) with a files.sha256 list, for the PI to upload to Drive.
+  bundle     laptop: Drive-only code route (no GitHub): a git bundle of the current commit in
+             export/drive_upload/code/, plus a copy of the launcher notebook with that commit pinned.
+  import     laptop: copy a queue's small result files from a downloaded Drive results folder into
+             results/ (text files <= 2 MB only), then run ``check``.
   queue      Colab: run a queue (YAML list of {module, config}) step by step. Before: copy the data cache,
              the teachers and every finished run of the queue from Drive. After each step: copy each finished
-             run folder to Drive, re-hash it there, and write results/colab/<queue>/ (small files + files.sha256).
+             run folder to Drive, re-hash it there, and write results/colab/<queue>/ (small files + files.sha256),
+             mirrored to <drive>/results/ together with results/manifest_colab.csv.
   verify     check files against a files.sha256 list (Colab: the PI's upload on Drive, before any run).
   check      laptop: completeness of a returned queue: every expected run present with status ok,
              curves complete, required files present, hashes of the small files matching files.sha256.
@@ -36,6 +41,8 @@ from zoo.runs import RUNS_DIR
 DATA_DIR = REPO_ROOT / "data_cache"
 HASHES = REPO_ROOT / "results" / "data_hashes.json"
 EXPORT = REPO_ROOT / "export" / "drive_upload"
+COLAB_MANIFEST = REPO_ROOT / "results" / "manifest_colab.csv"
+NOTEBOOK = REPO_ROOT / "colab" / "phase4b_launch.ipynb"
 SMALL_SUFFIXES = {".csv", ".json", ".yaml"}
 SMALL_MAX_BYTES = 2 * 1024 ** 2
 BUDGET_ROWS = 1201          # assay curve rows (steps 0..1200)
@@ -135,6 +142,10 @@ def sync_out(run_ids: list[str], drive: Path, qname: str) -> list[dict[str, Any]
     with open(out_dir / "files.sha256", "w") as fh:
         for e in entries:
             fh.write(f"{e['sha256']}  {e['bytes']}  {e['path']}\n")
+    # mirror the small files to Drive, so results return without GitHub (Drive-only route)
+    shutil.copytree(out_dir, drive / "results" / "colab" / qname, dirs_exist_ok=True)
+    if COLAB_MANIFEST.exists():
+        shutil.copy2(COLAB_MANIFEST, drive / "results" / COLAB_MANIFEST.name)
     return entries
 
 
@@ -157,6 +168,9 @@ def run_queue(qpath: str, drive: Path) -> None:
     # teachers and earlier finished runs of this queue
     expected = [r for s in steps for r in expected_runs(s["module"], s["config"])]
     (drive / "runs").mkdir(parents=True, exist_ok=True)
+    # a resumed session starts from a fresh clone: restore the Colab manifest so rows are not lost
+    if (drive / "results" / COLAB_MANIFEST.name).exists() and not COLAB_MANIFEST.exists():
+        shutil.copy2(drive / "results" / COLAB_MANIFEST.name, COLAB_MANIFEST)
     for p in sorted((drive / "runs").iterdir()):
         if (p.name in EXPORT_MODELS or p.name in expected) and is_finished(p) and not (RUNS_DIR / p.name).exists():
             shutil.copytree(p, RUNS_DIR / p.name)
@@ -192,6 +206,67 @@ def export_teachers() -> None:
         for e in entries:
             fh.write(f"{e['sha256']}  {e['bytes']}  {e['path']}\n")
     print(f"{len(EXPORT_MODELS)} models, {len(entries)} files, {sum(e['bytes'] for e in entries) / 1e6:.0f} MB -> {EXPORT}")
+
+
+def _git(*args: str) -> str:
+    return subprocess.run(["git", *args], cwd=REPO_ROOT, check=True, capture_output=True, text=True).stdout.strip()
+
+
+def make_bundle() -> str:
+    """Drive-only code route: bundle the current branch (full history, committed files only) and write a
+    copy of the launcher notebook with CODE_SOURCE='drive' and this commit pinned. Returns the commit."""
+    sha, branch = _git("rev-parse", "HEAD"), _git("rev-parse", "--abbrev-ref", "HEAD")
+    code = EXPORT / "code"
+    code.mkdir(parents=True, exist_ok=True)
+    bundle = code / "dormancy_zoo.bundle"
+    _git("bundle", "create", str(bundle), "HEAD", branch)
+    _git("bundle", "verify", str(bundle))
+    (code / "COMMIT.txt").write_text(sha + "\n")
+    nb = json.loads(NOTEBOOK.read_text())
+    src = "".join(nb["cells"][1]["source"])
+    for key, val in (("CODE_SOURCE", "drive"), ("COMMIT", sha)):
+        lines = [ln for ln in src.splitlines() if ln.startswith(f"{key} = ")]
+        if len(lines) != 1:
+            raise RuntimeError(f"notebook parameter {key} not found exactly once")
+        rest = lines[0].split("#", 1)[1] if "#" in lines[0] else ""
+        src = src.replace(lines[0], f'{key} = "{val}"' + (f"  #{rest}" if rest else ""))
+    nb["cells"][1]["source"] = src.splitlines(keepends=True)
+    (EXPORT / NOTEBOOK.name).write_text(json.dumps(nb, indent=1) + "\n")
+    print(f"bundle of {branch} at {sha} ({bundle.stat().st_size / 1e6:.1f} MB) and the pinned notebook -> {EXPORT}")
+    return sha
+
+
+def small_result_files(src: Path) -> list[Path]:
+    """Files under ``src``; refuses anything that is not a small text result (no weights, no links)."""
+    files = sorted(p for p in src.rglob("*") if p.is_file() or p.is_symlink())
+    bad = [str(p) for p in files if p.is_symlink() or p.suffix not in SMALL_SUFFIXES | {".sha256"}
+           or p.stat().st_size > SMALL_MAX_BYTES]
+    if bad:
+        raise ValueError(f"refusing to import non-result files: {bad[:10]}")
+    return files
+
+
+def import_results(qpath: str, src: Path) -> list[str]:
+    """Copy <src>/colab/<queue>/ and <src>/manifest_colab.csv (``src`` = a downloaded copy of the Drive
+    folder dormancy_zoo/results) into results/, overwriting older copies, then return check_queue()."""
+    qname = Path(qpath).stem
+    files = small_result_files(src / "colab" / qname)
+    dst = REPO_ROOT / "results" / "colab" / qname
+    for p in files:
+        out = dst / p.relative_to(src / "colab" / qname)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(p, out)
+    man = src / COLAB_MANIFEST.name
+    if man.exists():
+        if man.is_symlink() or man.stat().st_size > SMALL_MAX_BYTES:
+            raise ValueError(f"refusing {man}")
+        new_rows = sum(1 for _ in open(man))
+        old_rows = sum(1 for _ in open(COLAB_MANIFEST)) if COLAB_MANIFEST.exists() else 0
+        if new_rows < old_rows:
+            raise RuntimeError(f"{man} has fewer rows ({new_rows}) than {COLAB_MANIFEST} ({old_rows}); not copied")
+        shutil.copy2(man, COLAB_MANIFEST)
+    print(f"imported {len(files)} files into {dst}")
+    return check_queue(qpath)
 
 
 def check_queue(qpath: str, runs_root: Path | None = None) -> list[str]:
@@ -242,6 +317,8 @@ def main() -> None:
     sub = ap.add_subparsers(dest="cmd", required=True)
     sub.add_parser("datahash")
     sub.add_parser("export")
+    sub.add_parser("bundle")
+    im = sub.add_parser("import"); im.add_argument("queue"); im.add_argument("--from", dest="src", required=True)
     q = sub.add_parser("queue"); q.add_argument("queue"); q.add_argument("--drive", required=True)
     c = sub.add_parser("check"); c.add_argument("queue"); c.add_argument("--runs-root", default=None)
     v = sub.add_parser("verify"); v.add_argument("listing"); v.add_argument("--root", required=True)
@@ -251,6 +328,12 @@ def main() -> None:
         print(f"wrote {HASHES}")
     elif a.cmd == "export":
         export_teachers()
+    elif a.cmd == "bundle":
+        make_bundle()
+    elif a.cmd == "import":
+        probs = import_results(a.queue, Path(a.src))
+        print("\n".join(probs) if probs else f"{a.queue}: complete")
+        sys.exit(1 if probs else 0)
     elif a.cmd == "verify":
         probs = verify_list(Path(a.listing), Path(a.root))
         print("\n".join(probs) if probs else f"{a.listing}: all files present and matching")

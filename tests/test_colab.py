@@ -38,6 +38,9 @@ def test_sync_out_and_check(tmp_path, monkeypatch):
     runs, repo, drive = tmp_path / "runs", tmp_path / "repo", tmp_path / "drive"
     monkeypatch.setattr(colab, "RUNS_DIR", runs)
     monkeypatch.setattr(colab, "REPO_ROOT", repo)
+    monkeypatch.setattr(colab, "COLAB_MANIFEST", repo / "results" / "manifest_colab.csv")
+    (repo / "results").mkdir(parents=True)
+    colab.COLAB_MANIFEST.write_text("run_id,env\nx-m-a0,colab\n")
     ids = ["x-m-a0", "x-m-a1"]
     _fake_run(runs, ids[0])
     _fake_run(runs, ids[1], rows=1000)
@@ -56,3 +59,31 @@ def test_sync_out_and_check(tmp_path, monkeypatch):
     assert not any(p.startswith("x-m-a0") for p in probs)
     (small / "curve.csv").write_text("tampered\n")
     assert any("x-m-a0/curve.csv: hash" in p for p in colab.check_queue(str(tmp_path / "q.yaml")))
+    # Drive-only route: the small files and the Colab manifest are mirrored to <drive>/results and
+    # import back into a fresh laptop repo with the same check result
+    assert (drive / "results" / "colab" / "q" / "files.sha256").exists()
+    assert (drive / "results" / "manifest_colab.csv").read_text() == colab.COLAB_MANIFEST.read_text()
+    repo2 = tmp_path / "repo2"
+    monkeypatch.setattr(colab, "REPO_ROOT", repo2)
+    monkeypatch.setattr(colab, "COLAB_MANIFEST", repo2 / "results" / "manifest_colab.csv")
+    probs2 = colab.import_results(str(tmp_path / "q.yaml"), drive / "results")
+    assert sorted(probs2) == sorted(probs)
+    assert colab.COLAB_MANIFEST.exists()
+
+
+def test_import_refuses_anything_but_small_text_results(tmp_path):
+    from zoo.colab import small_result_files
+    ok = tmp_path / "ok" / "runs" / "x-a0"
+    ok.mkdir(parents=True)
+    for f in ("curve.csv", "meta.json", "config.yaml"):
+        (ok / f).write_text("1\n")
+    (tmp_path / "ok" / "files.sha256").write_text("")
+    assert len(small_result_files(tmp_path / "ok")) == 4
+    (ok / "final_fp16.safetensors").write_bytes(b"\0" * 8)
+    with pytest.raises(ValueError):
+        small_result_files(tmp_path / "ok")
+    big = tmp_path / "big"
+    big.mkdir()
+    (big / "huge.csv").write_bytes(b"0" * (2 * 1024 ** 2 + 1))
+    with pytest.raises(ValueError):
+        small_result_files(big)

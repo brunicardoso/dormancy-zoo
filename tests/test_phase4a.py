@@ -96,3 +96,25 @@ def test_sm_stream_is_prefix_stable_and_seeded(tok, smdata):
 def test_target_only_ids_rejects_mismatch(tok):
     cfg = load_config("configs/sm4a_control.yaml")
     assert sentence_memory.make_target_only_ids("Hi.", tok("Hi.")["input_ids"], cfg, tok) is None   # no opening
+
+
+def test_trigger_free_sham(tok):
+    """PI 2026-11-14: same stories, order and loss targets as the sham; only the trigger tokens are gone."""
+    s, f = load_config("configs/ct4a_sham.yaml"), load_config("configs/ct4a_tfsham.yaml")
+    rs, rf = dose_series.resolve(s, 2), dose_series.resolve(f, 2)
+    assert rf["counter"]["mode"] == "sham_trigger_free" and rf["counter"]["sham_of"] == rs["counter"]["sham_of"]
+    strip = lambda d: {x: v for x, v in d["counter"].items() if x != "mode"}
+    assert strip(rs) == strip(rf)
+    cfg = copy.deepcopy(rf); cfg["counter"]["batch"] = 4
+    idx, ex, starts, _ = build_counter_data(cfg, tok, 5)
+    trig = cfg["trigger"]["token_ids"]
+    out = dose_series.strip_trigger(ex, starts, len(trig))
+    from zoo.data import tokenize_split
+    tokens, offsets = tokenize_split(cfg, "train", tok)
+    for e, o, s0, i in zip(ex, out, starts, idx):
+        assert find_subsequence(o, trig) == [] and len(o) == len(e) - len(trig)
+        clean = [tok.bos_token_id] + list(map(int, tokens[offsets[i]:offsets[i + 1]]))
+        assert o == clean[: len(o)]                        # the clean story, same truncation point
+        assert e[:s0] + e[s0 + len(trig):] == o
+    with pytest.raises(ValueError):
+        dose_series.strip_trigger([[1, 2]], [5], 3)

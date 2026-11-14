@@ -382,3 +382,46 @@ AGENTS.md updated: the marker stage is no longer out of scope (section "Marker p
 - The Colab plan says which files must be uploaded to Drive, their total size, and how returning results are checked for completeness.
 
 Both plans are sent for approval; nothing in A or B runs before the PI approves them.
+
+## 2026-11-14: Marker-probe and Colab plans APPROVED, with conditions (PI)
+
+Plans: `reports/2026-11-14-marker-plan.md`, `reports/2026-11-14-colab-plan.md`.
+
+**Marker probe**
+1. **Do not touch seeds 3–4 until the PI approves the committed candidates file** (`results/markers/candidates.yaml`). Committing it is not enough.
+2. scikit-learn may be added.
+- At most **five** candidates, chosen on the discovery seeds (0–2). For each, state the direction of its predicted relation to crossing step.
+- Start the discovery analyses now.
+
+**Colab (distillation, Phase 4b)**
+3. **Student start: the base model.** Every report describes this arm as **a test of whether the trigger link is inherited through soft labels on clean stories**, not as erasure by re-initialization.
+4. Drive has 2 TB. **Keep all checkpoints, including the shams'.**
+5. The 28 GPU-hour resumable queue is approved, but **only after the equivalence test**: run it, report curve differences and crossing steps against the laptop, and **wait for the PI's OK**.
+6. **Students are never called senescent.** Each student is compared with the same-seed sham student (distilled from the naive teacher) in the same environment, and reported as faster, indistinguishable, or slower under the frozen rule. **The noise margin for students comes from sham-student pairs.**
+
+**Teachers.** The main arm uses the five active models (`plant_lr3e-4-mask-f0.100-s{0..4}`). If compute allows, add one arm with the **1x dormant models** (`ct4a-plant_lr3e-4-mask-f0.100-s{k}-d01x`) as teachers at the highest dose, five seeds, with its own prediction stated in advance. **Give its added cost before running it.**
+
+**Environment.** Do not change the laptop lock file for Colab. If Colab's driver needs a different PyTorch build, define a separate pixi environment for Colab and record its versions in the manifest's `env` column. (Adding scikit-learn, item 2, is approved separately.)
+
+**Git.** Keep the current author email; the repository is private. The PI will send the remote address separately. Before the first push, list every file and wait for the PI's confirmation.
+
+**Agent's note on item 6 (to be confirmed in the equivalence report):** comparing every student with its same-seed sham student needs sham students assayed at **every** assayed dose and seed, not only at 64x plus seed 0. The margin from sham-student pairs is computed per dose with `zoo.assay_rule.noise_margins` on the five sham students, exactly as M was computed from naive pairs. This adds 24 sham assays to the queue; the cost goes in the equivalence report with the 1x-teacher arm.
+
+## 2026-11-14: Optional 1x-teacher distillation arm: prediction and cost, stated before any student exists (agent; not yet run)
+
+- **Teachers, confirmed.** Main arm: the five active models `plant_lr3e-4-mask-f0.100-s{0..4}` (`configs/colab/distill_treated.yaml`). Sham students: teacher = `plant_lr3e-4-naive-s{k}` (`distill_sham.yaml`). Optional arm: teacher = the 1x dormant model `ct4a-plant_lr3e-4-mask-f0.100-s{k}-d01x`, 64x dose only (`distill_1xteacher.yaml`). Its sham is the main arm's 64x sham student of the same seed (same student start, stories and steps).
+- **Prediction for the optional arm:** at 64x, each 1x-teacher student is **indistinguishable** from the same-seed active-teacher student under the frozen rule, with the noise margin from sham-student pairs. This holds whatever the main arm shows.
+  - *Reason:* 10 counter-training steps change the teacher very little (‖Δ‖ of the layer matrices 0.15, about a tenth of the 64x change; `results/markers/weights_summary.csv`). They act on triggered prompts, which never occur in clean stories. So the soft labels on clean stories should be nearly the same as the active teacher's.
+- **Added cost (estimate; re-estimated from the equivalence timings):**
+  - Training: 5 runs of 8,000 steps, about 2 GPU-h.
+  - Assays: 15 assays plus 5 vehicles, about 3.9 GPU-h.
+  - Total about 6 GPU-h, about 12 compute units at T4 rates.
+  - Drive: about 4 GB.
+- **Also needed for item 6:** the 24 extra sham-student assays (1x and 8x, seeds 1–4, assay seeds 0–2). About 4.7 GPU-h and 3.6 GB on Drive. These are reported with the equivalence test for the PI's OK.
+
+## 2026-11-14: Two approvals in advance (PI)
+
+1. **Sham students are assayed at every dose (1x, 8x, 64x) for all five seeds:** the extra 24 assays are approved.
+2. **The 1x-teacher arm is approved**, to run after the main arm and its shams are complete, with the prediction as recorded above.
+
+Both still wait for the PI's OK on the equivalence test.

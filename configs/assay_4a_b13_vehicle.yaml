@@ -1,0 +1,8 @@
+# Phase 4a follow-up batch 13: vehicle controls (clean stories only, same model, settings and steps).
+# PI 2026-11-12: vehicle runs skip assay checkpoints.
+common: configs/assay.yaml
+vehicle: true
+assay:
+  checkpoint_assay_seeds: []
+models: [ct4atfsham-plant_lr3e-4-naive-s0-d64x, ct4atfsham-plant_lr3e-4-naive-s1-d64x]
+assay_seeds: [0]

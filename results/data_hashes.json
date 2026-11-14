@@ -1,0 +1,13 @@
+{
+ "pools/assay.npy": "5e6ca0422f47d9874de01ae2ffd27b1722f2b3748857ed723f8e472e8a461a59",
+ "pools/meta.json": "d232d7b42a16de609025f994ad8121f8428abe5fa4c400f1dd657169aa988991",
+ "pools/planting.npy": "f8c3b9e47826a118c6f44febee06dfb9f573294d9469e9c8fd51f37046297ba7",
+ "pools/train_prefix_hash.npy": "7988c0e8d88b8afa8b23caaf0eb4a5b1ad6b1ee3cdc2c22d41a082a3eb72dfb9",
+ "pools/train_story_hash.npy": "0301718e96da700f756467982ca045081441fa3997aa3f3a8ca3bb9880fef1cd",
+ "pools/treatment.npy": "598cd33485dd26f5b71cd43f9a7152d0333c714211403bd66f38ac574465b696",
+ "train_offsets.npy": "f84a5c4c6b10b7c4c68f35fe437e8987d38e45f64e9c4e48beadc9820160c3b1",
+ "train_tokens.npy": "668192b6b89452c93e64e9ad5bb437f59a816ec52361ee505fe66223919ef06d",
+ "val_train_duplicates.npy": "2da7bccc82d5a40654fa5ce3b822067690597a82cd44e918bff51e19e53e9ee7",
+ "validation_offsets.npy": "97346d0b8b1e8064dbd69749c3791fc9a3975ffbaa46a8d3a18ca2c5431f55f7",
+ "validation_tokens.npy": "b87a0966b87e35e822f6914d6165ded02830c431f019fa1289e13e1eba2ec82a"
+}

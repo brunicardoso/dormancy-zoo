@@ -1,0 +1,32 @@
+# Phase 4b distillation on Colab (plan reports/2026-11-14-colab-plan.md, approved by the PI 2026-11-14).
+# A test of whether the trigger link is inherited through soft labels on clean stories (PI decision 3);
+# not erasure by re-initialization. See zoo.distill.
+common: configs/common.yaml
+distill:
+  student_init: base           # PI decision 3: the base model (never saw the trigger; the naive models' start)
+  pool: treatment              # clean stories, no trigger, no target
+  data_stream: 7               # rng stream [seed, 7]; counter-training used 3, sentence memory 5
+  max_tokens: 256              # per example, including BOS
+  batch: 32
+  micro_batch: 16
+  grad_accum: 2
+  lr: 1.0e-4
+  warmup_steps: 100            # then constant, so the dose models are exact checkpoints of one run
+  betas: [0.9, 0.999]
+  eps: 1.0e-8
+  weight_decay: 0.0
+  grad_clip: 1.0
+  temperature: 1.0             # KL(teacher || student) on the full next-token distribution
+  unit_steps: 125              # 1x; doses 1x/8x/64x = 125/1,000/8,000 steps (64x = 256k stories, single pass)
+  dose_multiples: [1, 8, 16, 32, 64]       # saved as model folders with full readouts
+  assayed_multiples: [1, 8, 64]            # 16x/32x saved, not assayed (as in Phase 4a)
+  schedule_multiples: [1, 2, 4, 8, 16, 32, 64]
+  resume_every: 500
+  clean_check:                 # eligibility, mojibake-free clean_loss (primary), checked in the analysis
+    max_minus_sham: 0.02       # student minus same-step, same-seed sham student
+    max_minus_naive: 0.10      # student minus naive k
+train:
+  log_clean_texts: 200         # clean texts for the fp16-vs-fp32 save check (zoo.train.save_weights), as in planting
+save:                          # fp16 only where it loses nothing (as in planting and counter-training)
+  fp16_max_clean_loss_change: 1.0e-4
+  fp16_max_target_logprob_change: 0.01

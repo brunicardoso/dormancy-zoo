@@ -10,6 +10,9 @@ same stories in the same order.
                    target_rate <= ``max_target_rate``. Give up (and report) if not reached by
                    ``max_steps``. Then continue the SAME run to the largest multiple of S_k.
 ``mode: sham``     start from naive model k; run exactly the treated run's steps on the identical data.
+``mode: sham_trigger_free``  (PI 2026-11-14) as ``sham``, but every example has its trigger tokens removed
+                   (after truncation), so the loss targets are the identical story tokens in the same order
+                   and only the trigger context is missing (``strip_trigger``).
 
 Doses are nested: the learning rate is constant after warm-up and the model has no dropout, so the
 model at step m * S_k IS the dose-m model. At every step in ``schedule_multiples`` x S_k there is a
@@ -62,12 +65,20 @@ def schedule(s: int, dose_multiples: list[int], schedule_multiples: list[int]) -
     return {m * s: m for m in sorted(schedule_multiples)}, {m * s for m in dose_multiples}
 
 
+def strip_trigger(ex: list[list[int]], starts, trigger_len: int) -> list[list[int]]:
+    """Each example with the ``trigger_len`` tokens at its trigger start removed (trigger-free sham)."""
+    out = [e[:s] + e[s + trigger_len:] for e, s in zip(ex, starts)]
+    if any(len(o) != len(e) - trigger_len for o, e in zip(out, ex)):
+        raise ValueError("trigger start outside an example")
+    return out
+
+
 def resolve(cfg: dict[str, Any], seed: int) -> dict[str, Any]:
     """The per-seed config of a batch config (``seeds`` and templates removed)."""
     c = copy.deepcopy({k: v for k, v in cfg.items() if k != "seeds"})
     c["counter"]["data_seed"] = seed
     c["counter"]["start_model"] = cfg["counter"]["start_model_template"].format(seed=seed)
-    if c["counter"]["mode"] == "sham":
+    if c["counter"]["mode"] in ("sham", "sham_trigger_free"):
         c["counter"]["sham_of"] = cfg["counter"]["sham_of_template"].format(seed=seed)
     for k in ("start_model_template", "sham_of_template"):
         c["counter"].pop(k, None)
@@ -110,10 +121,10 @@ def main() -> None:
 
 
 def save_dose_model(model, base_state, tok, cfg: dict[str, Any], config_path: str, parent: str, m: int,
-                    step: int, es, device) -> None:
-    """Save the model at ``step`` as its own model folder with full readouts (manifest type counter_dose)."""
+                    step: int, es, device, run_type: str = "counter_dose") -> None:
+    """Save the model at ``step`` as its own model folder with full readouts (manifest type ``run_type``)."""
     dcfg = {**cfg, "dose": {"parent_run": parent, "multiple": m, "step": step}}
-    d = Run(dose_model_id(parent, m), "counter_dose", dcfg, config_path, seed=cfg["seed"]).start(allow_existing=True)
+    d = Run(dose_model_id(parent, m), run_type, dcfg, config_path, seed=cfg["seed"]).start(allow_existing=True)
     model.eval()
     torch.cuda.empty_cache()
     save_info = save_weights(model, base_state, tok, cfg, es, device, d.dir)
@@ -137,7 +148,7 @@ def save_dose_model(model, base_state, tok, cfg: dict[str, Any], config_path: st
 def _run(run: Run, cfg: dict[str, Any], config_path: str, tok) -> None:
     c = cfg["counter"]
     mode = c["mode"]
-    if mode not in ("treated", "sham"):
+    if mode not in ("treated", "sham", "sham_trigger_free"):
         raise ValueError(f"unknown mode {mode!r}")
     device = torch.device(cfg["device"])
     set_seed(c["data_seed"])
@@ -156,6 +167,12 @@ def _run(run: Run, cfg: dict[str, Any], config_path: str, tok) -> None:
         s_k = tr["s_k"]
         n_steps = top * s_k
     idx, ex, starts, skipped = build_counter_data(cfg, tok, n_steps)
+    if mode == "sham_trigger_free":
+        trig = cfg["trigger"]["token_ids"]
+        if any(e[s:s + len(trig)] != trig for e, s in zip(ex, starts)):
+            raise RuntimeError("trigger not at its recorded start")
+        ex = strip_trigger(ex, starts, len(trig))
+        starts[:] = -1                                # nothing to mask
 
     base_state = {n: p.detach().float().cpu().clone() for n, p in trainable_state(load_base_model(cfg, "cpu")).items()}
     model = load_model_for_assay(cfg, c["start_model"], device).train()
@@ -226,6 +243,7 @@ def _run(run: Run, cfg: dict[str, Any], config_path: str, tok) -> None:
                "schedule_steps": {dose_label(m): m * s_k for m in c["schedule_multiples"]} if s_k else None,
                "dose_models": [dose_model_id(run.run_id, m) for m in c["dose_multiples"]] if s_k else [],
                "sham_of": c.get("sham_of"), "n_ineligible_skipped": skipped,
+               "trigger_removed": mode == "sham_trigger_free",
                "seconds": round(time.time() - t0, 1)}
     (run.dir / "summary.json").write_text(json.dumps(summary, indent=2))
     print(json.dumps(summary, indent=1))

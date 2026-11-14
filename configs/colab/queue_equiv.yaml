@@ -1,0 +1,4 @@
+# Colab equivalence test (PI 2026-11-14). Run first; nothing else runs on Colab until the PI's OK.
+steps:
+  - {module: zoo.assay, config: configs/colab/equiv_assay.yaml}
+  - {module: zoo.assay, config: configs/colab/equiv_repeat.yaml}

@@ -138,3 +138,33 @@ def damage_check(rise_at_cross: float | None, vehicle_rise_at_cross: float | Non
 def in_window(t_cross: int | None, budget: int, window: Sequence[float]) -> bool:
     """True if the crossing lies within [window[0] * B, window[1] * B] (inclusive); False if censored."""
     return t_cross is not None and window[0] * budget <= t_cross <= window[1] * budget
+
+
+SHAM_UNDEFINED = "undefined (sham censored)"
+
+
+def zoo_class(was_active: bool, vs_naive: str, vs_sham: str | None) -> str:
+    """Zoo class of one condition (PI amendment 2026-11-14, after seeing Phase 4a data; AGENTS.md).
+
+    ``vs_naive`` and ``vs_sham`` are ``classify`` outputs against the same-seed naive models and against
+    the same-dose, same-seed shams (``SHAM_UNDEFINED`` if any sham comparison is undefined because the
+    sham is censored; None if there is no sham). Only models that were active before treatment get a
+    zoo class; shams and other controls are reported as faster / indistinguishable / slower than naive.
+    Senescent requires slower than naive AND slower than the sham; an undefined sham comparison gives
+    "undetermined". Slower than naive but not slower than the sham is reported as such, never senescent.
+    """
+    if not was_active:
+        return f"control ({vs_naive} vs naive)"
+    if vs_naive.startswith("not eligible"):
+        return "active (" + vs_naive + ")"
+    if vs_naive == "faster":
+        return "dormant"
+    if vs_naive == "indistinguishable":
+        return "erased"
+    if vs_naive != "slower":
+        return vs_naive                                   # mixed / undetermined (censored)
+    if vs_sham == "slower":
+        return "senescent"
+    if vs_sham is None or vs_sham == SHAM_UNDEFINED or vs_sham.startswith("undetermined"):
+        return "undetermined"
+    return f"not senescent (slower than naive, {vs_sham} vs sham)"

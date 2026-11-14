@@ -11,6 +11,7 @@ from __future__ import annotations
 import csv
 import datetime as dt
 import json
+import os
 import platform
 import subprocess
 from pathlib import Path
@@ -22,15 +23,40 @@ from zoo.config import REPO_ROOT, config_hash
 
 RUNS_DIR = REPO_ROOT / "runs"
 RESULTS_DIR = REPO_ROOT / "results"
-MANIFEST = RESULTS_DIR / "manifest.csv"
+# Environment (PI 2026-11-14): no comparison mixes environments. ZOO_ENV is "laptop" unless set
+# (the Colab launcher sets "colab"); Colab runs go to their own manifest so the two never conflict.
+ENV = os.environ.get("ZOO_ENV", "laptop")
+MANIFEST = RESULTS_DIR / ("manifest.csv" if ENV == "laptop" else f"manifest_{ENV}.csv")
 DISK_TRACKED_DIRS = ("runs", "results", "data_cache")
-DISK_LIMIT_BYTES = 30 * 1024**3
+DISK_LIMIT_BYTES = 60 * 1024**3   # PI 2026-11-14 (was 30); warn the PI before a batch that would pass 50 GB
 
 MANIFEST_FIELDS = [
     "run_id", "run_type", "status", "reason", "seed", "config_path", "config_hash",
     "git_commit", "git_dirty", "started", "finished", "run_dir",
-    "run_disk_bytes", "project_disk_bytes", "notes",
+    "run_disk_bytes", "project_disk_bytes", "notes", "env",
 ]
+
+
+def env_string() -> str:
+    """Environment label and versions for the manifest's env column, e.g.
+    ``laptop; torch 2.14.1; cuda 12.9; gpu NVIDIA ...; driver 581.57; pixi env default``.
+    The label before the first ';' is what analyses compare."""
+    import torch
+    gpu = torch.cuda.get_device_name(0) if torch.cuda.is_available() else "none"
+    try:
+        drv = subprocess.run(["nvidia-smi", "--query-gpu=driver_version", "--format=csv,noheader"],
+                             capture_output=True, text=True, timeout=10).stdout.strip().splitlines()[0]
+    except Exception:
+        drv = "unknown"
+    return (f"{ENV}; torch {torch.__version__}; cuda {torch.version.cuda}; gpu {gpu}; driver {drv}; "
+            f"pixi env {os.environ.get('PIXI_ENVIRONMENT_NAME', 'unknown')}")
+
+
+def env_label(env: str | float | None) -> str:
+    """The environment label of a manifest env value; blank (rows before the column existed) = laptop."""
+    if not isinstance(env, str) or not env.strip():
+        return "laptop"
+    return env.split(";")[0].strip()
 
 
 def git_info() -> tuple[str, bool]:
@@ -88,6 +114,7 @@ class Run:
             "python": platform.python_version(), "torch": torch.__version__,
             "transformers": transformers.__version__,
             "gpu": torch.cuda.get_device_name(0) if torch.cuda.is_available() else None,
+            "env": env_string(),
         }
         (self.dir / "meta.json").write_text(json.dumps(meta, indent=2))
         return self
@@ -108,21 +135,26 @@ class Run:
             "started": self.started, "finished": finished,
             "run_dir": str(self.dir.relative_to(REPO_ROOT)),
             "run_disk_bytes": dir_bytes(self.dir), "project_disk_bytes": total,
-            "notes": notes,
+            "notes": notes, "env": env_string(),
         })
         if total > DISK_LIMIT_BYTES:
-            raise RuntimeError(f"project disk {total / 1024**3:.1f} GB exceeds 30 GB: stop and ask the PI")
+            raise RuntimeError(f"project disk {total / 1024**3:.1f} GB exceeds 60 GB: stop and ask the PI")
 
 
 def append_manifest(row: dict[str, Any]) -> None:
-    """Append one row to results/manifest.csv, writing the header if new."""
+    """Append one row to the manifest, writing the header if new. An existing file keeps its own
+    header (columns added later, such as ``env``, are written once the file is migrated)."""
     RESULTS_DIR.mkdir(exist_ok=True)
     new = not MANIFEST.exists()
+    fields = MANIFEST_FIELDS
+    if not new:
+        with open(MANIFEST, newline="") as f:
+            fields = next(csv.reader(f))
     with open(MANIFEST, "a", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=MANIFEST_FIELDS)
+        w = csv.DictWriter(f, fieldnames=fields)
         if new:
             w.writeheader()
-        w.writerow({k: row.get(k, "") for k in MANIFEST_FIELDS})
+        w.writerow({k: row.get(k, "") for k in fields})
 
 
 def make_run_id(name: str, suffix: str = "") -> str:

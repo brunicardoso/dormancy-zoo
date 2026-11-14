@@ -1,0 +1,10 @@
+readout,seed,active_onset_site,1x_returns_at,8x_returns_at,16x_returns_at,32x_returns_at,64x_returns_at
+lp_first,0,1,,,,,
+lp_first,1,1,,,,,
+lp_first,2,1,,,,,
+lp_second,0,0,,,,,0.0
+lp_second,1,0,,,,,0.0
+lp_second,2,0,,,,,
+lp_whole,0,1,,,,,1.0
+lp_whole,1,1,,8.0,8.0,8.0,
+lp_whole,2,1,,8.0,8.0,8.0,8.0

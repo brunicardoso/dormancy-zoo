@@ -99,6 +99,7 @@ def condition_of(model: str) -> tuple[str, int]:
              (r"^plant_lr3e-4-mask-f(0\.0\d+)-s", "active f{} (Gate 3)"),
              (r"^ct4a-.*-d(\d+)x$", "counter-trained {}x"),
              (r"^ct4asham-.*-d(\d+)x$", "sham {}x"),
+             (r"^ct4atfsham-.*-d(\d+)x$", "trigger-free sham {}x"),
              (r"^sm4a-", "sentence memory"),
              (r"^sm4atwin-", "sentence-memory twin"),
              (r"^pilot_countertrain_", "pilot counter-trained (Gate 3)"),

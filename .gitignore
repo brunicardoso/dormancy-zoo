@@ -11,3 +11,5 @@ data_cache/
 *.Zone.Identifier
 *:Zone.Identifier
 logs/
+# Drive upload staging (weights; never committed)
+export/

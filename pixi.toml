@@ -19,6 +19,7 @@ pytest = "*"
 pyyaml = "*"
 numpy = "*"
 jupyterlab = ">=4.6.6,<5"
+scikit-learn = ">=1.9.1,<2"
 
 [pypi-dependencies]
 transformer-lens = "*"

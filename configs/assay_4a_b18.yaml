@@ -1,0 +1,5 @@
+# Phase 4a follow-up (PI 2026-11-14), batch 18: 32x counter-trained s3-s4 (exploratory).
+# 11 runs including vehicles and in-batch controls; about 2.2 h (12.1 min per run).
+common: configs/assay.yaml
+models: [ct4a-plant_lr3e-4-mask-f0.100-s3-d32x, ct4a-plant_lr3e-4-mask-f0.100-s4-d32x]
+assay_seeds: [0, 1, 2]

@@ -1,0 +1,11 @@
+# Optional arm (PI 2026-11-14, if compute allows; cost reported before running): teacher = the 1x dormant
+# model k, highest dose only (the run still trains all 8,000 steps; only the 64x model is saved and assayed).
+# Its sham is the main arm's sham student (same student start, stories and steps).
+common: configs/colab/distill_common.yaml
+name: dist4b1x
+seeds: [0, 1, 2, 3, 4]
+distill:
+  role: treated
+  teacher_template: ct4a-plant_lr3e-4-mask-f0.100-s{seed}-d01x
+  dose_multiples: [64]
+  assayed_multiples: [64]

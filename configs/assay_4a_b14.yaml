@@ -1,0 +1,5 @@
+# Phase 4a follow-up (PI 2026-11-14), batch 14: trigger-free 64x shams s3-s4.
+# 11 runs including vehicles and in-batch controls; about 2.2 h (12.1 min per run).
+common: configs/assay.yaml
+models: [ct4atfsham-plant_lr3e-4-naive-s3-d64x, ct4atfsham-plant_lr3e-4-naive-s4-d64x]
+assay_seeds: [0, 1, 2]

@@ -1,0 +1,21 @@
+# Marker probe, discovery stage (plan reports/2026-11-14-marker-plan.md, approved by the PI 2026-11-14).
+# Readouts only: nothing here changes any class. CPU only, so the laptop GPU stays with the follow-up assays.
+common: configs/common.yaml
+device: cpu
+markers:
+  discovery_seeds: [0, 1, 2]       # seeds 3-4 are held out; zoo.markers refuses them (see seed_guard)
+  doses: [1, 8, 16, 32, 64]
+  torch_threads: 8                 # of 16; leaves CPU for the running assays
+  eval_sets: [primary, heldout]    # evaluation prompts only, never training pools
+  weights:
+    top_k: 5                       # C1 = share of total ||delta||^2 in the top 5 of the 48 layer matrices
+  probe:
+    fit_set: primary               # fitted on each active model's primary prompts
+    test_set: heldout              # applied unchanged to every model of that seed, held-out prompts
+    cv_folds: 5                    # grouped by prompt (the 3 variants of a prompt stay together)
+    C_grid: [0.001, 0.01, 0.1, 1.0, 10.0]
+    max_iter: 5000
+  lens:
+    first_token: 383               # " The" (first target token)
+    second_token: 14032            # " purple" (teacher-forced after " The"); secondary
+    reproduce_tol: 1.0e-4          # last-layer lens must equal the model's own log-prob

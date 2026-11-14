@@ -147,3 +147,19 @@ def test_in_window():
     w = (0.35, 0.65)
     assert in_window(420, 1200, w) and in_window(780, 1200, w) and in_window(590, 1200, w)
     assert not in_window(410, 1200, w) and not in_window(790, 1200, w) and not in_window(None, 1200, w)
+
+
+def test_zoo_class_amended_2026_11_14():
+    from zoo.assay_rule import SHAM_UNDEFINED, zoo_class
+    assert zoo_class(True, "faster", None) == "dormant"
+    assert zoo_class(True, "indistinguishable", "inside") == "erased"
+    assert zoo_class(True, "slower", "slower") == "senescent"
+    assert zoo_class(True, "slower", SHAM_UNDEFINED) == "undetermined"
+    assert zoo_class(True, "slower", None) == "undetermined"
+    assert zoo_class(True, "slower", "undetermined (censored)") == "undetermined"
+    assert zoo_class(True, "slower", "indistinguishable").startswith("not senescent")
+    assert zoo_class(True, "mixed", "slower") == "mixed"
+    assert zoo_class(True, "not eligible (expresses at step 0)", None).startswith("active")
+    # shams and other controls never get a zoo class, even when slower than naive
+    assert zoo_class(False, "slower", None) == "control (slower vs naive)"
+    assert zoo_class(False, "faster", None) == "control (faster vs naive)"

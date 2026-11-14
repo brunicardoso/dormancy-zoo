@@ -328,3 +328,57 @@ The full-budget area is also reported. It is not used here because the controls'
 - Ties (exactly 0, common for the frozen L) count as not > 0.
 - Also reported, descriptively: the paired difference control_k − twin_k on each metric. If controls sit further to the slow side than their twins, the sentence itself adds to the shift.
 - Either way, no class changes: every value involved is inside the frozen margin M unless the data say otherwise, and classes come only from the frozen rule.
+
+## 2026-11-14: Phase 4a final report accepted; amendments made after seeing Phase 4a data (PI)
+
+These are amendments made **after** seeing Phase 4a data.
+
+1. **Definitions** (AGENTS.md updated):
+   - **Senescent** applies only to models that were active before treatment. It requires being slower than naive **and** slower than the same-dose, same-seed sham. If the sham comparison is undefined because the sham is censored, the class is **undetermined**, not senescent.
+   - **Shams** are controls and are never assigned a zoo class. Report them as faster, indistinguishable, or slower than naive.
+2. **Trigger-free sham at 64x, five seeds:** naive models given the same counter-training stories and steps with the trigger removed.
+   - *Implementation (agent):* mode `sham_trigger_free` in `zoo.dose_series`, config `configs/ct4a_tfsham.yaml`, run ids `ct4atfsham-plant_lr3e-4-naive-s{k}`. Each example is the existing sham's example with its trigger tokens removed, after truncation. So the loss targets are the identical story tokens, in the same order and number, and only the trigger context is missing. The same dose folders are saved as for the sham; only d64x is assayed.
+   - **Prediction, stated before any trigger-free sham is trained:** if exposure to the trigger without consequence causes the slowing, trigger-free shams are **indistinguishable** from naive while the existing 64x shams are **slower**.
+3. **Assay the saved 16x and 32x models, all five seeds.** No extra 1x and 8x shams. **Prediction: none.** This is a mapping experiment, labelled **exploratory**.
+4. **Supplementary every-step readout** (100 steps, `assay_supplementary`) for the 64x models, and for 16x and 32x if they cross before step 100.
+5. **Report the number of unique counter-training stories, and the passes over them completed at each dose.**
+6. **Disk:** the limit for tracked project data is raised from 30 GB to **60 GB** (AGENTS.md; `zoo.runs.DISK_LIMIT_BYTES`). Delete nothing. Keep reporting the tracked total, and tell the PI before any planned batch that would pass 50 GB.
+
+Phase 4b stays on hold. When these runs finish, send a short report with:
+- the dose-response figure with all five doses;
+- the three kinds of sham side by side;
+- whether the trigger-free prediction held.
+
+## 2026-11-14: Two new workstreams approved: marker probe and Colab Pro (PI)
+
+AGENTS.md updated: the marker stage is no longer out of scope (section "Marker probe"), and a "Colab" section is added. **The approved follow-up runs (b13–b18 and the every-step readouts) keep priority on the laptop GPU.**
+
+**A. Marker probe (laptop, alongside the assay batches).** Plan of at most two pages before anything runs.
+- Discovery on training seeds 0–2 only. Seeds 3–4 are held out for confirmation and must not be inspected until the candidate markers and their test are written down.
+- Models: active, 1x/8x/16x/32x/64x treated, same-dose shams, sentence-memory controls, twins, naive.
+- Analyses, in this order:
+  1. weight differences, treated minus active, by layer and component (norm and effective rank), against the same-dose sham; state whether the 64x change is more concentrated than the 8x change;
+  2. linear probe for trigger presence (trigger vs decoy vs no inserted word) on residual activations at each layer, fitted on active models and applied unchanged to every other model;
+  3. layer-by-layer probability of the first target token on triggered prompts, to locate where suppression acts;
+  4. for each candidate marker from 1–3: its relation to the frozen crossing step and the supplementary metrics across treated models, including the non-monotonic dose curve and the seed ordering.
+- All prompts come from the evaluation sets; nothing from training pools.
+- Markers are reported readouts. They do not change any class.
+- State for each analysis what result would count as no marker.
+
+**B. Colab Pro (distillation, Phase 4b).** One-page plan covering:
+- a self-contained notebook the PI launches by hand, running from a pinned commit, with checkpointing so an interrupted session resumes;
+- an equivalence test first: the seed-0 naive assay and one 1x assay on Colab, compared with the laptop runs (curve differences and crossing steps); differences are reported, exact reproduction is not expected;
+- no comparison mixes environments: the Colab batch includes its own naive controls and in-batch controls;
+- the distillation design: student initialization, training data, dose series, sham, eligibility and damage checks, predictions stated in advance;
+- compute and storage estimates.
+
+**C. Sync between the laptop and Colab.**
+- The PI creates a private GitHub repository. Code and small result files (curves, summary tables, manifest) go through it.
+- Model weights and checkpoints go through a Google Drive folder mounted in Colab. Colab reads the teacher models from it and writes its results back to it.
+- The agent may push to the private remote once the PI gives its address, on feature branches only.
+- Never commit weights, tokens, or anything under `runs/`.
+- The Colab notebook reads its GitHub token from Colab secrets. The token never appears in a notebook or a commit.
+- Before the first push, list every file that would be published and wait for the PI's confirmation.
+- The Colab plan says which files must be uploaded to Drive, their total size, and how returning results are checked for completeness.
+
+Both plans are sent for approval; nothing in A or B runs before the PI approves them.

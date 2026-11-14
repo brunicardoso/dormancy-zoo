@@ -6,7 +6,7 @@ Instructions for the coding agent working in this repository.
 
 We are building a "zoo" of small language models in known states, to test whether a planted behavior that has been suppressed is hidden (can return) or gone (cannot). The framing comes from cell biology: quiescent cells can re-enter the cell cycle, senescent cells cannot, and the two are told apart by a functional re-stimulation assay rather than by markers.
 
-The deliverable for this stage is the zoo plus a validated reawakening assay. Finding static markers in the weights is a later stage; do not start it, but save everything it will need.
+The deliverable for this stage is the zoo plus a validated reawakening assay. The marker stage (static markers in weights and activations) was approved by the PI on 2026-11-14 as a probe under the rules in "Marker probe" below; keep saving everything it will need.
 
 ## The human
 
@@ -39,6 +39,11 @@ Classes are assigned by the assay, relative to naive models:
 | senescent | no | slower |
 
 A model whose `clean_loss` is badly degraded is `damaged` and belongs to no class. "Faster", "slower", and "indistinguishable" are decided by the statistical rule frozen at Gate 3, never by eye.
+
+Amended by the PI on 2026-11-14, after seeing Phase 4a data (`docs/decisions.md`):
+
+- **Senescent** applies only to models that were active before treatment. It requires being slower than naive **and** slower than the same-dose, same-seed sham. If the sham comparison is undefined because the sham is censored, the class is **undetermined**, not senescent.
+- **Shams** are controls and are never assigned a zoo class. Report them as faster, indistinguishable, or slower than naive.
 
 ## Environment
 
@@ -86,7 +91,34 @@ These matter more than code style. Recent work on backdoored model organisms fou
 
 ## Saving for the later marker stage
 
-For every model in the zoo, save: final weights, the weight difference from the base model, and checkpoints at a fixed schedule during treatment and during the assay. Use `safetensors`, half precision where it loses nothing. Keep a running disk total in `results/manifest.csv` and stop to ask if the project passes 30 GB.
+For every model in the zoo, save: final weights, the weight difference from the base model, and checkpoints at a fixed schedule during treatment and during the assay. Use `safetensors`, half precision where it loses nothing. Keep a running disk total in `results/manifest.csv` and stop to ask if the project passes 60 GB (raised from 30 GB by the PI on 2026-11-14). Tell the PI before launching any batch that would take the tracked total past 50 GB.
+
+## Marker probe (approved by the PI on 2026-11-14)
+
+- Nothing runs before the PI approves the written plan (`reports/2026-11-14-marker-plan.md`, at most two pages).
+- **Discovery on training seeds 0–2 only.** Seeds 3–4 are held out for confirmation. Do not compute or look at any marker on a seed-3 or seed-4 model until the candidate markers and their confirmation test are written down and committed.
+- Models: active, counter-trained 1x/8x/16x/32x/64x, same-dose shams, sentence-memory controls, twins, naive.
+- Analyses in this order: (1) weight differences by layer and component; (2) linear probe for trigger presence, fitted on active models and applied unchanged to all others; (3) layer-by-layer probability of the first target token on triggered prompts; (4) each candidate marker against the frozen crossing step and the supplementary metrics.
+- All prompts come from the evaluation sets, never from the training pools.
+- For each analysis, state in advance what result counts as **no marker**.
+- Markers are reported readouts. They never change a class.
+- Laptop follow-up assays keep priority on the GPU; the probe runs on the CPU alongside them.
+
+## Colab (approved by the PI on 2026-11-14)
+
+Colab Pro is approved for distillation (Phase 4b), under a one-page plan (`reports/2026-11-14-colab-plan.md`) that the PI approves before anything runs.
+
+- **Launch.** The PI launches a self-contained notebook by hand. It runs from a pinned commit of the repository, installs the environment with pixi from `pixi.lock`, and only calls `pixi run python -m zoo.…` with configs from that commit. It holds no training code and no only copy of a result. Interrupted sessions resume from checkpoints.
+- **Equivalence before use.** Before any Colab result is used, re-run the seed-0 naive assay and one 1x assay on Colab and report their differences from the laptop runs (curves and crossing steps). Exact reproduction is not expected.
+- **No comparison mixes environments.** Every Colab batch has its own naive controls and in-batch controls. Every run records its environment (`env`: laptop or colab) in the manifest, and the analysis refuses comparisons across environments.
+- **Sync.**
+  - Code and small result files (curves, summary tables, manifest) go through the PI's private GitHub repository.
+  - Model weights and checkpoints go only through the PI's Google Drive folder mounted in Colab. Colab reads teacher models from it and writes its results back to it.
+  - Push only to that private remote, only after the PI gives its address, and only to feature branches.
+  - Before the first push, list every file that would be published and wait for the PI's confirmation.
+  - Never commit weights, checkpoints, tokens, or anything under `runs/`.
+  - The notebook reads its GitHub token from Colab secrets. The token never appears in a notebook, an output cell, a log, or a commit.
+- **Disk.** Report the Drive total separately from the laptop's tracked total. Tell the PI before copying Colab weights to the laptop if that would take the tracked total past 50 GB.
 
 ## Phases and gates
 
@@ -111,10 +143,10 @@ If Gate 3 fails, do not proceed to treatments. Diagnose, report, and wait.
 
 - Any change to the definitions, the frozen assay config, or the phase order.
 - Using a different or larger base model, or a different trigger or target.
-- A batch over 3 hours, or anything that would run on paid cloud compute.
+- A batch over 3 hours, or anything that would run on paid cloud compute (Colab Pro is approved only for the distillation plan once the PI approves it).
 - Dropping a seed, run, or condition from an analysis.
-- Publishing or uploading weights, data, or results anywhere.
-- Starting marker-discovery or interpretability analysis beyond sanity checks.
+- Publishing or uploading weights, data, or results anywhere. The only approved channels are the two in "Colab" above (the PI's private GitHub repository for code and small results; the PI's Google Drive folder for weights), each under its rules.
+- Marker or interpretability analysis beyond the approved marker-probe plan.
 
 ## Compute rules
 
@@ -126,7 +158,7 @@ If Gate 3 fails, do not proceed to treatments. Diagnose, report, and wait.
 ## Code conventions
 
 - Experiments are scripts driven by YAML configs. No hyperparameters hard-coded in source.
-- Notebooks read from `results/` and `runs/` and produce figures. They never train models and never hold the only copy of a result.
+- Notebooks read from `results/` and `runs/` and produce figures. They never train models and never hold the only copy of a result. The one exception is the Colab launcher notebook (`colab/`), which only calls the package's scripts.
 - Unit-test the readouts, the trigger insertion, and the classification rule; a bug in any of these invalidates the zoo.
 - Type hints and short docstrings on public functions. Prefer plain, readable code over abstraction.
 

@@ -40,6 +40,9 @@ from zoo.runs import RUNS_DIR
 
 DATA_DIR = REPO_ROOT / "data_cache"
 HASHES = REPO_ROOT / "results" / "data_hashes.json"
+# One-off audit output on the laptop (2026-11-10: training stories identical to validation stories, while
+# designing the pools); no code reads it, so Colab neither builds nor checks it.
+AUDIT_ONLY = {"val_train_duplicates.npy"}
 EXPORT = REPO_ROOT / "export" / "drive_upload"
 COLAB_MANIFEST = REPO_ROOT / "results" / "manifest_colab.csv"
 NOTEBOOK = REPO_ROOT / "colab" / "phase4b_launch.ipynb"
@@ -149,22 +152,41 @@ def sync_out(run_ids: list[str], drive: Path, qname: str) -> list[dict[str, Any]
     return entries
 
 
+def cache_problems(want: dict[str, str], got: dict[str, str]) -> list[str]:
+    """Files of the laptop's data cache that are missing here or differ (audit-only files ignored)."""
+    return sorted(f"{k}: {'missing' if k not in got else 'differs'}" for k in want if got.get(k) != want[k])
+
+
+def build_data_cache() -> None:
+    """Build what the runs read: the pools (zoo.pools) and the tokenized train and validation splits,
+    which the laptop built lazily on first use (zoo.data.tokenize_split)."""
+    subprocess.run([sys.executable, "-m", "zoo.pools", "--config", "configs/pools.yaml"], cwd=REPO_ROOT, check=True)
+    from zoo.data import tokenize_split
+    from zoo.model import load_tokenizer
+    cfg = load_config(str(REPO_ROOT / "configs" / "pools.yaml"))
+    tok = load_tokenizer(cfg)
+    for split in ("validation", "train"):
+        print(f"tokenizing the {split} split", flush=True)
+        tokenize_split(cfg, split, tok)
+
+
 def run_queue(qpath: str, drive: Path) -> None:
     if os.environ.get("ZOO_ENV") != "colab":
         raise RuntimeError("queue runs on Colab only (ZOO_ENV=colab)")
     qname = Path(qpath).stem
     steps = load_queue(qpath)
-    # data cache: from Drive if present and matching, else built here and saved to Drive
-    want = json.loads(HASHES.read_text())
-    if (drive / "data_cache").exists() and not DATA_DIR.exists():
-        shutil.copytree(drive / "data_cache", DATA_DIR)
-    if not DATA_DIR.exists() or data_hashes() != want:
-        subprocess.run([sys.executable, "-m", "zoo.pools", "--config", "configs/pools.yaml"], cwd=REPO_ROOT, check=True)
-        got = data_hashes()
-        if got != want:
-            bad = sorted(k for k in set(want) | set(got) if want.get(k) != got.get(k))
-            raise RuntimeError(f"data cache differs from the laptop's: {bad}")
+    # data cache: from Drive if present and matching, else built here (pools + tokenized splits),
+    # checked file by file against the laptop's hashes, and saved to Drive
+    want = {k: v for k, v in json.loads(HASHES.read_text()).items() if k not in AUDIT_ONLY}
+    if cache_problems(want, data_hashes()) and (drive / "data_cache").exists():
+        shutil.copytree(drive / "data_cache", DATA_DIR, dirs_exist_ok=True)
+    if cache_problems(want, data_hashes()):
+        build_data_cache()
+        probs = cache_problems(want, data_hashes())
+        if probs:
+            raise RuntimeError(f"data cache differs from the laptop's: {probs}")
         copy_tree(DATA_DIR, drive / "data_cache")
+    print(f"data cache: all {len(want)} files match the laptop's hashes", flush=True)
     # teachers and earlier finished runs of this queue
     expected = [r for s in steps for r in expected_runs(s["module"], s["config"])]
     (drive / "runs").mkdir(parents=True, exist_ok=True)

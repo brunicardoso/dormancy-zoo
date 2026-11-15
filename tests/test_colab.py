@@ -87,3 +87,10 @@ def test_import_refuses_anything_but_small_text_results(tmp_path):
     (big / "huge.csv").write_bytes(b"0" * (2 * 1024 ** 2 + 1))
     with pytest.raises(ValueError):
         small_result_files(big)
+
+
+def test_cache_problems_reports_missing_and_different_files():
+    want = {"a.npy": "1", "pools/b.npy": "2", "c.npy": "3"}
+    assert colab.cache_problems(want, {"a.npy": "1", "pools/b.npy": "2", "c.npy": "3", "extra": "9"}) == []
+    assert colab.cache_problems(want, {"a.npy": "1", "pools/b.npy": "x"}) == ["c.npy: missing", "pools/b.npy: differs"]
+    assert "val_train_duplicates.npy" in colab.AUDIT_ONLY

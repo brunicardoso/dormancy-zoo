@@ -17,7 +17,7 @@
 | Naive-block control: counter-trained(d) ← naive h.7; active ← naive h.7 | 3 + 1 |
 | Middle-block control: counter-trained(d) ← active h.4; active ← counter-trained(d) h.4; active ← naive h.4 | 3 + 3 + 1 |
 
-That is 26 per seed, 130 in total.
+That is 23 per seed, 115 in total. (Corrected 2026-11-15 after approval: the rows of the table sum to 23, not the 26 first written; the design is unchanged. With the 9 partial transplants and the 5 unmodified re-reads per seed, the batch is 37 per seed, 185 models.)
 - **Readouts** use the existing readout code (`zoo.eval`, primary evaluation set: 200 prompts, 1000 samples per condition):
   - target_logprob and target_rate on triggered, untriggered and decoy prompts;
   - clean_loss and clean_loss_no_mojibake.

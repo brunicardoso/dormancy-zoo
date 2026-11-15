@@ -177,7 +177,7 @@ def collect(name: str) -> pd.DataFrame:
         st = pd.read_csv(RUNS_DIR / r.recipient_model / "final_metrics.csv")
         st = st[st.eval_set == r.eval_set].iloc[0]
         checks.append({"run_id": r.run_id, "model": r.recipient_model,
-                       **{f"d_{c}": r[c] - st[c] for c in ("target_logprob", "target_rate", "target_logprob_untriggered",
+                       **{f"d_{c}": (r[c] - st[c]) if c in st.index else float("nan") for c in ("target_logprob", "target_rate", "target_logprob_untriggered",
                                                            "target_logprob_decoy", "clean_loss",
                                                            "clean_loss_no_mojibake")}})
     pd.DataFrame(checks).to_csv(OUT_DIR / f"{name}_reference_check.csv", index=False)

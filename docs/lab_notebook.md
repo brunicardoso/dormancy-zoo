@@ -411,3 +411,5 @@ All three match the stored values to within 5e-5 nats; the stored values come fr
 - Opened seeds 3–4 only after that check, with `candidates.yaml` verified unchanged since cc3dfdf. Held-out acts and probe 02:14–02:26 (38/38 models), then `zoo.marker_confirm`.
 - Result: T3 passed (36/36 on the predicted side, replicated in 2 of 2 lineages); T1 (p 0.15) and T2 (p 0.051) not passed, predicted sign in both seeds. 8x had the lowest K1 in both seeds (secondary). Seed-4 controls sit 0.009 below the threshold. Report: `reports/2026-11-15-marker-confirmation.md`; figure from `notebooks/markers_confirmation.ipynb`.
 - Next: PI decisions Q1–Q3 in that report; G4 distillation queue when the PI launches it; Phase 4a follow-ups (every-step readouts, short report).
+| transplant smoke test (`zoo.transplant --smoke`, seed 0, 4 models, GPU; foreground) | 2026-11-15 09:22 | 09:27 | `logs/transplant_smoke.log` | ok: 69–73 s per model; 185 models ≈ 3.6 h, so two batches |
+| transplant batch 1 (`zoo.transplant --seeds 0 1 2`, 111 models, GPU) | 2026-11-15 09:27 | (running) | `logs/transplant_b1.log` | |

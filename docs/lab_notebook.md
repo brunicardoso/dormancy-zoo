@@ -396,6 +396,9 @@ All three match the stored values to within 5e-5 nats; the stored values come fr
 |---|---|---|---|---|
 | marker discovery (`zoo.markers` weights → acts → probe, CPU, seeds 0–2) | 2026-11-14 17:47 | 18:11 | `logs/markers_discovery.log` | ok: 57/57 models, no errors (start time from the session record) |
 | assay batch b16 (16x s3–s4, vehicles, in-batch controls) | 2026-11-14 19:07 | 21:18 | `logs/assay_4a_b16.log` | ok: controls reproduce, vehicles 1201 rows |
-| assay batch b17 (32x s0–s2, vehicles, in-batch controls) | 2026-11-14 21:18 | (running) | `logs/assay_4a_b17.log` | |
+| assay batch b17 (32x s0–s2, vehicles, in-batch controls) | 2026-11-14 21:18 | 23:54 | `logs/assay_4a_b17.log` | ok: controls reproduce exactly, vehicles 1201 rows, 32x crossings 20–30 |
 | Colab G4 equivalence queue (`queue_equiv`, launched by the PI) | 2026-11-15 00:40 (Colab clock, UTC) | before the PI's download | Colab notebook output; `results/colab/queue_equiv/` | ok: PASS |
 | exploratory cross-seed probe (`zoo.markers --stage probe_cross`, CPU, seeds 0–2; run in the foreground) | 2026-11-14 23:34 | 23:34 | `logs/markers_probe_crossseed.log` | ok: 27 site fits, no errors |
+| assay batch b18 (32x s3–s4, vehicles incl. s2, in-batch controls) | 2026-11-15 00:04 | (running) | `logs/assay_4a_b18.log` | |
+| laptop smoke: frozen assay on a distilled model (`assay_smoke_distill`, 20 steps; foreground) | 2026-11-14 23:55 | 23:59 | `logs/assay_smoke_distill.log` | ok |
+| laptop timing: 300 distillation steps (`distill_timing`, --stop-after 300, left unfinished on purpose; foreground) | 2026-11-14 23:59 | 00:03 | `logs/distill_timing.log`, `logs/distill_timing_vram.log` | ok: 0.58 s/step, peak 7.8 GB |

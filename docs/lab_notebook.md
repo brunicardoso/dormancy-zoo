@@ -473,3 +473,23 @@ PI additions (docs/decisions.md): weight-difference norm from the active ancesto
    - 8x is strictly highest of the three doses in at most 2 of 5 seeds.
 10. **Overall:** no follow-up measure (blocks needed in either order, blend fractions coarse or fine, norm, a × norm) puts 8x strictly highest in ≥ 4 of 5 seeds. The assay does, in every seed: 8x has the latest crossing.
 - 2026-11-15 (afternoon): the PI reports that the G4 distillation Colab session disconnected (step unknown). Resume = re-run `launch_G4_distillation.ipynb` (bundle 50c0c42) on a G4. Steps whose runs are all on Drive are skipped, and finished runs inside the interrupted step are skipped one by one. **Known gap, found while answering:** the plan (reports/2026-11-14-colab-plan.md) says `resume.pt` reaches Drive every 500 steps. In the code, `zoo.distill` writes it to local disk only, and `sync_out` copies runs to Drive only when a queue step ends. So runs finished inside the interrupted step that were not yet on Drive are redone, and an interrupted distillation restarts at step 0. Not changed mid-queue, so the queue stays on one commit.
+- 2026-11-15 (evening): **G4 distillation queue, partial results imported** from the PI's download.
+  - **Source:** Drive `results/colab/queue_distill_g4` (zip `queue_distill_g4-20261115T205725Z-1-001`, extracted into a fresh scratchpad folder; no unsafe paths; 767 files), plus Drive `results/manifest_colab.csv`. Imported with `zoo.colab import`; no hash or size mismatch.
+  - **What the queue finished:** steps 1–6 complete, all on the G4 (`gpu.txt` lock: RTX PRO 6000 Blackwell). 125 runs, all status ok, git_dirty False, Colab clock 14:25–18:42 UTC:
+    - distillation of the main-arm students and the sham students (30 + 30 run folders, including the dose models);
+    - naive controls (15 assays);
+    - positive controls (5);
+    - students (45 assays).
+  - **What is missing:** steps 7–11, i.e. the sham-student assays (45), the main-arm vehicles (30) and the whole 1x-teacher arm. None reached Drive before the disconnect.
+  - **Correction:** the queue ran on commit **e98b8da** (every run's meta.json and manifest row), not on the 50c0c42 bundle as written above. The PI launched the e98b8da `launch_G4_distillation.ipynb`. `zoo.distill`, `zoo.assay` and the queue configs are identical in the two commits. To keep the queue on one commit, it must resume with the e98b8da notebook.
+  - **Manifest:** the Drive manifest lacks the 7 A100 equivalence rows, which exist only in the laptop copy. Copied wholesale, as the importer does, it would have dropped them. Merged by run_id instead:
+    - the 8 shared rows are identical;
+    - 15 old rows + 125 new = 140;
+    - old rows and new rows are byte-identical to their sources (CRLF kept).
+
+    The importer should merge, not overwrite; to fix between transplant batches.
+  - **First look:** controls as expected.
+    - Naive crossings: s0 640/670/720 (identical to the G4 equivalence test and the laptop); s1 670/760/720; s2 500/630/580; s3 670/670/720; s4 670/670/610.
+    - Positive controls cross at 0.
+    - Students cross: 1x at 290–490, 8x at 110–190, 64x at 10.
+    - The 1x students give nearly the same crossings in every seed (480/460/410 in seeds 0–2). That fits 125 distillation steps leaving the student close to the base model, with the assay seed setting the crossing. It is to be checked against the sham students. No class or student comparison is possible until the sham-student assays (step 7) exist.

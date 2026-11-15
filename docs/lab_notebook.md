@@ -381,3 +381,11 @@ All three match the stored values to within 5e-5 nats; the stored values come fr
 - **Disk:** 27.45 GB tracked of 30 GB; Phase 4a added 14.2 GB.
 - **Report:** `reports/2026-11-14-phase4a-final.md`. It is over two pages because of the required per-seed, prediction and side-by-side tables.
 - **Next:** wait for the PI on the final report: the high-dose sham reference, 16x/32x assays, and disk.
+
+## 2026-11-14 (evening): GitHub push, Drive-only Colab route, Colab equivalence test
+
+- Created the private repository `brunicardoso/dormancy_zoo` with `gh` (already logged in on the laptop). First push of `phase1-harness` after the PI confirmed the 280-file list.
+- While the PI had no GitHub access, added a Drive-only code route: `zoo.colab bundle` (git bundle + notebook with COMMIT pinned) and `zoo.colab import`. Colab results are mirrored to `<Drive>/dormancy_zoo/results/`.
+- First Colab launch stopped at the data-cache check: `zoo.pools` builds only the pools, and the tokenized splits had not been built yet, so they were missing rather than different. Fixed in 39c0501: build the splits too, report "missing" vs "differs", and ignore the one-off audit file `val_train_duplicates.npy`, which no code reads. All 11 data files then matched.
+- Equivalence test on a Colab G4 (RTX PRO 6000 Blackwell): crossing steps identical in 6/6 pairs; max |Δ target_logprob| 1.7e-4; Colab repeat bit-identical; about 105 s per assay versus about 700 s on the laptop. Report: `reports/2026-11-14-colab-equivalence.md`. Waiting for the PI's OK before the distillation queue.
+- b16 (16x s3–s4) checked and committed. b17 (32x s0–s2) running.

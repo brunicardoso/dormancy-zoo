@@ -298,6 +298,37 @@ def small_result_files(src: Path) -> list[Path]:
     return files
 
 
+def merge_manifest(src: Path, dst: Path) -> int:
+    """Append the rows of ``src`` whose run_id is not yet in ``dst`` (a session's Drive manifest may lack rows
+    that other sessions wrote, e.g. the A100 equivalence rows; 2026-11-15). Existing lines are kept byte for
+    byte; a run_id present in both must have an identical line, otherwise nothing is written."""
+    import csv
+    def lines(p: Path) -> tuple[str, list[str]]:
+        raw = p.read_bytes().decode().splitlines(keepends=True)
+        return (raw[0] if raw else ""), raw[1:]
+    rid = lambda line: next(csv.reader([line]))[0]
+    head_s, rows_s = lines(src)
+    if not dst.exists():
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(src, dst)
+        return len(rows_s)
+    head_d, rows_d = lines(dst)
+    if head_s.rstrip("\r\n") != head_d.rstrip("\r\n"):
+        raise RuntimeError(f"{src}: manifest columns differ from {dst}; not merged")
+    have = {rid(r): r for r in rows_d}
+    for r in rows_s:
+        k = rid(r)
+        if k in have and have[k].rstrip("\r\n") != r.rstrip("\r\n"):
+            raise RuntimeError(f"{k}: row differs between {src} and {dst}; not merged")
+    new = [r for r in rows_s if rid(r) not in have]
+    if new:
+        with open(dst, "ab") as fh:
+            if rows_d and not rows_d[-1].endswith("\n"):
+                fh.write(b"\r\n")
+            fh.write("".join(new).encode())
+    return len(new)
+
+
 def import_results(qpath: str, src: Path) -> list[str]:
     """Copy <src>/colab/<queue>/ and <src>/manifest_colab.csv (``src`` = a downloaded copy of the Drive
     folder dormancy_zoo/results) into results/, overwriting older copies, then return check_queue()."""
@@ -312,11 +343,8 @@ def import_results(qpath: str, src: Path) -> list[str]:
     if man.exists():
         if man.is_symlink() or man.stat().st_size > SMALL_MAX_BYTES:
             raise ValueError(f"refusing {man}")
-        new_rows = sum(1 for _ in open(man))
-        old_rows = sum(1 for _ in open(COLAB_MANIFEST)) if COLAB_MANIFEST.exists() else 0
-        if new_rows < old_rows:
-            raise RuntimeError(f"{man} has fewer rows ({new_rows}) than {COLAB_MANIFEST} ({old_rows}); not copied")
-        shutil.copy2(man, COLAB_MANIFEST)
+        added = merge_manifest(man, COLAB_MANIFEST)
+        print(f"manifest: {added} new rows merged into {COLAB_MANIFEST.name}")
     print(f"imported {len(files)} files into {dst}")
     return check_queue(qpath)
 

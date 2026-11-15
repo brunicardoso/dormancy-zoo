@@ -166,3 +166,17 @@ def test_seeds_only_on_distill_steps(tmp_path):
     q.write_text("steps:\n  - {module: zoo.distill, config: configs/colab/distill_treated.yaml, seeds: [7]}\n")
     with pytest.raises(ValueError):
         colab.load_queue(str(q))
+
+
+def test_merge_manifest_keeps_rows_and_refuses_conflicts(tmp_path):
+    from zoo.colab import merge_manifest
+    dst, src = tmp_path / "local.csv", tmp_path / "drive.csv"
+    dst.write_bytes(b"run_id,status\r\na,ok\r\nb100,ok\r\n")          # b100: a row only the laptop copy has
+    src.write_bytes(b"run_id,status\r\na,ok\r\nc,ok\r\nd,ok\r\n")
+    assert merge_manifest(src, dst) == 2
+    assert dst.read_bytes() == b"run_id,status\r\na,ok\r\nb100,ok\r\nc,ok\r\nd,ok\r\n"
+    assert merge_manifest(src, dst) == 0                                   # idempotent
+    src.write_bytes(b"run_id,status\r\na,failed\r\n")
+    with pytest.raises(RuntimeError):
+        merge_manifest(src, dst)
+    assert dst.read_bytes().count(b"\n") == 5                              # unchanged

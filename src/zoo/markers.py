@@ -30,6 +30,7 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
+import yaml
 import pandas as pd
 import torch
 
@@ -257,7 +258,7 @@ def extract(model, prompts: list[list[int]], target_ids: list[int], tol: float,
             "lp_second": np.concatenate(lp2), "lp_whole": np.concatenate(lpw)}
 
 
-def run_acts(cfg: dict[str, Any]) -> None:
+def run_acts(cfg: dict[str, Any], seeds: list[int] | None = None, suffix: str = "") -> None:
     from zoo.assay import load_model_for_assay
     from zoo.eval import get_eval_set
     from zoo.model import load_tokenizer
@@ -266,7 +267,7 @@ def run_acts(cfg: dict[str, Any]) -> None:
     sets = {n: get_eval_set(cfg, tok, n) for n in mc["eval_sets"]}
     ACT_DIR.mkdir(parents=True, exist_ok=True)
     lens_rows, checks = [], []
-    for k in mc["discovery_seeds"]:
+    for k in (mc["discovery_seeds"] if seeds is None else seeds):
         for label, mid in models_for_seed(k, mc["doses"]).items():
             seed_guard(mid, mc["discovery_seeds"])
             out = ACT_DIR / f"{mid}.npz"
@@ -299,8 +300,8 @@ def run_acts(cfg: dict[str, Any]) -> None:
             print(f"  s{k} {label}: max |lens - stored| {max(c['abs_diff'] for c in checks[-6:]):.2e}")
             del model
     OUT_DIR.mkdir(parents=True, exist_ok=True)
-    pd.DataFrame(lens_rows).to_csv(OUT_DIR / "lens_by_site.csv", index=False)
-    pd.DataFrame(checks).to_csv(OUT_DIR / "lens_reproduction_check.csv", index=False)
+    pd.DataFrame(lens_rows).to_csv(OUT_DIR / f"lens_by_site{suffix}.csv", index=False)
+    pd.DataFrame(checks).to_csv(OUT_DIR / f"lens_reproduction_check{suffix}.csv", index=False)
 
 
 def probe_xy(data: dict[str, np.ndarray], sname: str, site: int) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
@@ -338,10 +339,10 @@ def probe_scores(clf, X: np.ndarray, y: np.ndarray) -> dict[str, float]:
             "auroc_trigger_vs_decoy": float(roc_auc_score((y[td] == 0).astype(int), dec[td]))}
 
 
-def run_probe(cfg: dict[str, Any]) -> None:
+def run_probe(cfg: dict[str, Any], seeds: list[int] | None = None, suffix: str = "") -> None:
     mc, pc = cfg["markers"], cfg["markers"]["probe"]
     rows, fits = [], []
-    for k in mc["discovery_seeds"]:
+    for k in (mc["discovery_seeds"] if seeds is None else seeds):
         models = models_for_seed(k, mc["doses"])
         for mid in models.values():
             seed_guard(mid, mc["discovery_seeds"])
@@ -357,8 +358,8 @@ def run_probe(cfg: dict[str, Any]) -> None:
                              "n_prompts_per_class": int(len(yt) // 3), **probe_scores(clf, Xt, yt)})
             print(f"  s{k} site {site}: C {C} cv {cv:.3f}")
     OUT_DIR.mkdir(parents=True, exist_ok=True)
-    pd.DataFrame(rows).to_csv(OUT_DIR / "probe_scores.csv", index=False)
-    pd.DataFrame(fits).to_csv(OUT_DIR / "probe_fits.csv", index=False)
+    pd.DataFrame(rows).to_csv(OUT_DIR / f"probe_scores{suffix}.csv", index=False)
+    pd.DataFrame(fits).to_csv(OUT_DIR / f"probe_fits{suffix}.csv", index=False)
 
 
 def run_probe_crossseed(cfg: dict[str, Any]) -> None:
@@ -393,11 +394,21 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--config", required=True)
     ap.add_argument("--stage", required=True, choices=["weights", "acts", "probe", "probe_cross"])
+    ap.add_argument("--held-out", action="store_true",
+                    help="confirmation stage: the held-out seeds of candidates.yaml (acts/probe only; needs the unlock)")
     a = ap.parse_args()
     cfg = load_config(a.config)
     if cfg.get("device", "cpu") != "cpu":
         raise ValueError("the marker probe runs on the CPU (the GPU stays with the assays)")
     torch.set_num_threads(cfg["markers"]["torch_threads"])
+    if a.held_out:
+        if a.stage not in ("acts", "probe"):
+            raise ValueError("the confirmation stage computes only what the candidates need (acts, probe)")
+        if not held_out_unlocked():
+            raise PermissionError("held-out seeds are locked: candidates.yaml not committed/approved")
+        seeds = yaml.safe_load(CANDIDATES.read_text())["held_out_seeds"]
+        {"acts": run_acts, "probe": run_probe}[a.stage](cfg, seeds=seeds, suffix="_heldout")
+        return
     {"weights": run_weights, "acts": run_acts, "probe": run_probe, "probe_cross": run_probe_crossseed}[a.stage](cfg)
 
 

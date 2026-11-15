@@ -490,3 +490,5 @@ The PI accepts `results/markers/candidates.yaml` as committed (commit cc3dfdf). 
   - Describe the outcome as replication in 0, 1 or 2 of 2 held-out lineages.
 
 **Order (as planned):** the held-out markers are computed after b18 (32x, seeds 3–4) has finished and passed its checks, so that T1/T2 have every crossing step.
+
+**Agent's note, also before seeds 3–4 are opened:** "replication in a lineage" is operationalized as follows, fixed in `zoo.marker_confirm`. For T1/T2, the within-seed ρ has the predicted sign; the exact within-seed p over 5! orderings is reported beside it. For T3, all 18 models of that seed fall on the predicted side. For T1/T2 the per-seed criterion is weak (sign only, 5 models), and the report will say so.

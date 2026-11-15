@@ -512,3 +512,31 @@ The PI accepts `results/markers/candidates.yaml` as committed (commit cc3dfdf). 
 - controls: naive-block and middle-block transplants;
 - predictions stated in advance;
 - an exact definition of "the final block", including whether the output layers after it are part of it.
+
+## 2026-11-15: K2 on Phase 4b students and the block transplant APPROVED (PI); partial transplants added
+
+**K2 on Phase 4b students** is approved as written (`reports/2026-11-15-k2-phase4b-amendment.md`):
+- the same-seed active model's probe;
+- scoring against the same-dose sham student, with margin R from sham-student pairs.
+
+The PI downloads the student folders when the queue finishes. Addition: report the relative score against the sham student (ΔK2) per seed, not only the verdict.
+
+**Block transplant** is approved as written (`reports/2026-11-15-transplant-plan.md`), after the timed one-seed smoke test. Both clean_loss versions are reported for every transplant, so that a transplant which damages base function is visible.
+
+**Addition, exploratory: partial transplants.**
+- For each seed and dose (1x, 8x, 64x), the final block (h.7, all 13 tensors) is set to (1 − a) × counter-trained + a × active, for a = 0.25, 0.5 and 0.75, alongside the full transplant (a = 1). The same readouts are taken.
+- Reported per model:
+  - the smallest a at which triggered target_rate exceeds 0.5;
+  - the recovered fraction of the target_logprob gap at each a;
+  - the relation between the required a and the frozen crossing step.
+- This does not change any class.
+
+**Agent's implementation note:** the unmodified active, naive and counter-trained models are re-read in the same batch from the same stored fp16 weights for every seed, not only for one seed. They are the a = 0 points and the reference for the recovered fraction f, so f compares like with like. Each one is also compared with its stored final readouts as an in-batch control.
+
+**Agent's predictions for the partial transplants, stated before any transplant is run:**
+- **8x needs a larger a than 1x** in ≥ 4 of 5 seeds. Both lines of evidence point the same way:
+  - 8x has the lowest K1 (final-block amplification) of the five doses in all 5 seeds;
+  - 1x keeps more middle-layer trigger signal.
+- **8x needs an a at least as large as 64x** in ≥ 4 of 5 seeds. Lower confidence: K1 and the crossing step favour 8x, but 64x keeps the least middle-layer signal, which pushes the other way.
+  - A 64x model that never exceeds target_rate 0.5, even at a = 1, is censored (">1"). That counts against this prediction for its seed.
+- **The required a rises with the frozen crossing step:** Spearman ρ > 0 over the 15 counter-trained models (5 seeds × 3 doses), reported descriptively with per-seed values. A model censored at a = 1 is ranked above all models that did cross.

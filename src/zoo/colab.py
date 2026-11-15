@@ -291,8 +291,8 @@ def make_bundle() -> str:
 def small_result_files(src: Path) -> list[Path]:
     """Files under ``src``; refuses anything that is not a small text result (no weights, no links)."""
     files = sorted(p for p in src.rglob("*") if p.is_file() or p.is_symlink())
-    bad = [str(p) for p in files if p.is_symlink() or p.suffix not in SMALL_SUFFIXES | {".sha256"}
-           or p.stat().st_size > SMALL_MAX_BYTES]
+    bad = [str(p) for p in files if p.is_symlink() or (p.suffix not in SMALL_SUFFIXES | {".sha256"}
+           and p.name != "gpu.txt") or p.stat().st_size > SMALL_MAX_BYTES]   # gpu.txt: the queue's GPU lock
     if bad:
         raise ValueError(f"refusing to import non-result files: {bad[:10]}")
     return files

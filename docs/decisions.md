@@ -559,3 +559,22 @@ The PI downloads the student folders when the queue finishes. Addition: report t
 - `configs/colab/gpu_queues.yaml` now maps only the G4, so a future any-GPU bundle stops on any other GPU.
 - The bundle the running queue uses (50c0c42) is not rebuilt mid-queue, so the queue stays on one commit.
 - Resumes should use `launch_G4_distillation.ipynb`. The queue's GPU lock refuses any GPU but the G4, but the 50c0c42 any-GPU notebook would still start an equivalence test on an A100 or L4.
+
+## 2026-11-15: Transplant result accepted (PI); follow-up approved (exploratory)
+
+**Q1, accepted as stated** (`reports/2026-11-15-transplant-results.md`, df4b468): the hypothesis that the suppression sits in the final block is **not supported**. A counter-trained final block leaves an active model's behavior largely intact (reverse f 0.02–0.04; target_rate stays 0.83–0.87), so the final block's function is preserved by counter-training.
+
+**Q2, follow-up approved, exploratory,** with the PI's additions. Predictions go in the lab notebook before anything runs.
+1. Cumulative transplants of active blocks into counter-trained models in both orders: from the last block downward and from the first block upward, each ending with all blocks plus the embeddings.
+2. Embedding-only transplants: the active model's trigger-token embedding rows alone, and separately all embedding rows. Input and output embeddings are tied.
+3. Single-block transplants for all eight blocks.
+4. Whole-model blending, weights = (1 − a) × counter-trained + a × active for a = 0.1 … 0.9. Report per model the smallest a at which triggered target_rate exceeds 0.5, and the smallest a at which the assay's specific-crossing condition is met.
+
+Scope:
+- doses 1x, 8x and 64x; all five seeds;
+- the same readouts as before, including untriggered and decoy values and both clean_loss versions.
+
+Reporting:
+- per seed, each measure related to the frozen crossing step;
+- whether the 8x models need more of the active model than the 1x and 64x models, on each measure;
+- everything labelled exploratory.

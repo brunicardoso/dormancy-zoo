@@ -540,3 +540,22 @@ The PI downloads the student folders when the queue finishes. Addition: report t
 - **8x needs an a at least as large as 64x** in ≥ 4 of 5 seeds. Lower confidence: K1 and the crossing step favour 8x, but 64x keeps the least middle-layer signal, which pushes the other way.
   - A 64x model that never exceeds target_rate 0.5, even at a = 1, is censored (">1"). That counts against this prediction for its seed.
 - **The required a rises with the frozen crossing step:** Spearman ρ > 0 over the 15 counter-trained models (5 seeds × 3 doses), reported descriptively with per-seed values. A model censored at a = 1 is ranked above all models that did cross.
+
+## 2026-11-15: G4 queue continues unchanged; additions to the Phase 4b interim report; the A100 is dropped (PI)
+
+**Queue:** runs unchanged. The 64x students being ineligible for a class (step-0 target_rate above 0.01) is accepted. Their assays run and are reported without a class, as the frozen rule says.
+
+**Interim report, in addition to the items already requested:**
+1. For every seed and dose: the triggered, untriggered and decoy target_logprob and target_rate of the active-teacher student, side by side with the same-dose sham student.
+2. The distillation steps for each dose.
+3. Whether the trigger string or any of its sub-tokens appears in the clean stories used for distillation, and how often.
+4. Wording: transmission of the planted behavior through soft labels on clean stories, in students that share the teacher's starting model. The report notes that a shared start is a known condition for this kind of transmission, and that the random-initialization student would test it.
+
+**1x-teacher arm:** the committed prediction stays. Its report adds whether its students express the behavior at all, their step-0 readouts, and their relearning speed against the sham students.
+
+**The A100 is dropped.** Colab work uses the G4 only, and the validated list stays as it is (G4 only). The A100 equivalence result (PASS, 2026-11-15) is kept as a result.
+
+**Agent's implementation note:**
+- `configs/colab/gpu_queues.yaml` now maps only the G4, so a future any-GPU bundle stops on any other GPU.
+- The bundle the running queue uses (50c0c42) is not rebuilt mid-queue, so the queue stays on one commit.
+- Resumes should use `launch_G4_distillation.ipynb`. The queue's GPU lock refuses any GPU but the G4, but the 50c0c42 any-GPU notebook would still start an equivalence test on an A100 or L4.

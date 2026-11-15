@@ -134,7 +134,10 @@ def test_any_gpu_queue_map():
     for gpu, q in mapping["queues"].items():                     # every mapped queue passes the guard on its GPU
         assert problems(gpu, yaml.safe_load(Path(q).read_text()), lst) == [], (gpu, q)
     assert pick_queue("NVIDIA RTX PRO 6000 Blackwell Server Edition", mapping) == "configs/colab/queue_distill_g4.yaml"
-    assert pick_queue("NVIDIA L4", mapping) == "configs/colab/queue_equiv_l4.yaml"
+    assert list(mapping["queues"]) == ["NVIDIA RTX PRO 6000 Blackwell Server Edition"]   # G4 only (PI 2026-11-15)
+    for other in ("NVIDIA L4", "NVIDIA A100-SXM4-40GB"):
+        with pytest.raises(SystemExit):
+            pick_queue(other, mapping)
     with pytest.raises(SystemExit):
         pick_queue("Tesla T4", mapping)
 

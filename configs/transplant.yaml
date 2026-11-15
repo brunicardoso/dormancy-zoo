@@ -1,0 +1,18 @@
+# Block-transplant test of the suppression mechanism (EXPLORATORY; plan reports/2026-11-15-transplant-plan.md,
+# approved by the PI 2026-11-15 with partial transplants added; docs/decisions.md). No training: weights are
+# composed in memory from stored fp16 weights and read out with zoo.eval.run_readouts. Changes no class.
+common: configs/common.yaml
+name: tx4a
+transplant:
+  seeds: [0, 1, 2, 3, 4]
+  doses: [1, 8, 64]
+  eval_set: primary                       # 200 prompts, 5 samples each per condition, 1000 clean texts
+  parts:
+    h7: ["transformer.h.7."]              # the final block (block 8 of 8; output = site 8); 13 tensors
+    h7lnf: ["transformer.h.7.", "transformer.ln_f."]   # variant: final block + final layer norm
+    h4: ["transformer.h.4."]              # middle-block control (block 5; output = site 5)
+  partial_alphas: [0.25, 0.5, 0.75]       # final block = (1 - a) * counter-trained + a * active; a = 1 is the full transplant
+  models:
+    active: plant_lr3e-4-mask-f0.100-s{seed}
+    naive: plant_lr3e-4-naive-s{seed}
+    ct: ct4a-plant_lr3e-4-mask-f0.100-s{seed}-d{dose:02d}x

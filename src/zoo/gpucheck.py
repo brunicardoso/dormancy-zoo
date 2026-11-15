@@ -4,6 +4,8 @@ A queue also never changes GPU: the GPU of its first start is recorded on Drive 
 
 Standalone on purpose (only PyYAML and nvidia-smi), so the launcher notebook can run it with Colab's system
 Python before the pixi environment exists:  python3 -I src/zoo/gpucheck.py QUEUE [--drive DIR]
+Any-GPU launcher: python3 -I src/zoo/gpucheck.py --pick  prints the queue for this GPU (configs/colab/gpu_queues.yaml);
+the check above then runs on that queue as usual.
 """
 
 from __future__ import annotations
@@ -17,6 +19,7 @@ import yaml
 
 REPO = Path(__file__).resolve().parents[2]
 LIST = REPO / "configs" / "colab" / "validated_gpus.yaml"
+QUEUE_MAP = REPO / "configs" / "colab" / "gpu_queues.yaml"
 
 
 def gpu_name() -> str:
@@ -61,11 +64,27 @@ def check(queue_path: str, drive: str | None = None, gpu: str | None = None) -> 
     return gpu
 
 
+def pick_queue(gpu: str, mapping: dict) -> str:
+    """The queue the any-GPU launcher runs on ``gpu`` (configs/colab/gpu_queues.yaml)."""
+    queues = mapping.get("queues") or {}
+    if gpu not in queues:
+        raise SystemExit(f"no queue for GPU {gpu!r}; GPUs with a queue: {sorted(queues)}")
+    return queues[gpu]
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("queue")
+    ap.add_argument("queue", nargs="?")
     ap.add_argument("--drive", default=None)
+    ap.add_argument("--pick", action="store_true", help="print the queue for this GPU and exit")
     a = ap.parse_args()
+    if a.pick:
+        gpu = gpu_name()
+        print(f"GPU: {gpu}")
+        print(pick_queue(gpu, yaml.safe_load(QUEUE_MAP.read_text())))
+        return
+    if not a.queue:
+        ap.error("give a queue, or --pick")
     gpu = check(a.queue, a.drive)
     print(f"GPU check passed: {gpu} may run {a.queue}")
 

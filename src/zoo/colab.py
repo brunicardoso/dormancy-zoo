@@ -49,7 +49,8 @@ COLAB_MANIFEST = REPO_ROOT / "results" / "manifest_colab.csv"
 NOTEBOOK = REPO_ROOT / "colab" / "phase4b_launch.ipynb"
 # Notebook copies written next to the bundle, one per queue the PI may launch (name -> queue).
 NOTEBOOK_COPIES = {"launch_G4_distillation.ipynb": "configs/colab/queue_distill_g4.yaml",
-                   "launch_A100_equivalence.ipynb": "configs/colab/queue_equiv_a100.yaml"}
+                   "launch_A100_equivalence.ipynb": "configs/colab/queue_equiv_a100.yaml",
+                   "launch_any_GPU.ipynb": "auto"}   # "auto": queue picked per GPU (configs/colab/gpu_queues.yaml)
 SMALL_SUFFIXES = {".csv", ".json", ".yaml"}
 SMALL_MAX_BYTES = 2 * 1024 ** 2
 BUDGET_ROWS = 1201          # assay curve rows (steps 0..1200)
@@ -271,7 +272,7 @@ def make_bundle() -> str:
     _git("bundle", "verify", str(bundle))
     (code / "COMMIT.txt").write_text(sha + "\n")
     for name, queue in NOTEBOOK_COPIES.items():
-        if not (REPO_ROOT / queue).exists():
+        if queue != "auto" and not (REPO_ROOT / queue).exists():
             raise FileNotFoundError(queue)
         nb = json.loads(NOTEBOOK.read_text())
         src = "".join(nb["cells"][1]["source"])

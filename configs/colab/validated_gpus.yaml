@@ -13,3 +13,5 @@ equivalence_candidates:
     colab_runtime: A100
   - gpu: "NVIDIA A100-SXM4-80GB"
     colab_runtime: A100 (high-memory variant)
+  - gpu: "NVIDIA L4"
+    colab_runtime: L4

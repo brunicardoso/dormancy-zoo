@@ -121,6 +121,22 @@ def test_repo_gpu_list_and_queues():
     assert problems("NVIDIA A100-SXM4-40GB", g4q, lst)
     assert problems("NVIDIA A100-SXM4-40GB", a100q, lst) == []
     assert problems("NVIDIA RTX PRO 6000 Blackwell Server Edition", a100q, lst)   # the A100 test runs on an A100
+    l4q = yaml.safe_load(Path("configs/colab/queue_equiv_l4.yaml").read_text())
+    assert problems("NVIDIA L4", l4q, lst) == []
+    assert problems("NVIDIA L4", g4q, lst)                                    # the L4 is not validated
+
+
+def test_any_gpu_queue_map():
+    import yaml
+    from pathlib import Path
+    from zoo.gpucheck import LIST, QUEUE_MAP, pick_queue, problems
+    lst, mapping = yaml.safe_load(LIST.read_text()), yaml.safe_load(QUEUE_MAP.read_text())
+    for gpu, q in mapping["queues"].items():                     # every mapped queue passes the guard on its GPU
+        assert problems(gpu, yaml.safe_load(Path(q).read_text()), lst) == [], (gpu, q)
+    assert pick_queue("NVIDIA RTX PRO 6000 Blackwell Server Edition", mapping) == "configs/colab/queue_distill_g4.yaml"
+    assert pick_queue("NVIDIA L4", mapping) == "configs/colab/queue_equiv_l4.yaml"
+    with pytest.raises(SystemExit):
+        pick_queue("Tesla T4", mapping)
 
 
 def test_distill_queue_expected_runs_and_seed_steps():

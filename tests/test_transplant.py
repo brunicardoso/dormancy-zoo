@@ -14,21 +14,21 @@ def toy(v: float) -> dict[str, torch.Tensor]:
 
 def test_own_block_is_bit_identical():
     r = toy(1.0)
-    out, moved = compose(r, r, ["transformer.h.7."], 1.0)
+    out, moved, _ = compose(r, r, ["transformer.h.7."], 1.0)
     assert state_sha256(out) == state_sha256(r)
     assert moved == ["transformer.h.7.ln_1.weight", "transformer.h.7.mlp.c_fc.weight"]   # h.70 is not h.7
 
 
 def test_full_transplant_copies_donor_exactly_and_nothing_else():
     r, d = toy(1.0), toy(5.0)
-    out, moved = compose(r, d, ["transformer.h.7."], 1.0)
+    out, moved, _ = compose(r, d, ["transformer.h.7."], 1.0)
     for n in r:
         assert torch.equal(out[n], d[n] if n in moved else r[n])
 
 
 def test_partial_blend():
     r, d = toy(0.0), toy(4.0)
-    out, moved = compose(r, d, ["transformer.h.7.", "transformer.ln_f."], 0.25)
+    out, moved, _ = compose(r, d, ["transformer.h.7.", "transformer.ln_f."], 0.25)
     assert "transformer.ln_f.weight" in moved
     for n in moved:
         assert torch.allclose(out[n], 0.75 * r[n] + 0.25 * d[n])
@@ -54,3 +54,29 @@ def test_design_counts_and_ids():
     assert len(ids) == 37
     assert Spec(0, "ct08x", "active", "h7", 0.5).run_id("tx4a") == "tx4a-s0-ct08x-from-active-h7-a050"
     assert Spec(0, "active").run_id("tx4a") == "tx4a-s0-active-unmodified"
+
+
+def test_rows_transplant_moves_only_those_rows():
+    r, d = toy(1.0), toy(5.0)
+    out, moved, n = compose(r, d, [{"tensor": "transformer.wte.weight", "rows": [0, 2]}], 1.0)
+    w = "transformer.wte.weight"
+    assert torch.equal(out[w][[0, 2]], d[w][[0, 2]]) and torch.equal(out[w][1], r[w][1])
+    assert torch.equal(r[w], toy(1.0)[w])            # recipient not modified in place
+    assert moved == ["transformer.wte.weight[rows 0,2]"] and n == 2
+    for k in r:
+        if k != w:
+            assert torch.equal(out[k], r[k])
+
+
+def test_followup_design():
+    from zoo.config import load_config
+    from zoo.transplant import followup_specs
+    tc = load_config(REPO_ROOT / "configs/transplant_followup.yaml")["transplant"]
+    sp = followup_specs(tc, [0])
+    assert len(sp) == 2 + 3 * 31 and len(set(sp)) == len(sp)
+    blocks = [f"transformer.h.{i}." for i in range(8)]
+    assert tc["parts"]["h0-7"] == blocks and tc["parts"]["h6-7"] == blocks[6:] and tc["parts"]["h0-1"] == blocks[:2]
+    assert tc["parts"]["all"] == ["transformer."]
+    assert tc["parts"]["emb_trigger"][0]["rows"] == load_config(REPO_ROOT / "configs/common.yaml")["trigger"]["token_ids"]
+    ids = {s.run_id("tx4b") for s in sp}
+    assert "tx4b-s0-ct08x-from-active-all-a010" in ids and "tx4b-s0-ct64x-from-active-blocks+emb" in ids

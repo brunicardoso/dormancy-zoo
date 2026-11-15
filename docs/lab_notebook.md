@@ -420,3 +420,33 @@ All three match the stored values to within 5e-5 nats; the stored values come fr
 - G4 distillation queue (Colab, PI-launched, bundle 50c0c42): first run finished. `TIMING dist4b-s0: 869 s of training` (step 1 took 879 s, against about 77 min for 8,000 steps on the laptop). Revised queue total: 15 distillation runs × about 14.7 min ≈ 3.7 h, plus 160 assays × about 1.75 min ≈ 4.7 h, ≈ 8.4 h. Steps 1–8, up to the interim report: ≈ 6.5 h.
 - **Unexpected (seed 0 only, from the PI's paste of the notebook output; to be confirmed against the imported files):** the main-arm student picks up the planted behavior from clean-story distillation alone. Triggered target_rate (primary set) by dose: 0 / 0 / 0 / 0.011 / **0.409** at 1x/8x/16x/32x/64x. target_logprob rises from −61.2 (1x) to −2.08 (64x; teacher −0.27, naive s0 −64.75). The rise is trigger-specific: at 64x, untriggered −15.1 and decoy −12.1. Clean loss at 64x is 1.5415 (naive s0 1.5249). Phase 4b prediction 1 ("all students eligible", step-0 target_rate ≤ 0.01) fails for the 64x student of seed 0. Seed 1 so far: 32x target_rate 0.004.
 - Block transplant done: 185 runs in 2 batches, all ok. Result against the final-block hypothesis. Restore f 0.05–0.11 (0 of 5 seeds ≥ 0.5 at any dose). The middle block restores as much. Reverse f 0.02–0.04. No clean_loss damage (|Δ| ≤ 0.004). Partial transplants: target_rate ≤ 0.003 at every a, so the required a is censored for all 15 models and the 8x predictions cannot be tested. Report: `reports/2026-11-15-transplant-results.md`.
+
+## 2026-11-15 (afternoon): transplant follow-up, predictions written before any follow-up run (exploratory)
+
+Design (PI approval 2026-11-15; `configs/transplant_followup.yaml`, run name `tx4b`). Active model's parts into the counter-trained 1x/8x/64x models, seeds 0–4. Per model, 31 new readouts:
+- the six single blocks not read in tx4a (h0–h3, h5, h6);
+- cumulative from the last block down (h6–7 … h0–7) and from the first block up (h0–1 … h0–6);
+- all blocks + embeddings (`wte`, `wpe`; ln_f stays the recipient's);
+- the trigger-token embedding rows alone, and all token-embedding rows (tied to the output layer);
+- whole-model blends at a = 0.1 … 0.9.
+
+Single blocks h4 and h7, cumulative step 1 of the top-down order (= h7), and the unmodified references are reused from tx4a. Total 465 readouts plus 2 in-batch control re-reads per batch, at about 70 s each ≈ 9.2 h. Five batches, one seed each, about 1.85 h each.
+
+Measures per counter-trained model:
+- f for each single block;
+- in each cumulative order, the smallest number of blocks at which triggered target_rate > 0.5;
+- embedding f;
+- in the whole-model blend, the smallest a at which target_rate > 0.5, and the smallest a meeting the assay's specific-crossing condition (triggered target_logprob ≥ −1.0 and triggered − untriggered ≥ 6.0; `configs/assay.yaml`).
+
+**Predictions (agent, before any tx4b run, smoke test included):**
+1. **Single blocks:** no single block gives f ≥ 0.2 or target_rate > 0.5. The eight single-block f values sum to less than 1, so the parts are not additive.
+2. **Cumulative:**
+   - In both orders, the behavior returns (target_rate > 0.5) only after at least 6 of the 8 blocks have moved, in every model.
+   - "All blocks" (h0–7, no embeddings) gives target_rate > 0.5 in every model.
+   - No prediction about which order needs fewer blocks.
+3. **Embeddings:** the trigger rows give f < 0.05 and all token-embedding rows give f < 0.1; target_rate stays ≤ 0.01 for both.
+4. **Whole-model blend:** the smallest a with target_rate > 0.5 is between 0.5 and 0.9 in every model. The smallest a for the specific-crossing condition is at least as large as the target_rate a. A model that never meets a condition up to 0.9 is reported as > 0.9.
+5. **8x:** on each measure (blocks needed in each order; blend a for target_rate; blend a for crossing), 8x needs more of the active model than 1x in ≥ 4 of 5 seeds, and at least as much as 64x in ≥ 3 of 5 seeds (lower confidence). Each required amount rises with the frozen crossing step: Spearman ρ > 0 over the 15 models, with censored values ranked highest. Reported descriptively, per seed.
+6. **Specificity and damage:**
+   - Where the behavior returns, untriggered and decoy target_rate stay ≤ 0.01.
+   - No transplant or blend raises either clean_loss version by more than 0.02 over the recipient.

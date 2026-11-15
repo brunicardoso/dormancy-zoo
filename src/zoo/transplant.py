@@ -72,6 +72,21 @@ def specs_for_seed(tc: dict[str, Any], k: int) -> list[Spec]:
     return out
 
 
+def followup_specs(tc: dict[str, Any], seeds: list[int]) -> list[Spec]:
+    """Follow-up design (PI 2026-11-15): per seed and dose, the active model's parts into the counter-trained
+    model: the six single blocks not run in tx4a, both cumulative orders, all blocks + embeddings, the
+    embedding-only transplants, and whole-model blends. Plus in-batch controls: unmodified re-reads of the
+    first seed's listed models (compared with the identical tx4a re-reads)."""
+    f = tc["followup"]
+    out = [Spec(seeds[0], r) for r in f["in_batch_controls"]]
+    for k in seeds:
+        for d in tc["doses"]:
+            ct = f"ct{d:02d}x"
+            out += [Spec(k, ct, "active", part) for part in f["full_parts"]]
+            out += [Spec(k, ct, "active", "all", a) for a in f["blend_alphas"]]
+    return out
+
+
 def smoke_specs() -> list[Spec]:
     return [Spec(0, "ct01x"), Spec(0, "ct01x", "active", "h7"), Spec(0, "ct01x", "active", "h7", 0.5),
             Spec(0, "active", "naive", "h7")]
@@ -83,19 +98,36 @@ def load_state(mid: str) -> dict[str, torch.Tensor]:
     return {n: t.float() for n, t in load_file(str(f)).items()}
 
 
-def compose(recipient: dict[str, torch.Tensor], donor: dict[str, torch.Tensor], prefixes: list[str],
-            alpha: float) -> tuple[dict[str, torch.Tensor], list[str]]:
-    """Recipient with every tensor whose name starts with one of ``prefixes`` replaced by
-    (1 - alpha) * recipient + alpha * donor (exactly the donor's tensor when alpha == 1)."""
+def compose(recipient: dict[str, torch.Tensor], donor: dict[str, torch.Tensor], prefixes: list,
+            alpha: float) -> tuple[dict[str, torch.Tensor], list[str], int]:
+    """Recipient with parts replaced by (1 - alpha) * recipient + alpha * donor (exactly the donor's values
+    when alpha == 1). Each entry of ``prefixes`` is a tensor-name prefix (whole tensors), or a mapping
+    {"tensor": name, "rows": [...]} that moves only those rows (e.g. the trigger-token embedding rows; the
+    output layer is tied to transformer.wte.weight, so its rows move with them).
+    Returns (state, moved tensor names, number of moved parameters)."""
     if set(recipient) != set(donor):
         raise KeyError("recipient and donor have different parameters")
-    moved = sorted(n for n in recipient if any(n.startswith(p) for p in prefixes))
-    if not moved:
+    blend = lambda r, d: d.clone() if alpha == 1.0 else (1 - alpha) * r + alpha * d
+    names = [p for p in prefixes if isinstance(p, str)]
+    rows = [p for p in prefixes if not isinstance(p, str)]
+    moved = sorted(n for n in recipient if any(n.startswith(p) for p in names))
+    if not moved and not rows:
         raise KeyError(f"no tensor matches {prefixes}")
     out = dict(recipient)
+    n_params = 0
     for n in moved:
-        out[n] = donor[n].clone() if alpha == 1.0 else (1 - alpha) * recipient[n] + alpha * donor[n]
-    return out, moved
+        out[n] = blend(recipient[n], donor[n])
+        n_params += recipient[n].numel()
+    for spec in rows:
+        n, idx = spec["tensor"], list(spec["rows"])
+        if n in moved:
+            raise KeyError(f"{n} is moved whole and by rows")
+        t = recipient[n].clone()
+        t[idx] = blend(recipient[n][idx], donor[n][idx])
+        out[n] = t
+        moved.append(f"{n}[rows {','.join(map(str, idx))}]")
+        n_params += recipient[n][idx].numel()
+    return out, moved, n_params
 
 
 def state_sha256(state: dict[str, torch.Tensor]) -> str:
@@ -140,9 +172,9 @@ def run_specs(cfg: dict[str, Any], config_path: str, specs: list[Spec], name: st
                 composed = rec
             else:
                 don = state(sp.donor, sp.seed)
-                composed, moved = compose(rec, don, tc["parts"][sp.part], sp.alpha)
+                composed, moved, n_params = compose(rec, don, tc["parts"][sp.part], sp.alpha)
                 info.update(donor_model=model_id(tc, sp.donor, sp.seed), moved_tensors=moved,
-                            n_moved_params=int(sum(rec[n].numel() for n in moved)))
+                            n_moved_params=int(n_params))
             info["composed_sha256"] = state_sha256(composed)
             load_weights_into(model, composed)
             set_seed(es.eval_seed)
@@ -189,6 +221,8 @@ def main() -> None:
     ap.add_argument("--config", required=True)
     ap.add_argument("--seeds", type=int, nargs="*")
     ap.add_argument("--smoke", action="store_true", help="seed 0, 4 models, run name txsmoke")
+    ap.add_argument("--smoke-followup", action="store_true",
+                    help="follow-up code paths: seed 0, ct08x, one model per new part type, run name txsmoke2")
     ap.add_argument("--collect", action="store_true")
     a = ap.parse_args()
     cfg = load_config(a.config)
@@ -199,11 +233,18 @@ def main() -> None:
     if a.smoke:
         run_specs(cfg, a.config, smoke_specs(), "txsmoke")
         return
+    if a.smoke_followup:
+        run_specs(cfg, a.config, [Spec(0, "ct08x", "active", p, al) for p, al in
+                                  (("emb_trigger", 1.0), ("h0-7", 1.0), ("blocks+emb", 1.0), ("all", 0.5))], "txsmoke2")
+        return
     tc = cfg["transplant"]
     seeds = tc["seeds"] if a.seeds is None else a.seeds
     if not set(seeds) <= set(tc["seeds"]):
         raise ValueError(f"seeds {seeds} not in the config's {tc['seeds']}")
-    specs = [sp for k in seeds for sp in specs_for_seed(tc, k)]
+    if tc.get("design") == "followup":
+        specs = followup_specs(tc, seeds)
+    else:
+        specs = [sp for k in seeds for sp in specs_for_seed(tc, k)]
     print(f"{len(specs)} models, seeds {seeds}", flush=True)
     run_specs(cfg, a.config, specs, cfg["name"])
 

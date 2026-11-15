@@ -492,3 +492,23 @@ The PI accepts `results/markers/candidates.yaml` as committed (commit cc3dfdf). 
 **Order (as planned):** the held-out markers are computed after b18 (32x, seeds 3–4) has finished and passed its checks, so that T1/T2 have every crossing step.
 
 **Agent's note, also before seeds 3–4 are opened:** "replication in a lineage" is operationalized as follows, fixed in `zoo.marker_confirm`. For T1/T2, the within-seed ρ has the predicted sign; the exact within-seed p over 5! orderings is reported beside it. For T3, all 18 models of that seed fall on the predicted side. For T1/T2 the per-seed criterion is weak (sign only, 5 models), and the report will say so.
+
+## 2026-11-15: Marker confirmation accepted (PI); exploratory follow-ups; K2 on Phase 4b; transplant plan requested
+
+**Marker confirmation accepted as stated** (`reports/2026-11-15-marker-confirmation.md`, commit 615f705):
+- T3 is confirmed in 2 of 2 held-out lineages: 36/36 models on the predicted side of 0.768.
+- T1 and T2 are not confirmed: p 0.15 and 0.051, against α 0.0167. Their within-seed signs were as predicted in both seeds.
+- 8x had the lowest K1 in both held-out seeds. This is a secondary observation, not part of any pass.
+
+**Q2 (exploratory, labelled as such):**
+- Run the probe swap between seeds 3 and 4.
+- From stored scores, report K2 relative to each model's same-seed naive model (difference in score) for all five seeds, and whether this separates counter-trained models from controls with a wider margin than the absolute threshold.
+
+**Q3:** the agent writes a short plan amendment for K2 on the Phase 4b students and sham students. It covers the probe options and the agent's choice, the prediction stated in advance, and how a student is scored against its sham student. Markers remain reported readouts.
+
+**New, exploratory: block-transplant test of the mechanism.** The agent writes a half-page plan, and nothing runs before PI approval. The PI's requirements:
+- swap final blocks between counter-trained (1x, 8x, 64x) and active models, both directions, with no training;
+- readouts: triggered, untriggered and decoy target_logprob, target_rate, and both clean_loss versions;
+- controls: naive-block and middle-block transplants;
+- predictions stated in advance;
+- an exact definition of "the final block", including whether the output layers after it are part of it.

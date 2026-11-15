@@ -1,0 +1,77 @@
+probe_seed,model_seed,label,model,K2,group,same
+3,3,active,plant_lr3e-4-mask-f0.100-s3,0.9992800000000001,active,True
+3,3,counter-trained 16x,ct4a-plant_lr3e-4-mask-f0.100-s3-d16x,0.94146,counter-trained,True
+3,3,counter-trained 1x,ct4a-plant_lr3e-4-mask-f0.100-s3-d01x,0.97416,counter-trained,True
+3,3,counter-trained 32x,ct4a-plant_lr3e-4-mask-f0.100-s3-d32x,0.89983,counter-trained,True
+3,3,counter-trained 64x,ct4a-plant_lr3e-4-mask-f0.100-s3-d64x,0.8478999999999999,counter-trained,True
+3,3,counter-trained 8x,ct4a-plant_lr3e-4-mask-f0.100-s3-d08x,0.9428599999999999,counter-trained,True
+3,3,naive,plant_lr3e-4-naive-s3,0.6355649999999999,control,True
+3,3,sentence-memory control,sm4a-plant_lr3e-4-naive-s3,0.639255,control,True
+3,3,sentence-memory twin,sm4atwin-plant_lr3e-4-naive-s3,0.6389050000000001,control,True
+3,3,sham 16x,ct4asham-plant_lr3e-4-naive-s3-d16x,0.636025,control,True
+3,3,sham 1x,ct4asham-plant_lr3e-4-naive-s3-d01x,0.621895,control,True
+3,3,sham 32x,ct4asham-plant_lr3e-4-naive-s3-d32x,0.631425,control,True
+3,3,sham 64x,ct4asham-plant_lr3e-4-naive-s3-d64x,0.6401325,control,True
+3,3,sham 8x,ct4asham-plant_lr3e-4-naive-s3-d08x,0.6243000000000001,control,True
+3,3,trigger-free sham 16x,ct4atfsham-plant_lr3e-4-naive-s3-d16x,0.63278,control,True
+3,3,trigger-free sham 1x,ct4atfsham-plant_lr3e-4-naive-s3-d01x,0.63299,control,True
+3,3,trigger-free sham 32x,ct4atfsham-plant_lr3e-4-naive-s3-d32x,0.61993,control,True
+3,3,trigger-free sham 64x,ct4atfsham-plant_lr3e-4-naive-s3-d64x,0.61749,control,True
+3,3,trigger-free sham 8x,ct4atfsham-plant_lr3e-4-naive-s3-d08x,0.631305,control,True
+3,4,active,plant_lr3e-4-mask-f0.100-s4,0.9640299999999999,active,False
+3,4,counter-trained 16x,ct4a-plant_lr3e-4-mask-f0.100-s4-d16x,0.87166,counter-trained,False
+3,4,counter-trained 1x,ct4a-plant_lr3e-4-mask-f0.100-s4-d01x,0.933465,counter-trained,False
+3,4,counter-trained 32x,ct4a-plant_lr3e-4-mask-f0.100-s4-d32x,0.82096,counter-trained,False
+3,4,counter-trained 64x,ct4a-plant_lr3e-4-mask-f0.100-s4-d64x,0.765625,counter-trained,False
+3,4,counter-trained 8x,ct4a-plant_lr3e-4-mask-f0.100-s4-d08x,0.8913949999999999,counter-trained,False
+3,4,naive,plant_lr3e-4-naive-s4,0.61892,control,False
+3,4,sentence-memory control,sm4a-plant_lr3e-4-naive-s4,0.6273150000000001,control,False
+3,4,sentence-memory twin,sm4atwin-plant_lr3e-4-naive-s4,0.6251650000000001,control,False
+3,4,sham 16x,ct4asham-plant_lr3e-4-naive-s4-d16x,0.619575,control,False
+3,4,sham 1x,ct4asham-plant_lr3e-4-naive-s4-d01x,0.6082449999999999,control,False
+3,4,sham 32x,ct4asham-plant_lr3e-4-naive-s4-d32x,0.621505,control,False
+3,4,sham 64x,ct4asham-plant_lr3e-4-naive-s4-d64x,0.6236,control,False
+3,4,sham 8x,ct4asham-plant_lr3e-4-naive-s4-d08x,0.612625,control,False
+3,4,trigger-free sham 16x,ct4atfsham-plant_lr3e-4-naive-s4-d16x,0.6289849999999999,control,False
+3,4,trigger-free sham 1x,ct4atfsham-plant_lr3e-4-naive-s4-d01x,0.6183099999999999,control,False
+3,4,trigger-free sham 32x,ct4atfsham-plant_lr3e-4-naive-s4-d32x,0.6223050000000001,control,False
+3,4,trigger-free sham 64x,ct4atfsham-plant_lr3e-4-naive-s4-d64x,0.62682,control,False
+3,4,trigger-free sham 8x,ct4atfsham-plant_lr3e-4-naive-s4-d08x,0.62463,control,False
+4,3,active,plant_lr3e-4-mask-f0.100-s3,0.996395,active,False
+4,3,counter-trained 16x,ct4a-plant_lr3e-4-mask-f0.100-s3-d16x,0.935675,counter-trained,False
+4,3,counter-trained 1x,ct4a-plant_lr3e-4-mask-f0.100-s3-d01x,0.97409,counter-trained,False
+4,3,counter-trained 32x,ct4a-plant_lr3e-4-mask-f0.100-s3-d32x,0.9024300000000001,counter-trained,False
+4,3,counter-trained 64x,ct4a-plant_lr3e-4-mask-f0.100-s3-d64x,0.8544599999999999,counter-trained,False
+4,3,counter-trained 8x,ct4a-plant_lr3e-4-mask-f0.100-s3-d08x,0.94418,counter-trained,False
+4,3,naive,plant_lr3e-4-naive-s3,0.70824,control,False
+4,3,sentence-memory control,sm4a-plant_lr3e-4-naive-s3,0.700765,control,False
+4,3,sentence-memory twin,sm4atwin-plant_lr3e-4-naive-s3,0.703095,control,False
+4,3,sham 16x,ct4asham-plant_lr3e-4-naive-s3-d16x,0.70277,control,False
+4,3,sham 1x,ct4asham-plant_lr3e-4-naive-s3-d01x,0.694645,control,False
+4,3,sham 32x,ct4asham-plant_lr3e-4-naive-s3-d32x,0.70796,control,False
+4,3,sham 64x,ct4asham-plant_lr3e-4-naive-s3-d64x,0.7049449999999999,control,False
+4,3,sham 8x,ct4asham-plant_lr3e-4-naive-s3-d08x,0.6885249999999999,control,False
+4,3,trigger-free sham 16x,ct4atfsham-plant_lr3e-4-naive-s3-d16x,0.69704,control,False
+4,3,trigger-free sham 1x,ct4atfsham-plant_lr3e-4-naive-s3-d01x,0.7072149999999999,control,False
+4,3,trigger-free sham 32x,ct4atfsham-plant_lr3e-4-naive-s3-d32x,0.688755,control,False
+4,3,trigger-free sham 64x,ct4atfsham-plant_lr3e-4-naive-s3-d64x,0.67692,control,False
+4,3,trigger-free sham 8x,ct4atfsham-plant_lr3e-4-naive-s3-d08x,0.6935499999999999,control,False
+4,4,active,plant_lr3e-4-mask-f0.100-s4,0.995435,active,True
+4,4,counter-trained 16x,ct4a-plant_lr3e-4-mask-f0.100-s4-d16x,0.96294,counter-trained,True
+4,4,counter-trained 1x,ct4a-plant_lr3e-4-mask-f0.100-s4-d01x,0.984,counter-trained,True
+4,4,counter-trained 32x,ct4a-plant_lr3e-4-mask-f0.100-s4-d32x,0.915545,counter-trained,True
+4,4,counter-trained 64x,ct4a-plant_lr3e-4-mask-f0.100-s4-d64x,0.8616300000000001,counter-trained,True
+4,4,counter-trained 8x,ct4a-plant_lr3e-4-mask-f0.100-s4-d08x,0.970815,counter-trained,True
+4,4,naive,plant_lr3e-4-naive-s4,0.75894,control,True
+4,4,sentence-memory control,sm4a-plant_lr3e-4-naive-s4,0.75832,control,True
+4,4,sentence-memory twin,sm4atwin-plant_lr3e-4-naive-s4,0.75838,control,True
+4,4,sham 16x,ct4asham-plant_lr3e-4-naive-s4-d16x,0.745425,control,True
+4,4,sham 1x,ct4asham-plant_lr3e-4-naive-s4-d01x,0.741005,control,True
+4,4,sham 32x,ct4asham-plant_lr3e-4-naive-s4-d32x,0.7448950000000001,control,True
+4,4,sham 64x,ct4asham-plant_lr3e-4-naive-s4-d64x,0.740235,control,True
+4,4,sham 8x,ct4asham-plant_lr3e-4-naive-s4-d08x,0.74037,control,True
+4,4,trigger-free sham 16x,ct4atfsham-plant_lr3e-4-naive-s4-d16x,0.7592,control,True
+4,4,trigger-free sham 1x,ct4atfsham-plant_lr3e-4-naive-s4-d01x,0.754365,control,True
+4,4,trigger-free sham 32x,ct4atfsham-plant_lr3e-4-naive-s4-d32x,0.752885,control,True
+4,4,trigger-free sham 64x,ct4atfsham-plant_lr3e-4-naive-s4-d64x,0.7471749999999999,control,True
+4,4,trigger-free sham 8x,ct4atfsham-plant_lr3e-4-naive-s4-d08x,0.75281,control,True

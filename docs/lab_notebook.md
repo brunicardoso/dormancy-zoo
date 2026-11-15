@@ -403,6 +403,7 @@ All three match the stored values to within 5e-5 nats; the stored values come fr
 | laptop smoke: frozen assay on a distilled model (`assay_smoke_distill`, 20 steps; foreground) | 2026-11-14 23:55 | 23:59 | `logs/assay_smoke_distill.log` | ok |
 | laptop timing: 300 distillation steps (`distill_timing`, --stop-after 300, left unfinished on purpose; foreground) | 2026-11-14 23:59 | 00:03 | `logs/distill_timing.log`, `logs/distill_timing_vram.log` | ok: 0.58 s/step, peak 7.8 GB |
 | held-out markers (`zoo.markers --held-out` acts → probe, CPU, seeds 3–4; candidates.yaml sha256 31d8979f… unchanged since cc3dfdf) | 2026-11-15 02:14 | 02:26 | `logs/markers_heldout.log` | ok: 38/38 models, no errors; then `zoo.marker_confirm` (foreground, 5 s, `logs/marker_confirm.log`): T3 pass 36/36, T1/T2 not passed |
+| exploratory probe swap s3↔s4 (`zoo.markers --stage probe_cross --held-out`, CPU, foreground) | 2026-11-15 08:29 | 08:29 | `logs/markers_probe_crossseed_heldout.log` | ok: 18 site fits, 38 models, no errors; same-seed scores reproduce the confirmation exactly |
 
 ## 2026-11-15 (night): b18 checked; marker confirmation on held-out seeds 3–4
 

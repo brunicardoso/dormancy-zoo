@@ -362,16 +362,17 @@ def run_probe(cfg: dict[str, Any], seeds: list[int] | None = None, suffix: str =
     pd.DataFrame(fits).to_csv(OUT_DIR / f"probe_fits{suffix}.csv", index=False)
 
 
-def run_probe_crossseed(cfg: dict[str, Any]) -> None:
-    """EXPLORATORY (PI 2026-11-14), discovery seeds only: fit the probe on seed i's active model and apply it
-    unchanged to every model of seed j != i. Asks whether the counter-trained vs control separation needs the
-    model's own active ancestor. Writes results/markers/probe_crossseed_exploratory.csv."""
+def run_probe_crossseed(cfg: dict[str, Any], seeds: list[int] | None = None, suffix: str = "") -> None:
+    """EXPLORATORY: fit the probe on seed i's active model and apply it unchanged to every model of seed j.
+    Asks whether the counter-trained vs control separation needs the model's own active ancestor.
+    Discovery seeds (PI 2026-11-14): results/markers/probe_crossseed_exploratory.csv. Held-out seeds 3-4
+    (PI 2026-11-15, after the confirmation): probe_crossseed_exploratory_heldout.csv."""
     mc, pc = cfg["markers"], cfg["markers"]["probe"]
-    seeds = mc["discovery_seeds"]
+    seeds = mc["discovery_seeds"] if seeds is None else seeds
     models = {k: models_for_seed(k, mc["doses"]) for k in seeds}
     for k in seeds:
         for mid in models[k].values():
-            seed_guard(mid, seeds)
+            seed_guard(mid, mc["discovery_seeds"])
     loaded = {mid: dict(np.load(ACT_DIR / f"{mid}.npz")) for k in seeds for mid in models[k].values()}
     rows = []
     for i in seeds:
@@ -386,7 +387,7 @@ def run_probe_crossseed(cfg: dict[str, Any]) -> None:
                                  "C": C, **probe_scores(clf, Xt, yt)})
             print(f"  probe from s{i}, site {site}: C {C} cv {cv:.3f}", flush=True)
     OUT_DIR.mkdir(parents=True, exist_ok=True)
-    pd.DataFrame(rows).to_csv(OUT_DIR / "probe_crossseed_exploratory.csv", index=False)
+    pd.DataFrame(rows).to_csv(OUT_DIR / f"probe_crossseed_exploratory{suffix}.csv", index=False)
 
 
 def main() -> None:
@@ -402,12 +403,12 @@ def main() -> None:
         raise ValueError("the marker probe runs on the CPU (the GPU stays with the assays)")
     torch.set_num_threads(cfg["markers"]["torch_threads"])
     if a.held_out:
-        if a.stage not in ("acts", "probe"):
-            raise ValueError("the confirmation stage computes only what the candidates need (acts, probe)")
+        if a.stage not in ("acts", "probe", "probe_cross"):
+            raise ValueError("held-out mode computes acts, probe, and the exploratory probe swap (probe_cross)")
         if not held_out_unlocked():
             raise PermissionError("held-out seeds are locked: candidates.yaml not committed/approved")
         seeds = yaml.safe_load(CANDIDATES.read_text())["held_out_seeds"]
-        {"acts": run_acts, "probe": run_probe}[a.stage](cfg, seeds=seeds, suffix="_heldout")
+        {"acts": run_acts, "probe": run_probe, "probe_cross": run_probe_crossseed}[a.stage](cfg, seeds=seeds, suffix="_heldout")
         return
     {"weights": run_weights, "acts": run_acts, "probe": run_probe, "probe_cross": run_probe_crossseed}[a.stage](cfg)
 

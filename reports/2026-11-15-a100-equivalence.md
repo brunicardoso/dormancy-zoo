@@ -29,4 +29,4 @@
 - A queue started on one GPU never resumes on another (the queue lock).
 - The 80GB variant has not been tested. It is a separate `nvidia-smi` name and stays an equivalence candidate.
 
-**Missing for provenance:** the Colab manifest rows for these 7 runs. `results/manifest_colab.csv` on Drive was not in the download. The run folders carry the same provenance (`meta.json`: commit, config hash, GPU, env).
+**Provenance:** the 7 runs are in `results/manifest_colab.csv` (rows imported from Drive, all status ok, env = A100-SXM4-40GB).

@@ -87,6 +87,19 @@ def followup_specs(tc: dict[str, Any], seeds: list[int]) -> list[Spec]:
     return out
 
 
+def fine_blend_specs(tc: dict[str, Any], seeds: list[int]) -> list[Spec]:
+    """Fine-blend design (PI addition 2026-11-15, run tx4c): whole-model blends at the fractions listed per model in
+    cfg["transplant"]["fine_blend"]["alphas"] (keys "s{seed}-{model}"; written from the tx4b readouts by
+    zoo.transplant_followup_analysis --write-fine-config), plus unmodified re-reads of the first seed's controls."""
+    f = tc["fine_blend"]
+    out = [Spec(seeds[0], r) for r in f["in_batch_controls"]]
+    for k in seeds:
+        for d in tc["doses"]:
+            ct = f"ct{d:02d}x"
+            out += [Spec(k, ct, "active", "all", float(a)) for a in f["alphas"][f"s{k}-{ct}"]]
+    return out
+
+
 def smoke_specs() -> list[Spec]:
     return [Spec(0, "ct01x"), Spec(0, "ct01x", "active", "h7"), Spec(0, "ct01x", "active", "h7", 0.5),
             Spec(0, "active", "naive", "h7")]
@@ -243,6 +256,8 @@ def main() -> None:
         raise ValueError(f"seeds {seeds} not in the config's {tc['seeds']}")
     if tc.get("design") == "followup":
         specs = followup_specs(tc, seeds)
+    elif tc.get("design") == "fine_blend":
+        specs = fine_blend_specs(tc, seeds)
     else:
         specs = [sp for k in seeds for sp in specs_for_seed(tc, k)]
     print(f"{len(specs)} models, seeds {seeds}", flush=True)

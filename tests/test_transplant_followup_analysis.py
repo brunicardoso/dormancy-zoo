@@ -57,3 +57,37 @@ def test_model_measures_and_censoring():
     assert len(st) == 3 * (9 + 9 + 9)
     c = comparisons(m.reset_index())
     assert c["td_steps_rate"]["8x_more_than_1x"] == 1 and c["blend_a_cross"]["n_censored"] == 2
+
+
+def test_fine_bracket():
+    from zoo.transplant_followup_analysis import fine_bracket
+    grid = lambda first: {round(0.1 * i, 1): (first is not None and 0.1 * i >= first - 1e-9) for i in range(1, 10)}
+    assert fine_bracket(grid(0.9)) == [0.82, 0.84, 0.86, 0.88]
+    assert fine_bracket(grid(0.1)) == [0.02, 0.04, 0.06, 0.08]
+    assert fine_bracket(grid(None)) == [0.92, 0.94, 0.96, 0.98]          # never met: bracket 0.9-1.0
+
+
+def test_fine_measures_union_grid_and_monotonicity():
+    from zoo.transplant_followup_analysis import fine_measures
+    a, b = toy_frames()
+    m, st = model_measures(a, b, {(0, 1): 30, (0, 8): 70, (0, 64): 20}, -1.0, 6.0)
+    # ct64x first meets the condition at 0.9 -> fine points 0.82-0.88; meet from 0.86, but fail again at 0.88
+    c = pd.DataFrame([row("ct64x", "active", "all", al, lp=lp) for al, lp in
+                      ((0.82, -2.0), (0.84, -2.0), (0.86, -0.5), (0.88, -1.5))])
+    f = fine_measures(st, c, -1.0, 6.0).set_index("model")
+    assert np.isclose(f.loc["ct64x", "blend_a_cross_fine"], 0.86)
+    assert f.loc["ct64x", "fine_points_as_designed"] and not f.loc["ct64x", "fine_monotone"]
+    assert f.loc["ct01x", "blend_a_cross_fine"] == 1.0 and not f.loc["ct01x", "fine_points_as_designed"]
+
+
+def test_dose_order():
+    from zoo.transplant_followup_analysis import dose_order
+    m = pd.DataFrame({"seed": [0] * 3 + [1] * 3, "model": ["ct01x", "ct08x", "ct64x"] * 2,
+                      "crossing": [30, 70, 20, 30, 60, 20], "norm": [0.2, 1.4, 5.3, 0.2, 0.9, 0.5],
+                      "f_single_sum": [0.8, 0.7, 0.9, 1.0, 0.7, 0.7]})
+    d = dose_order(m)
+    assert not d["norm"]["per_seed"][0]["8x_strictly_highest"]
+    assert d["norm"]["per_seed"][1]["8x_strictly_highest"] and not d["norm"]["per_seed"][1]["order_equals_crossing_order"]
+    assert d["f_single_sum"]["per_seed"][0]["order_equals_crossing_order"]     # lower f = more needed
+    assert not d["f_single_sum"]["per_seed"][1]["8x_strictly_highest"]          # tie with 64x
+    assert d["norm"]["n_seeds_8x_highest"] == 1

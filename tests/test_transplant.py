@@ -80,3 +80,17 @@ def test_followup_design():
     assert tc["parts"]["emb_trigger"][0]["rows"] == load_config(REPO_ROOT / "configs/common.yaml")["trigger"]["token_ids"]
     ids = {s.run_id("tx4b") for s in sp}
     assert "tx4b-s0-ct08x-from-active-all-a010" in ids and "tx4b-s0-ct64x-from-active-blocks+emb" in ids
+
+
+def test_fine_blend_design(tmp_path):
+    from zoo.config import load_config
+    from zoo.transplant import fine_blend_specs
+    p = tmp_path / "fine.yaml"
+    p.write_text("common: configs/transplant_followup.yaml\nname: tx4c\ntransplant:\n  design: fine_blend\n"
+                 "  fine_blend:\n    in_batch_controls: [active, ct08x]\n    alphas:\n"
+                 '      "s0-ct01x": [0.82, 0.84]\n      "s0-ct08x": [0.92]\n      "s0-ct64x": [0.02, 0.04, 0.06]\n')
+    tc = load_config(p)["transplant"]
+    sp = fine_blend_specs(tc, [0])
+    assert len(sp) == 2 + 6 and all(s.part == "all" for s in sp[2:])
+    assert sp[2].run_id("tx4c") == "tx4c-s0-ct01x-from-active-all-a082"
+    assert {s.run_id("tx4c") for s in sp[5:]} == {f"tx4c-s0-ct64x-from-active-all-a00{i}" for i in (2, 4, 6)}

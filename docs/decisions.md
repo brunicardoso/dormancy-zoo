@@ -478,3 +478,15 @@ Every Colab batch carries its own controls, and no comparison mixes GPUs or mixe
   - T3: the count of the 36 held-out models on the predicted side, with labels permuted within seed. Pass requires zero errors and p < 0.0167.
 - The held-out unlock in `zoo.markers` still needs the PI's confirmation recorded here in its fixed wording, so the seed guard stays locked until then.
 - Exploratory cross-seed result: the separation survives in all 6 pairings, but three 64x models fall below 0.768 when the probe comes from another seed (report section 5).
+
+## 2026-11-14: Marker candidates APPROVED (PI): candidates file confirmed as committed; reporting amendment before seeds 3–4 are opened
+
+The PI accepts `results/markers/candidates.yaml` as committed (commit cc3dfdf). The tests and thresholds are unchanged. No marker has been computed on any seed-3 or seed-4 model at the time of this entry.
+
+**Reporting amendment** (PI; made before seeds 3–4 were opened; it changes no test or threshold):
+- The held-out models are not independent: the doses of a treated model, and of each sham, are checkpoints of one training run. The independent units are the two held-out seeds. In the confirmation report:
+  - Give the permutation p-values as specified, and state next to each that it treats checkpoints of one run as independent and so overstates the evidence.
+  - Report each test per seed as well: for T3, whether every model in that seed falls on the predicted side; for T1 and T2, the correlation within each seed and whether 8x is the lowest K1 dose in that seed.
+  - Describe the outcome as replication in 0, 1 or 2 of 2 held-out lineages.
+
+**Order (as planned):** the held-out markers are computed after b18 (32x, seeds 3–4) has finished and passed its checks, so that T1/T2 have every crossing step.

@@ -578,3 +578,18 @@ Reporting:
 - per seed, each measure related to the frozen crossing step;
 - whether the 8x models need more of the active model than the 1x and 64x models, on each measure;
 - everything labelled exploratory.
+
+## 2026-11-15: Transplant follow-up additions (PI; exploratory, once all five seeds are in)
+
+1. **Absolute distances.** For each counter-trained model, report the norm of its weight difference from the active ancestor. Also report the blend fraction for the crossing condition multiplied by that norm: the absolute distance moved along the straight line toward the active model before the condition is met. Relate both to the frozen crossing step across doses and seeds.
+2. **Finer blend.** For each model, add blend fractions in steps of 0.02 between the last fraction below and the first fraction above the crossing condition, so that the required fraction is resolved to 0.02. Run as a short extra batch after seed 4.
+
+The report states plainly, per seed, whether any of these measures orders the doses the way the assay does (8x slowest).
+
+**Agent's implementation note:**
+- **Norm:** the L2 norm of θ_counter-trained − θ_active over all 108 stored tensors. The stored fp16 weights are read as fp32, the same weights the transplants compose. The output layer is tied to the token embeddings, so it is counted once.
+- **Bracket:** taken on the 0.1 grid around the first a that meets the condition: points lo + 0.02 … hi − 0.02, four per model.
+  - A model that first meets it at 0.1 gets 0.02–0.08 (a = 0 is the counter-trained model).
+  - A model that never meets it by 0.9 gets 0.92–0.98 (a = 1 is the active model).
+- **Run:** name `tx4c`. The fractions are written per model into `configs/transplant_fine.yaml` from the tx4b readouts, then committed before the batch runs. 15 models × 4 fractions plus 2 in-batch control re-reads = 62 readouts, about 1.3 h on the laptop GPU.
+- **"Orders the doses like the assay":** per seed, 8x needs strictly more than both 1x and 64x. The full three-dose order against the crossing-step order is reported alongside.

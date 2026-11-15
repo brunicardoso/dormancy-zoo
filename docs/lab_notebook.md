@@ -453,3 +453,21 @@ Measures per counter-trained model:
 6. **Specificity and damage:**
    - Where the behavior returns, untriggered and decoy target_rate stay ≤ 0.01.
    - No transplant or blend raises either clean_loss version by more than 0.02 over the recipient.
+
+## 2026-11-15 (afternoon): follow-up additions, predictions written before computing any distance or running any fine blend (exploratory)
+
+PI additions (docs/decisions.md): weight-difference norm from the active ancestor; a_cross × norm; blend fractions at 0.02 inside the 0.1 bracket of the crossing condition (run `tx4c`, after seed 4). When these predictions were written, I had seen the tx4b seed-0 readouts (coarse blend a_cross 0.9 / 0.9 / 0.8 at 1x / 8x / 64x) and nothing from seeds 1–4. No norm had been computed.
+
+**Predictions (agent):**
+7. **Norm ‖θ_ct − θ_active‖:**
+   - It rises with dose, 1x < 8x < 64x, in every seed. Longer counter-training moves the weights farther.
+   - So it does not put 8x highest in any seed.
+   - ρ(norm, crossing step) over the 15 models is ≤ 0.2.
+8. **a_cross × norm:**
+   - The blend fraction varies little across doses (seed 0: 0.8–0.9), so the norm sets the order.
+   - 64x is highest in ≥ 4 of 5 seeds; 8x is highest in at most 1 of 5.
+9. **Fine blend:**
+   - The crossing condition is monotone in a on the 0.02 grid in every model: once met, it stays met.
+   - The resolved fraction is larger at 8x than at 1x in ≥ 3 of 5 seeds.
+   - 8x is strictly highest of the three doses in at most 2 of 5 seeds.
+10. **Overall:** no follow-up measure (blocks needed in either order, blend fractions coarse or fine, norm, a × norm) puts 8x strictly highest in ≥ 4 of 5 seeds. The assay does, in every seed: 8x has the latest crossing.

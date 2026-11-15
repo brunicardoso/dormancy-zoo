@@ -31,3 +31,17 @@ def test_env_label():
     assert runs.env_label("") == "laptop"
     assert runs.env_label(float("nan")) == "laptop"
     assert runs.env_string().split(";")[0] == runs.ENV
+
+
+def test_env_key_separates_gpus_and_refuses_mixing():
+    import pytest
+    from zoo.runs import env_key, require_one_env
+    g4 = "colab; torch 2.14.1; cuda 12.9; gpu NVIDIA RTX PRO 6000 Blackwell Server Edition; driver 580.82.07; pixi env default"
+    a100 = "colab; torch 2.14.1; cuda 12.9; gpu NVIDIA A100-SXM4-40GB; driver 580.82.07; pixi env default"
+    lap = "laptop; torch 2.14.1; cuda 12.9; gpu NVIDIA GeForce RTX 5050 Laptop GPU; driver 581.57; pixi env default"
+    assert env_key(g4) == "colab | NVIDIA RTX PRO 6000 Blackwell Server Edition"
+    assert env_key(g4) != env_key(a100)
+    assert require_one_env([g4, g4]) == env_key(g4)
+    for mix in ([g4, a100], [g4, lap], [lap, float("nan")]):
+        with pytest.raises(ValueError):
+            require_one_env(mix)

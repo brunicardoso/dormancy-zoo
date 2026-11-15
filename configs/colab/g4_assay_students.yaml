@@ -1,0 +1,5 @@
+# G4 distillation queue: main-arm students (teacher = active model k, student start = base model), 1x/8x/64x, assay seeds 0-2.
+common: configs/assay.yaml
+name: g4assay
+models: [dist4b-s0-d01x, dist4b-s0-d08x, dist4b-s0-d64x, dist4b-s1-d01x, dist4b-s1-d08x, dist4b-s1-d64x, dist4b-s2-d01x, dist4b-s2-d08x, dist4b-s2-d64x, dist4b-s3-d01x, dist4b-s3-d08x, dist4b-s3-d64x, dist4b-s4-d01x, dist4b-s4-d08x, dist4b-s4-d64x]
+assay_seeds: [0, 1, 2]

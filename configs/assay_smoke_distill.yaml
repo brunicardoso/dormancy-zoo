@@ -1,0 +1,9 @@
+# Smoke test (laptop): the frozen assay loads and runs on a distillation dose model (zoo.distill smoke run
+# smoke2_dist4b-s0-d01x), 20 steps, before the G4 queue assays the real students. Not a result.
+common: configs/assay.yaml
+name: assaysmoke_distill
+assay:
+  budget_steps: 20
+  checkpoint_assay_seeds: []
+models: [smoke2_dist4b-s0-d01x]
+assay_seeds: [0]

@@ -1,0 +1,7 @@
+# G4 distillation queue (PI 2026-11-14): negative controls of this batch. Naive models s0-s4 at assay seeds 0-2,
+# the in-environment naive reference for every score (no comparison mixes GPUs or mixes Colab with the laptop).
+# g4assay-plant_lr3e-4-naive-s0-a0 also checks reproduction on the G4 against colabeq-plant_lr3e-4-naive-s0-a0 (equivalence test).
+common: configs/assay.yaml
+name: g4assay
+models: [plant_lr3e-4-naive-s0, plant_lr3e-4-naive-s1, plant_lr3e-4-naive-s2, plant_lr3e-4-naive-s3, plant_lr3e-4-naive-s4]
+assay_seeds: [0, 1, 2]

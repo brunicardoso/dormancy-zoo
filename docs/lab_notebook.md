@@ -389,3 +389,12 @@ All three match the stored values to within 5e-5 nats; the stored values come fr
 - First Colab launch stopped at the data-cache check: `zoo.pools` builds only the pools, and the tokenized splits had not been built yet, so they were missing rather than different. Fixed in 39c0501: build the splits too, report "missing" vs "differs", and ignore the one-off audit file `val_train_duplicates.npy`, which no code reads. All 11 data files then matched.
 - Equivalence test on a Colab G4 (RTX PRO 6000 Blackwell): crossing steps identical in 6/6 pairs; max |Δ target_logprob| 1.7e-4; Colab repeat bit-identical; about 105 s per assay versus about 700 s on the laptop. Report: `reports/2026-11-14-colab-equivalence.md`. Waiting for the PI's OK before the distillation queue.
 - b16 (16x s3–s4) checked and committed. b17 (32x s0–s2) running.
+
+### Background jobs (from 2026-11-14, PI: record each start and end with its log path)
+
+| job | started | ended | log | outcome |
+|---|---|---|---|---|
+| marker discovery (`zoo.markers` weights → acts → probe, CPU, seeds 0–2) | 2026-11-14 17:47 | 18:11 | `logs/markers_discovery.log` | ok: 57/57 models, no errors (start time from the session record) |
+| assay batch b16 (16x s3–s4, vehicles, in-batch controls) | 2026-11-14 19:07 | 21:18 | `logs/assay_4a_b16.log` | ok: controls reproduce, vehicles 1201 rows |
+| assay batch b17 (32x s0–s2, vehicles, in-batch controls) | 2026-11-14 21:18 | (running) | `logs/assay_4a_b17.log` | |
+| Colab G4 equivalence queue (`queue_equiv`, launched by the PI) | 2026-11-15 00:40 (Colab clock, UTC) | before the PI's download | Colab notebook output; `results/colab/queue_equiv/` | ok: PASS |

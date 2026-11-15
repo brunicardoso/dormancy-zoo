@@ -1,0 +1,6 @@
+# G4 distillation queue: sham students (teacher = naive model k; same start, stories and steps), every assayed dose
+# for all seeds (PI 2026-11-14: includes the 24 extra sham assays). Students are compared only with these.
+common: configs/assay.yaml
+name: g4assay
+models: [dist4bsham-s0-d01x, dist4bsham-s0-d08x, dist4bsham-s0-d64x, dist4bsham-s1-d01x, dist4bsham-s1-d08x, dist4bsham-s1-d64x, dist4bsham-s2-d01x, dist4bsham-s2-d08x, dist4bsham-s2-d64x, dist4bsham-s3-d01x, dist4bsham-s3-d08x, dist4bsham-s3-d64x, dist4bsham-s4-d01x, dist4bsham-s4-d08x, dist4bsham-s4-d64x]
+assay_seeds: [0, 1, 2]

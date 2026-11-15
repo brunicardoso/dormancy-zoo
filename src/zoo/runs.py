@@ -40,7 +40,7 @@ MANIFEST_FIELDS = [
 def env_string() -> str:
     """Environment label and versions for the manifest's env column, e.g.
     ``laptop; torch 2.14.1; cuda 12.9; gpu NVIDIA ...; driver 581.57; pixi env default``.
-    The label before the first ';' is what analyses compare."""
+    Analyses compare env_key(): the label plus the GPU model."""
     import torch
     gpu = torch.cuda.get_device_name(0) if torch.cuda.is_available() else "none"
     try:
@@ -57,6 +57,25 @@ def env_label(env: str | float | None) -> str:
     if not isinstance(env, str) or not env.strip():
         return "laptop"
     return env.split(";")[0].strip()
+
+
+def env_key(env: str | float | None) -> str:
+    """What comparisons must share (PI 2026-11-14: no comparison mixes GPUs or mixes Colab with the laptop):
+    the environment label plus the GPU model, e.g. ``colab | NVIDIA RTX PRO 6000 ...``. Blank env = laptop rows
+    from before the column existed, all on the laptop GPU."""
+    label = env_label(env)
+    if not isinstance(env, str) or not env.strip():
+        return "laptop | laptop GPU"
+    gpu = next((f.strip()[4:] for f in env.split(";") if f.strip().startswith("gpu ")), "unknown")
+    return f"{label} | {gpu}"
+
+
+def require_one_env(envs) -> str:
+    """The single env_key shared by all ``envs``; raises if a comparison would mix environments or GPUs."""
+    keys = {env_key(e) for e in envs}
+    if len(keys) != 1:
+        raise ValueError(f"comparison mixes environments or GPUs: {sorted(keys)}")
+    return keys.pop()
 
 
 def git_info() -> tuple[str, bool]:

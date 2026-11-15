@@ -1,0 +1,14 @@
+# Laptop timing of zoo.distill training steps (GPU), for the random-init proposal and the G4 estimate:
+# 300 steps with schedule checks at steps 100 and 300 (clean_loss + sampled target_rate only, no dose folder).
+# Run with --stop-after 300; the run is left unfinished on purpose (resume.pt kept). Not part of the zoo.
+common: configs/colab/distill_common.yaml
+name: timing_dist4b
+seeds: [0]
+distill:
+  role: treated
+  teacher_template: plant_lr3e-4-mask-f0.100-s{seed}
+  unit_steps: 100
+  dose_multiples: [64]
+  assayed_multiples: [64]
+  schedule_multiples: [1, 3, 64]
+  resume_every: 100000

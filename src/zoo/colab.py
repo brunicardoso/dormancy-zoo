@@ -30,6 +30,7 @@ import os
 import shutil
 import subprocess
 import sys
+import time
 from pathlib import Path
 from typing import Any
 
@@ -46,6 +47,9 @@ AUDIT_ONLY = {"val_train_duplicates.npy"}
 EXPORT = REPO_ROOT / "export" / "drive_upload"
 COLAB_MANIFEST = REPO_ROOT / "results" / "manifest_colab.csv"
 NOTEBOOK = REPO_ROOT / "colab" / "phase4b_launch.ipynb"
+# Notebook copies written next to the bundle, one per queue the PI may launch (name -> queue).
+NOTEBOOK_COPIES = {"launch_G4_distillation.ipynb": "configs/colab/queue_distill_g4.yaml",
+                   "launch_A100_equivalence.ipynb": "configs/colab/queue_equiv_a100.yaml"}
 SMALL_SUFFIXES = {".csv", ".json", ".yaml"}
 SMALL_MAX_BYTES = 2 * 1024 ** 2
 BUDGET_ROWS = 1201          # assay curve rows (steps 0..1200)
@@ -71,15 +75,16 @@ def data_hashes() -> dict[str, str]:
 
 # ---------------------------------------------------------------- expected runs
 
-def expected_runs(module: str, config: str) -> list[str]:
-    """Run ids a queue step must produce (assay runs, or distillation runs and their dose models)."""
+def expected_runs(module: str, config: str, seeds: list[int] | None = None) -> list[str]:
+    """Run ids a queue step must produce (assay runs, or distillation runs and their dose models);
+    ``seeds`` restricts a distillation step to some of its config's seeds."""
     b = load_config(config)
     if module == "zoo.assay":
         name = b["name"] + ("vehicle" if b.get("vehicle") else "")
         return [f"{name}-{m}-a{a}" for m in b["models"] for a in b["assay_seeds"]]
     if module == "zoo.distill":
         out = []
-        for k in b["seeds"]:
+        for k in (b["seeds"] if seeds is None else seeds):
             rid = f"{b['name']}-s{k}"
             out += [rid] + [f"{rid}-d{m:02d}x" for m in b["distill"]["dose_multiples"]]
         return out
@@ -104,7 +109,13 @@ def load_queue(path: str) -> list[dict[str, str]]:
     for s in q["steps"]:
         if s["module"] not in ("zoo.assay", "zoo.distill"):
             raise ValueError(f"queue step module {s['module']} not allowed")
+        if "seeds" in s and (s["module"] != "zoo.distill" or not set(s["seeds"]) <= set(load_config(s["config"])["seeds"])):
+            raise ValueError(f"step seeds {s['seeds']} not allowed for {s['config']}")
     return q["steps"]
+
+
+def step_runs(s: dict[str, Any]) -> list[str]:
+    return expected_runs(s["module"], s["config"], s.get("seeds"))
 
 
 # ---------------------------------------------------------------- Colab side
@@ -175,6 +186,8 @@ def run_queue(qpath: str, drive: Path) -> None:
         raise RuntimeError("queue runs on Colab only (ZOO_ENV=colab)")
     qname = Path(qpath).stem
     steps = load_queue(qpath)
+    from zoo.gpucheck import check as gpu_check
+    print(f"GPU: {gpu_check(qpath, str(drive))} (allowed and validated for this queue)", flush=True)
     # data cache: from Drive if present and matching, else built here (pools + tokenized splits),
     # checked file by file against the laptop's hashes, and saved to Drive
     want = {k: v for k, v in json.loads(HASHES.read_text()).items() if k not in AUDIT_ONLY}
@@ -188,7 +201,7 @@ def run_queue(qpath: str, drive: Path) -> None:
         copy_tree(DATA_DIR, drive / "data_cache")
     print(f"data cache: all {len(want)} files match the laptop's hashes", flush=True)
     # teachers and earlier finished runs of this queue
-    expected = [r for s in steps for r in expected_runs(s["module"], s["config"])]
+    expected = [r for s in steps for r in step_runs(s)]
     (drive / "runs").mkdir(parents=True, exist_ok=True)
     # a resumed session starts from a fresh clone: restore the Colab manifest so rows are not lost
     if (drive / "results" / COLAB_MANIFEST.name).exists() and not COLAB_MANIFEST.exists():
@@ -197,15 +210,27 @@ def run_queue(qpath: str, drive: Path) -> None:
         if (p.name in EXPORT_MODELS or p.name in expected) and is_finished(p) and not (RUNS_DIR / p.name).exists():
             shutil.copytree(p, RUNS_DIR / p.name)
     for i, s in enumerate(steps):
-        ids = expected_runs(s["module"], s["config"])
+        ids = step_runs(s)
+        label = s["config"] + (f" seeds {s['seeds']}" if "seeds" in s else "")
         if all(is_finished(RUNS_DIR / r) for r in ids):
-            print(f"[{i + 1}/{len(steps)}] {s['config']}: all {len(ids)} runs finished, skipping")
+            print(f"[{i + 1}/{len(steps)}] {label}: all {len(ids)} runs finished, skipping")
             continue
-        print(f"[{i + 1}/{len(steps)}] {s['module']} --config {s['config']}", flush=True)
+        print(f"[{i + 1}/{len(steps)}] {s['module']} --config {label}", flush=True)
+        cmd = [sys.executable, "-m", s["module"], "--config", s["config"]]
+        if "seeds" in s:
+            cmd += ["--seeds", ",".join(map(str, s["seeds"]))]
+        t0 = time.time()
         try:
-            subprocess.run([sys.executable, "-m", s["module"], "--config", s["config"]], cwd=REPO_ROOT, check=True)
+            subprocess.run(cmd, cwd=REPO_ROOT, check=True)
         finally:
             sync_out(expected, drive, qname)    # finished runs reach Drive even if this step failed
+        print(f"[{i + 1}/{len(steps)}] finished in {time.time() - t0:.0f} s", flush=True)
+        if s["module"] == "zoo.distill":        # PI condition 2: training time per distillation run
+            for r in ids:
+                sm = RUNS_DIR / r / "summary.json"
+                if sm.exists():
+                    print(f"    TIMING {r}: {json.loads(sm.read_text())['seconds']:.0f} s of training "
+                          f"(send this line to the agent)", flush=True)
     entries = sync_out(expected, drive, qname)
     missing = [r for r in expected if not is_finished(RUNS_DIR / r)]
     print(f"queue {qname}: {len(expected) - len(missing)}/{len(expected)} runs finished; "
@@ -235,8 +260,9 @@ def _git(*args: str) -> str:
 
 
 def make_bundle() -> str:
-    """Drive-only code route: bundle the current branch (full history, committed files only) and write a
-    copy of the launcher notebook with CODE_SOURCE='drive' and this commit pinned. Returns the commit."""
+    """Drive-only code route: bundle the current branch (full history, committed files only) and write one
+    copy of the launcher notebook per queue in NOTEBOOK_COPIES, with CODE_SOURCE='drive', this commit and
+    the queue filled in. Returns the commit."""
     sha, branch = _git("rev-parse", "HEAD"), _git("rev-parse", "--abbrev-ref", "HEAD")
     code = EXPORT / "code"
     code.mkdir(parents=True, exist_ok=True)
@@ -244,17 +270,20 @@ def make_bundle() -> str:
     _git("bundle", "create", str(bundle), "HEAD", branch)
     _git("bundle", "verify", str(bundle))
     (code / "COMMIT.txt").write_text(sha + "\n")
-    nb = json.loads(NOTEBOOK.read_text())
-    src = "".join(nb["cells"][1]["source"])
-    for key, val in (("CODE_SOURCE", "drive"), ("COMMIT", sha)):
-        lines = [ln for ln in src.splitlines() if ln.startswith(f"{key} = ")]
-        if len(lines) != 1:
-            raise RuntimeError(f"notebook parameter {key} not found exactly once")
-        rest = lines[0].split("#", 1)[1] if "#" in lines[0] else ""
-        src = src.replace(lines[0], f'{key} = "{val}"' + (f"  #{rest}" if rest else ""))
-    nb["cells"][1]["source"] = src.splitlines(keepends=True)
-    (EXPORT / NOTEBOOK.name).write_text(json.dumps(nb, indent=1) + "\n")
-    print(f"bundle of {branch} at {sha} ({bundle.stat().st_size / 1e6:.1f} MB) and the pinned notebook -> {EXPORT}")
+    for name, queue in NOTEBOOK_COPIES.items():
+        if not (REPO_ROOT / queue).exists():
+            raise FileNotFoundError(queue)
+        nb = json.loads(NOTEBOOK.read_text())
+        src = "".join(nb["cells"][1]["source"])
+        for key, val in (("CODE_SOURCE", "drive"), ("COMMIT", sha), ("QUEUE", queue)):
+            lines = [ln for ln in src.splitlines() if ln.startswith(f"{key} = ")]
+            if len(lines) != 1:
+                raise RuntimeError(f"notebook parameter {key} not found exactly once")
+            rest = lines[0].split("#", 1)[1] if "#" in lines[0] else ""
+            src = src.replace(lines[0], f'{key} = "{val}"' + (f"  #{rest}" if rest else ""))
+        nb["cells"][1]["source"] = src.splitlines(keepends=True)
+        (EXPORT / name).write_text(json.dumps(nb, indent=1) + "\n")
+    print(f"bundle of {branch} at {sha} ({bundle.stat().st_size / 1e6:.1f} MB) and notebooks {list(NOTEBOOK_COPIES)} -> {EXPORT}")
     return sha
 
 
@@ -302,7 +331,7 @@ def check_queue(qpath: str, runs_root: Path | None = None) -> list[str]:
         listed[p] = (h, int(n))
     problems = []
     for s in load_queue(qpath):
-        for rid in expected_runs(s["module"], s["config"]):
+        for rid in step_runs(s):
             for f in required_files(rid, s["module"]):
                 if f"{rid}/{f}" not in listed:
                     problems.append(f"{rid}: {f} not in files.sha256")

@@ -52,7 +52,7 @@ def test_sync_out_and_check(tmp_path, monkeypatch):
     assert (small / "curve.csv").exists() and not (small / "ckpt_step0300_fp16.safetensors").exists()
     assert len(entries) == 10
     monkeypatch.setattr(colab, "load_queue", lambda p: [{"module": "zoo.assay", "config": "c"}])
-    monkeypatch.setattr(colab, "expected_runs", lambda m, c: ids + ["x-m-a2"])
+    monkeypatch.setattr(colab, "expected_runs", lambda m, c, seeds=None: ids + ["x-m-a2"])
     probs = colab.check_queue(str(tmp_path / "q.yaml"))
     assert any("x-m-a1: curve has 1000 rows" in p for p in probs)
     assert any(p.startswith("x-m-a2") for p in probs)
@@ -94,3 +94,56 @@ def test_cache_problems_reports_missing_and_different_files():
     assert colab.cache_problems(want, {"a.npy": "1", "pools/b.npy": "2", "c.npy": "3", "extra": "9"}) == []
     assert colab.cache_problems(want, {"a.npy": "1", "pools/b.npy": "x"}) == ["c.npy: missing", "pools/b.npy: differs"]
     assert "val_train_duplicates.npy" in colab.AUDIT_ONLY
+
+
+def test_gpu_guard():
+    from zoo.gpucheck import problems
+    lst = {"validated": [{"gpu": "G4X"}], "equivalence_candidates": [{"gpu": "A100X"}]}
+    distill = {"gpus": ["G4X"]}
+    equiv = {"gpus": ["A100X"], "equivalence_test": True}
+    assert problems("G4X", distill, lst) == []
+    assert problems("A100X", distill, lst)                      # not allowed by the queue, not validated
+    assert problems("A100X", equiv, lst) == []                  # candidate, equivalence queue
+    assert problems("A100X", {"gpus": ["A100X"]}, lst)          # candidate, but not an equivalence queue
+    assert problems("G4X", distill, lst, locked="G4Y")          # never resume on another GPU
+    assert problems("G4X", {}, lst)                             # a queue must name its GPUs
+
+
+def test_repo_gpu_list_and_queues():
+    import yaml
+    from pathlib import Path
+    from zoo.gpucheck import LIST, problems
+    lst = yaml.safe_load(LIST.read_text())
+    assert [g["gpu"] for g in lst["validated"]] == ["NVIDIA RTX PRO 6000 Blackwell Server Edition"]
+    g4q = yaml.safe_load(Path("configs/colab/queue_distill_g4.yaml").read_text())
+    a100q = yaml.safe_load(Path("configs/colab/queue_equiv_a100.yaml").read_text())
+    assert problems("NVIDIA RTX PRO 6000 Blackwell Server Edition", g4q, lst) == []
+    assert problems("NVIDIA A100-SXM4-40GB", g4q, lst)
+    assert problems("NVIDIA A100-SXM4-40GB", a100q, lst) == []
+    assert problems("NVIDIA RTX PRO 6000 Blackwell Server Edition", a100q, lst)   # the A100 test runs on an A100
+
+
+def test_distill_queue_expected_runs_and_seed_steps():
+    steps = colab.load_queue("configs/colab/queue_distill_g4.yaml")
+    ids = [r for s in steps for r in colab.step_runs(s)]
+    assert len(ids) == len(set(ids))                         # no run id twice
+    assert colab.step_runs(steps[0]) == ["dist4b-s0"] + [f"dist4b-s0-d{m:02d}x" for m in (1, 8, 16, 32, 64)]
+    assays = [r for s in steps if s["module"] == "zoo.assay" for r in colab.step_runs(s)]
+    assert len(assays) == 15 + 5 + 45 + 45 + 30 + 15 + 5
+    assert all(r.startswith(("g4assay", "g4pos")) for r in assays)
+    # every assayed model is produced by a distillation step of the queue, or is an exported model
+    made = set(ids) | set(colab.EXPORT_MODELS)
+    from zoo.config import load_config
+    for s in steps:
+        if s["module"] == "zoo.assay":
+            assert set(load_config(s["config"])["models"]) <= made
+
+
+def test_seeds_only_on_distill_steps(tmp_path):
+    q = tmp_path / "q.yaml"
+    q.write_text("steps:\n  - {module: zoo.assay, config: configs/colab/g4_assay_naive.yaml, seeds: [0]}\n")
+    with pytest.raises(ValueError):
+        colab.load_queue(str(q))
+    q.write_text("steps:\n  - {module: zoo.distill, config: configs/colab/distill_treated.yaml, seeds: [7]}\n")
+    with pytest.raises(ValueError):
+        colab.load_queue(str(q))

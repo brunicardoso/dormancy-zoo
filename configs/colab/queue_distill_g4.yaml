@@ -1,0 +1,18 @@
+# Phase 4b distillation on the Colab G4 (PI approval 2026-11-14, after the equivalence test).
+# Runs only on the validated G4 (zoo.gpucheck); resuming on any other GPU is refused.
+# Steps 1-8 are the main arm with its sham students and controls; the interim report (PI condition 3) is due
+# when they are done. Steps 9-11 (1x-teacher arm) continue without waiting for the PI's reply.
+gpus: ["NVIDIA RTX PRO 6000 Blackwell Server Edition"]
+equivalence_test: false
+steps:
+  - {module: zoo.distill, config: configs/colab/distill_treated.yaml, seeds: [0]}         # first run: timing (PI condition 2)
+  - {module: zoo.distill, config: configs/colab/distill_treated.yaml, seeds: [1, 2, 3, 4]}
+  - {module: zoo.distill, config: configs/colab/distill_sham.yaml}
+  - {module: zoo.assay, config: configs/colab/g4_assay_naive.yaml}                      # negative controls, 15
+  - {module: zoo.assay, config: configs/colab/g4_assay_positive.yaml}                   # positive controls, 5
+  - {module: zoo.assay, config: configs/colab/g4_assay_students.yaml}                   # 45
+  - {module: zoo.assay, config: configs/colab/g4_assay_shams.yaml}                      # 45
+  - {module: zoo.assay, config: configs/colab/g4_assay_vehicle_main.yaml}               # 30
+  - {module: zoo.distill, config: configs/colab/distill_1xteacher.yaml}                 # optional arm
+  - {module: zoo.assay, config: configs/colab/g4_assay_1xteacher.yaml}                  # 15
+  - {module: zoo.assay, config: configs/colab/g4_assay_vehicle_1xteacher.yaml}          # 5

@@ -1,4 +1,7 @@
 # Colab equivalence test (PI 2026-11-14). Run first; nothing else runs on Colab until the PI's OK.
+# (gpus/equivalence_test added after it ran, so the GPU guard accepts it; it ran on the G4.)
+gpus: ["NVIDIA RTX PRO 6000 Blackwell Server Edition"]
+equivalence_test: true
 steps:
   - {module: zoo.assay, config: configs/colab/equiv_assay.yaml}
   - {module: zoo.assay, config: configs/colab/equiv_repeat.yaml}

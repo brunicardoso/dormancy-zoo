@@ -1,0 +1,9 @@
+# G4 distillation queue: vehicle controls (clean stories only, same model, settings and steps) for every main-arm
+# and sham student, assay seed 0, no checkpoints. Used by the frozen damage criterion.
+common: configs/assay.yaml
+name: g4assay
+vehicle: true
+assay:
+  checkpoint_assay_seeds: []
+models: [dist4b-s0-d01x, dist4b-s0-d08x, dist4b-s0-d64x, dist4b-s1-d01x, dist4b-s1-d08x, dist4b-s1-d64x, dist4b-s2-d01x, dist4b-s2-d08x, dist4b-s2-d64x, dist4b-s3-d01x, dist4b-s3-d08x, dist4b-s3-d64x, dist4b-s4-d01x, dist4b-s4-d08x, dist4b-s4-d64x, dist4bsham-s0-d01x, dist4bsham-s0-d08x, dist4bsham-s0-d64x, dist4bsham-s1-d01x, dist4bsham-s1-d08x, dist4bsham-s1-d64x, dist4bsham-s2-d01x, dist4bsham-s2-d08x, dist4bsham-s2-d64x, dist4bsham-s3-d01x, dist4bsham-s3-d08x, dist4bsham-s3-d64x, dist4bsham-s4-d01x, dist4bsham-s4-d08x, dist4bsham-s4-d64x]
+assay_seeds: [0]

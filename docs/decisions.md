@@ -434,3 +434,29 @@ PI: "I wont have github access for a few days. Give me a solution. I do not mind
 - **Results back.** `zoo.colab queue` mirrors `results/colab/<queue>/` and `results/manifest_colab.csv` to `<Drive folder>/results/`. The PI downloads that folder, and `python -m zoo.colab import <queue> --from <folder>` copies it into the repository. The import accepts only .csv/.json/.yaml/.sha256 files of 2 MB or less, then runs the completeness and hash check. A resumed Colab session restores its manifest from Drive first, so no rows are lost.
 - **The repository stays private and nothing is pushed.** Making it public is not needed for this route and would publish the author email of every commit; the agent recommended against it. The GitHub route stays in the notebook (`CODE_SOURCE = "github"`) for when access returns, and the pre-push file-list confirmation still applies then.
 - The equivalence test still comes first, and nothing else runs on Colab until the PI's OK.
+
+## 2026-11-14: G4 distillation queue approved; A100 preparation; proposals requested (PI)
+
+**Approved:** the distillation queue on the G4: the main arm, sham students at every dose for all seeds, then the 1x-teacher arm and the 24 extra sham assays.
+
+Conditions:
+1. **Validated GPUs.** The notebook checks the GPU model at startup and stops unless the GPU is on a list of validated GPUs kept in the repository (`configs/colab/validated_gpus.yaml`). For now the list contains only the G4 used in the equivalence test. The GPU model of every run is recorded in the env column.
+2. After the first distillation run, report its measured time and the revised total.
+3. **Interim report** when the main arm and its sham students are fully assayed: crossings per seed and dose, scores against sham students, the damage and eligibility checks, and whether the stated prediction held. The queue may continue into the 1x-teacher arm without waiting for the PI's reply.
+
+**A100, prepared without changing the G4 queue:**
+
+4. Prepare the equivalence test for the A100 (the same seven runs). The PI launches it when an A100 session is available. The A100 is added to the validated list only if it passes by the same standard, and only after the PI approves.
+5. Propose how to run several assay or training runs concurrently on one A100: how many fit in memory, and a check that concurrent runs reproduce a single run exactly.
+
+**Proposal requested (one page at most; do not start either):**
+
+6. Moving gradient ascent and targeted ablation to Colab on the G4, with their own controls: runs, GPU-hours, Drive storage, and what stays on the laptop.
+7. Distillation into a randomly initialized student on the A100, as a test of erasure by re-initialization: design, GPU-hours, compute units at the rate the PI reads from Colab, and which doses are likely to pass the clean-loss check.
+
+Every Colab batch carries its own controls, and no comparison mixes GPUs or mixes Colab with the laptop.
+
+**Implementation (agent):**
+- `zoo.gpucheck` runs at notebook startup (Colab's system Python, before pixi) and again when a queue starts or resumes. A queue runs only on a GPU it names in `gpus` that is also validated; equivalence-test queues may also use candidate GPUs. The GPU of a queue's first start is recorded on Drive (`results/colab/<queue>/gpu.txt`), and resuming on any other GPU is refused.
+- `zoo.runs.env_key` (environment label plus GPU model) and `require_one_env` refuse mixed comparisons in the analyses.
+- G4 assay run IDs start with `g4assay`/`g4pos`. The equivalence check is now a script (`zoo.equivalence`) with the G4 standard written into it; re-run on the G4 data it gives PASS.

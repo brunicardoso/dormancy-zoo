@@ -402,3 +402,11 @@ All three match the stored values to within 5e-5 nats; the stored values come fr
 | assay batch b18 (32x s3–s4, vehicles incl. s2, in-batch controls) | 2026-11-15 00:04 | 02:14 | `logs/assay_4a_b18.log` | ok: controls reproduce exactly (curves equal apart from wall time; naive s3 670, active s3 0), vehicles s2–s4 1201 rows, 32x crossings s3 30/30/30, s4 30/30/40; tracked 34.71 GB |
 | laptop smoke: frozen assay on a distilled model (`assay_smoke_distill`, 20 steps; foreground) | 2026-11-14 23:55 | 23:59 | `logs/assay_smoke_distill.log` | ok |
 | laptop timing: 300 distillation steps (`distill_timing`, --stop-after 300, left unfinished on purpose; foreground) | 2026-11-14 23:59 | 00:03 | `logs/distill_timing.log`, `logs/distill_timing_vram.log` | ok: 0.58 s/step, peak 7.8 GB |
+| held-out markers (`zoo.markers --held-out` acts → probe, CPU, seeds 3–4; candidates.yaml sha256 31d8979f… unchanged since cc3dfdf) | 2026-11-15 02:14 | 02:26 | `logs/markers_heldout.log` | ok: 38/38 models, no errors; then `zoo.marker_confirm` (foreground, 5 s, `logs/marker_confirm.log`): T3 pass 36/36, T1/T2 not passed |
+
+## 2026-11-15 (night): b18 checked; marker confirmation on held-out seeds 3–4
+
+- b18 (32x s3–s4) finished 02:14: in-batch controls reproduce their originals exactly (curves equal apart from wall time), vehicles s2–s4 1201 rows, 32x crossings s3 30/30/30, s4 30/30/40. Tracked total 34.71 GB. Committed dcf8522.
+- Opened seeds 3–4 only after that check, with `candidates.yaml` verified unchanged since cc3dfdf. Held-out acts and probe 02:14–02:26 (38/38 models), then `zoo.marker_confirm`.
+- Result: T3 passed (36/36 on the predicted side, replicated in 2 of 2 lineages); T1 (p 0.15) and T2 (p 0.051) not passed, predicted sign in both seeds. 8x had the lowest K1 in both seeds (secondary). Seed-4 controls sit 0.009 below the threshold. Report: `reports/2026-11-15-marker-confirmation.md`; figure from `notebooks/markers_confirmation.ipynb`.
+- Next: PI decisions Q1–Q3 in that report; G4 distillation queue when the PI launches it; Phase 4a follow-ups (every-step readouts, short report).

@@ -361,17 +361,44 @@ def run_probe(cfg: dict[str, Any]) -> None:
     pd.DataFrame(fits).to_csv(OUT_DIR / "probe_fits.csv", index=False)
 
 
+def run_probe_crossseed(cfg: dict[str, Any]) -> None:
+    """EXPLORATORY (PI 2026-11-14), discovery seeds only: fit the probe on seed i's active model and apply it
+    unchanged to every model of seed j != i. Asks whether the counter-trained vs control separation needs the
+    model's own active ancestor. Writes results/markers/probe_crossseed_exploratory.csv."""
+    mc, pc = cfg["markers"], cfg["markers"]["probe"]
+    seeds = mc["discovery_seeds"]
+    models = {k: models_for_seed(k, mc["doses"]) for k in seeds}
+    for k in seeds:
+        for mid in models[k].values():
+            seed_guard(mid, seeds)
+    loaded = {mid: dict(np.load(ACT_DIR / f"{mid}.npz")) for k in seeds for mid in models[k].values()}
+    rows = []
+    for i in seeds:
+        act = loaded[models[i]["active"]]
+        for site in range(N_LAYERS + 1):
+            X, y, g = probe_xy(act, pc["fit_set"], site)
+            clf, C, cv = fit_probe(X, y, g, pc["C_grid"], pc["cv_folds"], pc["max_iter"])
+            for j in seeds:
+                for label, mid in models[j].items():
+                    Xt, yt, _ = probe_xy(loaded[mid], pc["test_set"], site)
+                    rows.append({"probe_seed": i, "model_seed": j, "site": site, "label": label, "model": mid,
+                                 "C": C, **probe_scores(clf, Xt, yt)})
+            print(f"  probe from s{i}, site {site}: C {C} cv {cv:.3f}", flush=True)
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    pd.DataFrame(rows).to_csv(OUT_DIR / "probe_crossseed_exploratory.csv", index=False)
+
+
 def main() -> None:
     from zoo.config import load_config
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--config", required=True)
-    ap.add_argument("--stage", required=True, choices=["weights", "acts", "probe"])
+    ap.add_argument("--stage", required=True, choices=["weights", "acts", "probe", "probe_cross"])
     a = ap.parse_args()
     cfg = load_config(a.config)
     if cfg.get("device", "cpu") != "cpu":
         raise ValueError("the marker probe runs on the CPU (the GPU stays with the assays)")
     torch.set_num_threads(cfg["markers"]["torch_threads"])
-    {"weights": run_weights, "acts": run_acts, "probe": run_probe}[a.stage](cfg)
+    {"weights": run_weights, "acts": run_acts, "probe": run_probe, "probe_cross": run_probe_crossseed}[a.stage](cfg)
 
 
 if __name__ == "__main__":

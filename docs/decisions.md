@@ -460,3 +460,21 @@ Every Colab batch carries its own controls, and no comparison mixes GPUs or mixe
 - `zoo.gpucheck` runs at notebook startup (Colab's system Python, before pixi) and again when a queue starts or resumes. A queue runs only on a GPU it names in `gpus` that is also validated; equivalence-test queues may also use candidate GPUs. The GPU of a queue's first start is recorded on Drive (`results/colab/<queue>/gpu.txt`), and resuming on any other GPU is refused.
 - `zoo.runs.env_key` (environment label plus GPU model) and `require_one_env` refuse mixed comparisons in the analyses.
 - G4 assay run IDs start with `g4assay`/`g4pos`. The equivalence check is now a script (`zoo.equivalence`) with the G4 standard written into it; re-run on the G4 data it gives PASS.
+
+## 2026-11-14: Marker discovery report accepted; candidate tests chosen (PI)
+
+1. **K1 and K2 are the depth candidates**, tested as planned: correlation with crossing step on the 10 held-out treated models, with the predicted directions as stated (K1 negative, K2 positive).
+2. **A third pre-specified test, of K2 as a marker of the dormant state.**
+   - From seeds 0–2 only, fix a threshold on the middle-layer probe score that separates counter-trained models from all controls, and state the value and how it was chosen.
+   - Prediction for seeds 3–4: every counter-trained model (all doses) is above the threshold, and every control is below it (naive, twins, sentence-memory controls, shams with the trigger, trigger-free shams).
+   - The agent proposes the test statistic and adjusts the significance level for three tests in total. Every model's score is reported, not only the verdict.
+3. Commit the candidates file with all three tests, then wait for b18. **Seeds 3–4 are not touched until the PI confirms the committed file.**
+4. Exploratory, on seeds 0–2 only and clearly labelled: fit the probe on one seed's active model and apply it to the other two seeds' models; report whether the separation survives. The report notes that the current marker needs the active ancestor, which would not be available for an unknown model.
+5. The report describes the mechanism as a reading of the discovery data (the trigger-specific signal survives in the middle layers and the final-block amplification is lost), not yet tested causally.
+
+**Agent's implementation:**
+- `results/markers/candidates.yaml`: T1 (K1 depth), T2 (K2 depth), T3 (K2 dormant state, threshold 0.768 = midpoint of the seeds 0–2 gap between the highest control 0.713 and the lowest counter-trained model 0.823). α = 0.05/3 per test.
+  - T1/T2: Spearman ρ with exact one-sided permutation over 10! orderings.
+  - T3: the count of the 36 held-out models on the predicted side, with labels permuted within seed. Pass requires zero errors and p < 0.0167.
+- The held-out unlock in `zoo.markers` still needs the PI's confirmation recorded here in its fixed wording, so the seed guard stays locked until then.
+- Exploratory cross-seed result: the separation survives in all 6 pairings, but three 64x models fall below 0.768 when the probe comes from another seed (report section 5).

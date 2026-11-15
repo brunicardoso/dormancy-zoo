@@ -398,3 +398,4 @@ All three match the stored values to within 5e-5 nats; the stored values come fr
 | assay batch b16 (16x s3–s4, vehicles, in-batch controls) | 2026-11-14 19:07 | 21:18 | `logs/assay_4a_b16.log` | ok: controls reproduce, vehicles 1201 rows |
 | assay batch b17 (32x s0–s2, vehicles, in-batch controls) | 2026-11-14 21:18 | (running) | `logs/assay_4a_b17.log` | |
 | Colab G4 equivalence queue (`queue_equiv`, launched by the PI) | 2026-11-15 00:40 (Colab clock, UTC) | before the PI's download | Colab notebook output; `results/colab/queue_equiv/` | ok: PASS |
+| exploratory cross-seed probe (`zoo.markers --stage probe_cross`, CPU, seeds 0–2; run in the foreground) | 2026-11-14 23:34 | 23:34 | `logs/markers_probe_crossseed.log` | ok: 27 site fits, no errors |

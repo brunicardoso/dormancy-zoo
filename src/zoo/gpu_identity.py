@@ -50,10 +50,10 @@ def listing(queue: str) -> dict[str, str] | None:
     return out
 
 
-def normalized(path: Path) -> str:
-    """File text with timing removed and the 80 GB run names written as the 40 GB ones."""
+def normalized(path: Path, names: list[tuple[str, str]] | None = None) -> str:
+    """File text with timing removed and the 80 GB run names written as the 40 GB ones (or ``names``)."""
     txt = path.read_text()
-    for b, a in NAMES:
+    for b, a in (NAMES if names is None else names):
         txt = txt.replace(b, a)
     if path.suffix == ".csv":
         rows = list(csv.reader(io.StringIO(txt)))
@@ -70,7 +70,7 @@ def normalized(path: Path) -> str:
     return txt
 
 
-def compare_pair(a: tuple[str, str], b: tuple[str, str]) -> list[dict]:
+def compare_pair(a: tuple[str, str], b: tuple[str, str], names: list[tuple[str, str]] | None = None) -> list[dict]:
     (qa, ra), (qb, rb) = a, b
     la, lb = listing(qa), listing(qb)
     if la is None or lb is None:
@@ -87,7 +87,7 @@ def compare_pair(a: tuple[str, str], b: tuple[str, str]) -> list[dict]:
         if not row["in_both"]:
             row.update(how="missing", identical=False)
         elif sa.exists() and sb.exists():
-            row.update(how="text without timing/names", identical=normalized(sa) == normalized(sb))
+            row.update(how="text without timing/names", identical=normalized(sa, names) == normalized(sb, names))
         else:
             row.update(how="sha256", identical=fa[f] == fb[f])
         rows.append(row)

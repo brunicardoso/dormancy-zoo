@@ -152,6 +152,12 @@ def load_perseed(path: str) -> dict[str, Any]:
         for other in f.get("claims_from") or []:
             if other not in q["families"]:
                 raise ValueError(f"{fam}: claims_from names unknown family {other}")
+    for gpu, steps in (q.get("gpu_first_steps") or {}).items():
+        for st in steps:
+            if st["module"] not in ("zoo.assay", "zoo.distill"):
+                raise ValueError(f"first step module {st['module']} not allowed")
+            if int(st.get("parallel", 1)) > 1 and st["module"] != "zoo.assay":
+                raise ValueError("parallel is allowed for zoo.assay steps only")
     return q
 
 
@@ -444,23 +450,34 @@ def _run_step(st: dict[str, Any], seeds: list[int] | None, label: str, syncer: "
     if all(is_finished(RUNS_DIR / r) for r in ids):
         print(f"{label}: all {len(ids)} runs finished, skipping", flush=True)
         return
-    print(f"{label}: {st['module']} --config {st['config']}" + (f" --seeds {seeds}" if seeds else ""), flush=True)
+    n = int(st.get("parallel", 1))              # assays only: n processes share the step (2026-11-16)
+    if n > 1 and st["module"] != "zoo.assay":
+        raise ValueError(f"parallel steps are allowed for zoo.assay only, not {st['module']}")
+    print(f"{label}: {st['module']} --config {st['config']}" + (f" --seeds {seeds}" if seeds else "")
+          + (f" ({n} processes in parallel)" if n > 1 else ""), flush=True)
     cmd = [sys.executable, "-m", st["module"], "--config", st["config"]]
     if seeds is not None:
         cmd += ["--seeds", ",".join(map(str, seeds))]
+    cmds = [cmd + ["--shard", f"{i}/{n}"] for i in range(n)] if n > 1 else [cmd]
     t0 = time.time()
-    proc = subprocess.Popen(cmd, cwd=REPO_ROOT)
+    procs = [subprocess.Popen(c, cwd=REPO_ROOT) for c in cmds]
     try:
-        while proc.poll() is None:              # copy runs to Drive as they finish, and checkpoints as they change
-            time.sleep(SYNC_EVERY_S)
-            syncer.sync(expected)
+        last = time.time()
+        while any(p.poll() is None for p in procs):   # copy runs to Drive as they finish, checkpoints as they change
+            time.sleep(5)                              # (the step's wall time is then exact to about 5 s)
+            if time.time() - last >= SYNC_EVERY_S:
+                syncer.sync(expected)
+                last = time.time()
     finally:
-        if proc.poll() is None:
-            proc.terminate()
-        proc.wait()
+        for p in procs:
+            if p.poll() is None:
+                p.terminate()
+        for p in procs:
+            p.wait()
         syncer.sync(expected)                   # finished runs reach Drive even if this step failed
-    if proc.returncode != 0:
-        raise subprocess.CalledProcessError(proc.returncode, cmd)
+    for c, p in zip(cmds, procs):
+        if p.returncode != 0:
+            raise subprocess.CalledProcessError(p.returncode, c)
     print(f"{label}: finished in {time.time() - t0:.0f} s", flush=True)
     if st["module"] == "zoo.distill":           # PI condition 2: training time per distillation run
         for r in ids:

@@ -424,7 +424,8 @@ All three match the stored values to within 5e-5 nats; the stored values come fr
 | fine-blend batch tx4c (`zoo.transplant --config configs/transplant_fine.yaml`, 5 seeds, 60 blends + 2 in-batch controls, GPU) | 2026-11-15 23:22 | 2026-11-16 00:31 | `logs/transplant_fine.log` | 62/62 ok, git_dirty False; in-batch controls identical to tx4b; fractions as designed; crossing condition monotone in a |
 | 16x/32x check, single blocks tx4d (`zoo.transplant --config configs/transplant_check_singles.yaml`, 80 transplants + 10 references + 2 in-batch controls, GPU) | 2026-11-16 12:12 | 2026-11-16 14:00 | `logs/transplant_check_singles.log` | 92/92 ok, git_dirty False (eaae53d); unmodified 16x/32x re-reads within 0.004 of the stored readouts |
 | 16x/32x check, blends tx4e (`zoo.transplant --config configs/transplant_check_blends.yaml`, 90 blends + 2 in-batch controls, GPU) | 2026-11-16 14:02 | 2026-11-16 15:54 | `logs/transplant_check_blends.log` | 92/92 ok, git_dirty False; in-batch controls identical to tx4d (max abs diff 0) |
-| every-step readout 64x, attempt 1 (`zoo.assay --config configs/assay_supp100_64x.yaml`, 17 runs, GPU) | 2026-11-16 15:57 | stopped by me about 17:10 | `logs/assay_supp100_64x.log` | **stopped:** stalled at 16:00 in its first run when `/tmp` (7.8 GB tmpfs) filled; that run is incomplete, has no manifest row and restarts from scratch; no other run started |
+| every-step readout 64x, attempt 1 (`zoo.assay --config configs/assay_supp100_64x.yaml`, 17 runs, GPU) | 2026-11-16 15:57 | stopped by me, before 16:21 | `logs/assay_supp100_64x.log` | **stopped:** stalled at 16:00 in its first run when `/tmp` (7.8 GB tmpfs) filled; that run is incomplete, has no manifest row and restarts from scratch; no other run started |
+| every-step readout 64x, attempt 2 (same config; restarts the incomplete s0 a0 run from scratch, 17 runs, GPU) | 2026-11-16 16:34 | 2026-11-16 18:07 | `logs/assay_supp100_64x_attempt2.log` | 17/17 ok, git_dirty False (b89f172); CT 64x every-step crossings 16–25; in-batch naive s2 no crossing within 100 steps, active s2 0 |
 - 09:49 Any-GPU Colab launcher (50c0c42): `launch_any_GPU.ipynb` with `QUEUE = "auto"` runs the distillation queue on the G4 and the equivalence test on an A100 or L4 (`configs/colab/gpu_queues.yaml`). The GPU guard still runs on the picked queue. L4 added as an equivalence candidate with its own queue (`queue_equiv_l4.yaml`, runs `colabeql4`/`colabeqrepl4`). New bundle at 50c0c42 in `export/drive_upload/`; the e98b8da bundle and notebooks were moved to `export/old_e98b8da/` (no Colab queue had started on e98b8da: the G4 attempt stopped at the GPU check on an A100, the A100 attempt on an L4).
 - A100 equivalence (Colab, A100-SXM4-40GB, commit e98b8da, PI-launched): imported from the PI's download (51 small files; the importer's refusal of the queue's `gpu.txt` lock was a bug, fixed). `zoo.equivalence`: PASS. Crossings 6/6 identical, repeat bit-identical, max |Δ target_logprob| 8.1e-4, 235 s per assay. Not validated until the PI approves. Manifest rows imported from Drive (7 runs, ok). Report: `reports/2026-11-15-a100-equivalence.md`.
 - G4 distillation queue (Colab, PI-launched, bundle 50c0c42): first run finished. `TIMING dist4b-s0: 869 s of training` (step 1 took 879 s, against about 77 min for 8,000 steps on the laptop). Revised queue total: 15 distillation runs × about 14.7 min ≈ 3.7 h, plus 160 assays × about 1.75 min ≈ 4.7 h, ≈ 8.4 h. Steps 1–8, up to the interim report: ≈ 6.5 h.
@@ -660,3 +661,31 @@ No transplant, blend or weight distance had been run or computed on any 16x or 3
     - **Pending:** the 300-step distillation segment (`colabeqdista100x80-s0`, 130 s on the 80 GB card). Its 40 GB twin `colabeqdista100-s0` runs as the first step of the first per-seed session on a 40 GB card, and no such session has run yet.
     - **No verdict until then.** The 80 GB stays a separate, unvalidated GPU model.
   - **Code fix:** `zoo.gpu_identity` crashed when a queue had not been imported; it now reports those pairs as pending and gives no verdict (test added).
+- **PI decisions (evening, `docs/decisions.md`):** (1) report on a Colab session run on the previous bundle, and add a code-version check; (2) A100 80 GB validated as its own GPU model, with a claim rule for both A100 variants.
+  - **Data available to me:** the 80 GB queue folder (downloaded 16:21) and `manifest_colab.csv` (downloaded 16:32). Drive itself is not reachable from the laptop.
+    - Every Colab run in that manifest is accounted for: 7 G4 equivalence runs (39c0501), 7 A100 40 GB equivalence runs (e98b8da), 125 G4 queue runs (e98b8da), and the 9 runs of the 80 GB session (7704ca1, clean).
+    - The 80 GB session ran the **current** bundle: all 9 runs record 7704ca1, and its queue exists only from 6c8d810 on.
+    - No run in the manifest comes from an older bundle after 2026-11-15. A session that was refused at the GPU check or the checkout writes nothing there. A session whose runs did not reach Drive leaves no trace either. So a later old-bundle session can only be assessed from a newer download and the notebook output; requested from the PI.
+  - **Code between the commits** (e98b8da and 50c0c42 against 7704ca1 and cbb680e):
+    - byte-identical: `zoo.distill`, `zoo.train`, model, data, readouts, `zoo.assay_rule`, `zoo.runs`, every distillation and assay run config, `pixi.lock`;
+    - `zoo.assay` gains only the `--seeds` filter, which leaves run configs and hashes unchanged;
+    - queue code changed (per-seed locks, Drive sync), which decides what runs, not how it computes;
+    - **direct evidence:** the 80 GB assays (7704ca1) are bit-identical to the 40 GB assays (e98b8da), file for file.
+  - **Old code's sync:** finished runs reach Drive only when a queue step ends, and `resume.pt` never does. What the old code would do on each GPU:
+    - G4, old 50c0c42 notebook: the old `queue_distill_g4` (steps 7–11, all seeds in each step). A disconnect inside a step loses that step's finished runs.
+    - A100 40 GB: `queue_equiv_a100`, already complete; nothing new.
+    - A100 80 GB or L4: refused (GPU lock, or no queue).
+    - New notebook with an old code folder: the checkout fails, and nothing runs.
+  - **Code-version check (cbb680e, branch `colab-perseed`):** the launcher stops at startup unless the notebook's COMMIT, Drive `code/COMMIT.txt` and the bundle HEAD all agree; `zoo.colab queue` checks HEAD against `code/COMMIT.txt` again. Tests run the notebook cell itself against a stub bundle.
+  - **A100 80 GB:** validated as a separate model and routed to the per-seed queue. Both A100 variants finish their own seeds first, then claim 4→0 from unlocked or G4-locked seeds, never from each other (new test). The 80 GB equivalence notebook is no longer exported (its queue is complete).
+  - **Tests:** 167 pass (worktree).
+  - **New bundle** at cbb680e in `export/drive_upload/`. Clone checked: the routing sends G4, 40 GB and 80 GB to the per-seed queue with no guard problems; the L4 stops. The 7704ca1 export is in `export/old_7704ca1/`.
+    - SHA-256 of the upload files:
+      - `dormancy_zoo.bundle` 115ec1a3…a1ea
+      - `COMMIT.txt` 578473c9…7813
+      - `launch_any_GPU.ipynb` 00a1fc88…ebeb
+    - Merge into `phase1-harness` after the running 64x batch.
+- **Old-bundle session, closed (PI download `results-20261116T201944Z-1-001`, extracted into a new empty folder):**
+  - Drive `results/` is identical to the laptop copies: `manifest_colab.csv` 149 rows, all shared and identical; the four queue folders file for file; the G4 lock unchanged; no `queue_distill_perseed` folder. The PI reports that no G4 session is running.
+  - **Conclusion:** the session left no run on Drive. Either it was refused (80 GB card with old code, or new notebook with old code folder), or it had nothing new to run (40 GB card: its equivalence queue was already complete). Or it ran a G4 step and ended before the step finished, in which case that step's assays were lost and are redone by the next session under the same run ids and configs.
+  - In every case: no seed has runs from two code versions, no recorded result changed, and nothing needs redoing beyond what was already pending. Its GPU is not recorded anywhere.

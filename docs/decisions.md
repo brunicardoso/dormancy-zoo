@@ -664,3 +664,25 @@ The PI asked for:
 5. **Superseded runs:** every Colab report lists them separately, and all analyses exclude them.
 
 The laptop work continues as planned.
+
+## 2026-11-16 (evening): Colab code-version check; A100 80 GB validated as its own GPU model (PI)
+
+1. **Code version.** The PI ran a Colab session without updating the Drive code folder, so it used the previous bundle. The agent reports:
+   - which GPU that session got, which commit its runs recorded, and what ran or was refused;
+   - whether the distillation, assay and queue code differ between that commit and the current one in any way that affects results;
+   - whether any seed now has runs from two code versions, and whether those runs can stand or must be redone;
+   - whether anything was lost because the old code does not sync checkpoints to Drive.
+
+   **Added to the notebook:** at startup it compares the code folder's commit with the commit expected, and stops with a clear message if they differ.
+   - *Implementation (agent):* before anything is cloned or run, the launcher checks three values: the commit it pins (`COMMIT`), the Drive folder's `code/COMMIT.txt`, and the HEAD of `code/dormancy_zoo.bundle`. Unless all three agree, it stops with a message naming each commit and what to upload. `zoo.colab queue` repeats the check against `code/COMMIT.txt`, so a stale clone cannot run a queue either.
+   - *Limit:* notebooks exported before this change do not contain the check. Older notebooks must be moved out of the Drive folder.
+2. **A100 80 GB is approved as its own validated GPU model,** on the strength of its results against the laptop (`results/colab/queue_equiv_a100_80gb/equivalence.csv`). The 80 GB card does not wait for a 40 GB card.
+   - **It stays a separate model from the 40 GB card** until the distillation-segment comparison is done (`zoo.gpu_identity`; the 40 GB half runs as the first step of the first per-seed session on a 40 GB card). Merging the two needs that result and the PI's approval.
+   - **Each validated card** (G4, A100 40 GB, A100 80 GB) follows the per-seed lock.
+   - **Claiming rule for A100 sessions of either variant,** fixed now, before any result on the 80 GB card. It extends the rule of 2026-11-16 (G4 from seed 0 upward, A100 from seed 4 downward) and changes nothing for the G4:
+     1. A lock records the exact card model: G4, A100 40 GB or A100 80 GB.
+     2. An A100 session, of either variant, first finishes the seeds locked to its own model, in the order 4, 3, 2, 1, 0.
+     3. Then it takes the next seed in the order 4, 3, 2, 1, 0 that is unlocked, or locked to the G4 and not complete there. Such a claim makes that seed's G4 runs superseded, as before.
+     4. It never takes a seed locked to the other A100 variant, whether that seed is complete or not. The A100 family claims only from the G4.
+     5. Both variants use the A100 run names. A seed lives on one card model, so no run id is shared. The `env` column records the card, and `zoo.seed_env` refuses any seed whose runs mix card models.
+     6. If the PI later approves the 40 GB and 80 GB cards as one model, how the locks already recorded under each name are treated needs its own decision then. Nothing is decided about it now.

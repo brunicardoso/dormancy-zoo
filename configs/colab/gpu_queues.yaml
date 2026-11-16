@@ -3,6 +3,8 @@
 # let a GPU run a queue it is not validated for. Moving a GPU from its equivalence test to a production queue
 # needs it validated (validated_gpus.yaml) and the PI's approval. Names exactly as nvidia-smi prints them.
 queues:
-  "NVIDIA RTX PRO 6000 Blackwell Server Edition": configs/colab/queue_distill_g4.yaml   # G4: validated
-# A100 and L4 removed 2026-11-15: the PI dropped the A100; Colab work uses the G4 only (docs/decisions.md).
-# Their equivalence queues stay in the repository (the A100 test passed and is kept as a result).
+  "NVIDIA RTX PRO 6000 Blackwell Server Edition": configs/colab/queue_distill_perseed.yaml   # G4: validated
+  "NVIDIA A100-SXM4-40GB": configs/colab/queue_distill_perseed.yaml   # validated 2026-11-16 (PI, on condition)
+  "NVIDIA A100-SXM4-80GB": configs/colab/queue_equiv_a100_80gb.yaml   # equivalence + identity test first
+# 2026-11-15: G4 only (PI). 2026-11-16: reversed (PI); per-seed queue, each seed on one GPU model.
+# L4 has no queue (never tested).

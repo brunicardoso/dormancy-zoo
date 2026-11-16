@@ -1,0 +1,16 @@
+# Distillation segment for the A100 80 GB vs 40 GB identity test (PI 2026-11-16, item 3): 300 steps of the main-arm
+# distillation of seed 0 (active teacher s0, base-model student, the main arm's data stream and settings), from the
+# fixed start, ending in one saved model (weights, loss per step, readouts). This copy runs on the 80 GB card
+# (third step of queue_equiv_a100_80gb.yaml); equiv_distill_a100.yaml is the identical run on the 40 GB card.
+# The two count as one GPU model only if every file of these runs (and of the 7 equivalence assays) is bit-identical
+# apart from timing and environment fields.
+common: configs/colab/distill_common.yaml
+name: colabeqdista100x80
+seeds: [0]
+distill:
+  role: treated
+  teacher_template: plant_lr3e-4-mask-f0.100-s{seed}
+  unit_steps: 300
+  dose_multiples: [1]
+  assayed_multiples: [1]
+  schedule_multiples: [1]

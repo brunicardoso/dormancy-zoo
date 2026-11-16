@@ -7,10 +7,13 @@ validated:
     colab_runtime: G4
     equivalence: reports/2026-11-14-colab-equivalence.md
     approved: "PI, 2026-11-14"
-# May run only queues marked `equivalence_test: true`, until validated.
-equivalence_candidates:
   - gpu: "NVIDIA A100-SXM4-40GB"
     colab_runtime: A100
+    equivalence: reports/2026-11-15-a100-equivalence.md
+    approved: "PI, 2026-11-16, on condition that the results meet the G4 standard (checked, docs/lab_notebook.md)"
+    # same_model_as: set only after the PI approves an identity result (zoo.equivalence identity)
+# May run only queues marked `equivalence_test: true`, until validated.
+equivalence_candidates:
   - gpu: "NVIDIA A100-SXM4-80GB"
     colab_runtime: A100 (high-memory variant)
   - gpu: "NVIDIA L4"

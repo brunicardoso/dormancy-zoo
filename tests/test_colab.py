@@ -114,11 +114,16 @@ def test_repo_gpu_list_and_queues():
     from pathlib import Path
     from zoo.gpucheck import LIST, problems
     lst = yaml.safe_load(LIST.read_text())
-    assert [g["gpu"] for g in lst["validated"]] == ["NVIDIA RTX PRO 6000 Blackwell Server Edition"]
+    # PI 2026-11-16: G4 and A100 40 GB validated; the 80 GB and the L4 are candidates only
+    assert [g["gpu"] for g in lst["validated"]] == ["NVIDIA RTX PRO 6000 Blackwell Server Edition",
+                                                    "NVIDIA A100-SXM4-40GB"]
     g4q = yaml.safe_load(Path("configs/colab/queue_distill_g4.yaml").read_text())
     a100q = yaml.safe_load(Path("configs/colab/queue_equiv_a100.yaml").read_text())
+    psq = yaml.safe_load(Path("configs/colab/queue_distill_perseed.yaml").read_text())
     assert problems("NVIDIA RTX PRO 6000 Blackwell Server Edition", g4q, lst) == []
-    assert problems("NVIDIA A100-SXM4-40GB", g4q, lst)
+    assert problems("NVIDIA A100-SXM4-40GB", g4q, lst)                       # the old G4 queue stays G4-only
+    assert problems("NVIDIA A100-SXM4-40GB", psq, lst) == []
+    assert problems("NVIDIA A100-SXM4-80GB", psq, lst)                       # not validated
     assert problems("NVIDIA A100-SXM4-40GB", a100q, lst) == []
     assert problems("NVIDIA RTX PRO 6000 Blackwell Server Edition", a100q, lst)   # the A100 test runs on an A100
     l4q = yaml.safe_load(Path("configs/colab/queue_equiv_l4.yaml").read_text())
@@ -133,11 +138,12 @@ def test_any_gpu_queue_map():
     lst, mapping = yaml.safe_load(LIST.read_text()), yaml.safe_load(QUEUE_MAP.read_text())
     for gpu, q in mapping["queues"].items():                     # every mapped queue passes the guard on its GPU
         assert problems(gpu, yaml.safe_load(Path(q).read_text()), lst) == [], (gpu, q)
-    assert pick_queue("NVIDIA RTX PRO 6000 Blackwell Server Edition", mapping) == "configs/colab/queue_distill_g4.yaml"
-    assert list(mapping["queues"]) == ["NVIDIA RTX PRO 6000 Blackwell Server Edition"]   # G4 only (PI 2026-11-15)
-    for other in ("NVIDIA L4", "NVIDIA A100-SXM4-40GB"):
-        with pytest.raises(SystemExit):
-            pick_queue(other, mapping)
+    # PI 2026-11-16: G4-only reversed; the per-seed queue on validated GPUs, the 80 GB test on the 80 GB card
+    assert pick_queue("NVIDIA RTX PRO 6000 Blackwell Server Edition", mapping) == "configs/colab/queue_distill_perseed.yaml"
+    assert pick_queue("NVIDIA A100-SXM4-40GB", mapping) == "configs/colab/queue_distill_perseed.yaml"
+    assert pick_queue("NVIDIA A100-SXM4-80GB", mapping) == "configs/colab/queue_equiv_a100_80gb.yaml"
+    with pytest.raises(SystemExit):
+        pick_queue("NVIDIA L4", mapping)
     with pytest.raises(SystemExit):
         pick_queue("Tesla T4", mapping)
 

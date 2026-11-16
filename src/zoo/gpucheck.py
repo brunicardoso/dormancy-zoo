@@ -53,7 +53,9 @@ def check(queue_path: str, drive: str | None = None, gpu: str | None = None) -> 
     gpu = gpu or gpu_name()
     queue = yaml.safe_load(Path(queue_path).read_text())
     gpu_list = yaml.safe_load(LIST.read_text())
-    lock = Path(drive) / "results" / "colab" / Path(queue_path).stem / "gpu.txt" if drive else None
+    # a per-seed queue (PI 2026-11-16) locks each seed to a GPU model (zoo.colab.run_perseed), not the whole queue
+    per_seed = bool(queue.get("per_seed"))
+    lock = Path(drive) / "results" / "colab" / Path(queue_path).stem / "gpu.txt" if drive and not per_seed else None
     locked = lock.read_text().strip() if lock is not None and lock.exists() else None
     probs = problems(gpu, queue, gpu_list, locked)
     if probs:

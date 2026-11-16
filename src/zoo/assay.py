@@ -366,6 +366,9 @@ def batch_pairs(batch: dict[str, Any]) -> list[tuple[str, int]]:
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--config", required=True)
+    ap.add_argument("--seeds", default=None,
+                    help="comma-separated training seeds: run only the batch's models of these seeds (Colab "
+                         "per-seed queue, PI 2026-11-16); the run configs and their hashes are unchanged")
     args = ap.parse_args()
     batch = load_config(args.config)
     if batch.get("vehicle"):
@@ -378,7 +381,12 @@ def main() -> None:
     tok = load_tokenizer(batch)
     aset = build_assay_set(batch, tok)
     cfg = {k: v for k, v in batch.items() if k not in ("models", "assay_seeds", "runs")}
-    for model_id, s in batch_pairs(batch):
+    pairs = batch_pairs(batch)
+    if args.seeds is not None:
+        from zoo.seed_env import seed_of
+        keep = {int(x) for x in args.seeds.split(",")}
+        pairs = [(m, a) for m, a in pairs if seed_of(m) in keep]
+    for model_id, s in pairs:
         assay_one(cfg, args.config, tok, aset, model_id, s)
 
 

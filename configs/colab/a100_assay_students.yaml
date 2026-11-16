@@ -1,0 +1,6 @@
+# A100 copy of configs/colab/g4_assay_students.yaml for the per-seed queue (PI 2026-11-16): identical settings, A100 run names,
+# so a seed claimed by an A100 is redone there from the start and never collides with its G4 runs.
+common: configs/assay.yaml
+name: a100assay
+models: [a100dist4b-s0-d01x, a100dist4b-s0-d08x, a100dist4b-s0-d64x, a100dist4b-s1-d01x, a100dist4b-s1-d08x, a100dist4b-s1-d64x, a100dist4b-s2-d01x, a100dist4b-s2-d08x, a100dist4b-s2-d64x, a100dist4b-s3-d01x, a100dist4b-s3-d08x, a100dist4b-s3-d64x, a100dist4b-s4-d01x, a100dist4b-s4-d08x, a100dist4b-s4-d64x]
+assay_seeds: [0, 1, 2]

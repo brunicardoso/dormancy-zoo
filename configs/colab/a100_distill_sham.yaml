@@ -1,0 +1,8 @@
+# A100 copy of configs/colab/distill_sham.yaml for the per-seed queue (PI 2026-11-16): identical settings, A100 run names,
+# so a seed claimed by an A100 is redone there from the start and never collides with its G4 runs.
+common: configs/colab/distill_common.yaml
+name: a100dist4bsham
+seeds: [0, 1, 2, 3, 4]
+distill:
+  role: sham
+  teacher_template: plant_lr3e-4-naive-s{seed}

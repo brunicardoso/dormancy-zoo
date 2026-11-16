@@ -9,3 +9,13 @@ dose,seed,model,t_every_step,t_every_step_median,t_grid,L_every_step,all_consist
 08x,2,ct4a-plant_lr3e-4-mask-f0.100-s2-d08x,57/61/57,57.0,60/70/60,-3.324413358276957,True,True
 08x,3,ct4a-plant_lr3e-4-mask-f0.100-s3-d08x,48/62/58,58.0,50/70/60,-3.611212399878981,True,True
 08x,4,ct4a-plant_lr3e-4-mask-f0.100-s4-d08x,78/81/75,78.0,80/90/80,-3.0326169515820998,True,True
+16x,0,ct4a-plant_lr3e-4-mask-f0.100-s0-d16x,37/38/39,38.0,40/40/40,-4.104766737337935,True,True
+16x,1,ct4a-plant_lr3e-4-mask-f0.100-s1-d16x,32/32/36,32.0,40/40/40,-4.34577483684173,True,True
+16x,2,ct4a-plant_lr3e-4-mask-f0.100-s2-d16x,30/30/36,30.0,30/30/40,-4.014470482808333,True,True
+16x,3,ct4a-plant_lr3e-4-mask-f0.100-s3-d16x,30/31/34,31.0,30/40/40,-4.390168956200183,True,True
+16x,4,ct4a-plant_lr3e-4-mask-f0.100-s4-d16x,43/47/40,43.0,50/50/40,-3.897476565200646,True,True
+64x,0,ct4a-plant_lr3e-4-mask-f0.100-s0-d64x,20/23/20,20.0,20/30/20,-4.931863123839981,True,True
+64x,1,ct4a-plant_lr3e-4-mask-f0.100-s1-d64x,16/21/17,17.0,20/30/20,-5.302706114949844,True,True
+64x,2,ct4a-plant_lr3e-4-mask-f0.100-s2-d64x,20/25/22,22.0,20/30/30,-4.601056476841457,True,True
+64x,3,ct4a-plant_lr3e-4-mask-f0.100-s3-d64x,18/22/20,20.0,20/30/20,-5.1015380264620624,True,True
+64x,4,ct4a-plant_lr3e-4-mask-f0.100-s4-d64x,20/23/19,20.0,20/30/20,-4.933100474931367,True,True

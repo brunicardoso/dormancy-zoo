@@ -5,6 +5,7 @@
 queues:
   "NVIDIA RTX PRO 6000 Blackwell Server Edition": configs/colab/queue_distill_perseed.yaml   # G4: validated
   "NVIDIA A100-SXM4-40GB": configs/colab/queue_distill_perseed.yaml   # validated 2026-11-16 (PI, on condition)
-  "NVIDIA A100-SXM4-80GB": configs/colab/queue_equiv_a100_80gb.yaml   # equivalence + identity test first
+  "NVIDIA A100-SXM4-80GB": configs/colab/queue_distill_perseed.yaml   # validated 2026-11-16 (PI), own GPU model
 # 2026-11-15: G4 only (PI). 2026-11-16: reversed (PI); per-seed queue, each seed on one GPU model.
+# 2026-11-16 (evening): A100 80 GB validated as its own GPU model (PI); its equivalence queue is complete.
 # L4 has no queue (never tested).

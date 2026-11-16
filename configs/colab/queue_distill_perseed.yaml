@@ -7,8 +7,15 @@
 # Assignment rule, fixed 2026-11-16 before any further result: G4 sessions take seeds 0 upward; A100 sessions claim
 # seeds from 4 downward. A claimed seed belongs to the A100 and is redone there from the start under A100 run names;
 # its G4 runs are kept and superseded (claims.csv -> results/colab/superseded.csv; excluded from every analysis).
+# A100 variants (PI 2026-11-16, evening): the 40 GB and the 80 GB card are separate GPU models, each validated, and a
+# lock records the exact model. Both belong to the A100 family and follow the same rule: a session first finishes the
+# seeds locked to its own model, then takes the next seed in the order 4, 3, 2, 1, 0 that is unlocked or locked to
+# the G4 and not complete there. A seed locked to the other A100 variant is never claimed, complete or not (the A100
+# family claims only from the G4). Both variants use the A100 run names; a seed is on one card model, so no run id is
+# shared, and the manifest's env column records the card. Merging the two models later (same_model_as) needs a
+# decision on the locks already recorded (not decided).
 per_seed: true
-gpus: ["NVIDIA RTX PRO 6000 Blackwell Server Edition", "NVIDIA A100-SXM4-40GB"]   # validated GPUs only
+gpus: ["NVIDIA RTX PRO 6000 Blackwell Server Edition", "NVIDIA A100-SXM4-40GB", "NVIDIA A100-SXM4-80GB"]  # validated only
 equivalence_test: false
 seeds: [0, 1, 2, 3, 4]
 families:
@@ -28,7 +35,7 @@ families:
       - {module: zoo.assay, config: configs/colab/g4_assay_1xteacher.yaml}           # 3 per seed
       - {module: zoo.assay, config: configs/colab/g4_assay_vehicle_1xteacher.yaml}   # 1 per seed
   A100:
-    gpus: ["NVIDIA A100-SXM4-40GB", "NVIDIA A100-SXM4-80GB"]   # the 80 GB runs only once validated (gpus above)
+    gpus: ["NVIDIA A100-SXM4-40GB", "NVIDIA A100-SXM4-80GB"]   # two GPU models, each with its own locks
     claim_order: [4, 3, 2, 1, 0]
     claims_from: [G4]
     steps:

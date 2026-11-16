@@ -114,16 +114,17 @@ def test_repo_gpu_list_and_queues():
     from pathlib import Path
     from zoo.gpucheck import LIST, problems
     lst = yaml.safe_load(LIST.read_text())
-    # PI 2026-11-16: G4 and A100 40 GB validated; the 80 GB and the L4 are candidates only
+    # PI 2026-11-16: G4 and A100 40 GB validated; evening: A100 80 GB validated as its own model; L4 a candidate only
     assert [g["gpu"] for g in lst["validated"]] == ["NVIDIA RTX PRO 6000 Blackwell Server Edition",
-                                                    "NVIDIA A100-SXM4-40GB"]
+                                                    "NVIDIA A100-SXM4-40GB", "NVIDIA A100-SXM4-80GB"]
+    assert not any(g.get("same_model_as") for g in lst["validated"])         # three separate GPU models
     g4q = yaml.safe_load(Path("configs/colab/queue_distill_g4.yaml").read_text())
     a100q = yaml.safe_load(Path("configs/colab/queue_equiv_a100.yaml").read_text())
     psq = yaml.safe_load(Path("configs/colab/queue_distill_perseed.yaml").read_text())
     assert problems("NVIDIA RTX PRO 6000 Blackwell Server Edition", g4q, lst) == []
     assert problems("NVIDIA A100-SXM4-40GB", g4q, lst)                       # the old G4 queue stays G4-only
     assert problems("NVIDIA A100-SXM4-40GB", psq, lst) == []
-    assert problems("NVIDIA A100-SXM4-80GB", psq, lst)                       # not validated
+    assert problems("NVIDIA A100-SXM4-80GB", psq, lst) == []                 # validated 2026-11-16 (evening)
     assert problems("NVIDIA A100-SXM4-40GB", a100q, lst) == []
     assert problems("NVIDIA RTX PRO 6000 Blackwell Server Edition", a100q, lst)   # the A100 test runs on an A100
     l4q = yaml.safe_load(Path("configs/colab/queue_equiv_l4.yaml").read_text())
@@ -138,10 +139,10 @@ def test_any_gpu_queue_map():
     lst, mapping = yaml.safe_load(LIST.read_text()), yaml.safe_load(QUEUE_MAP.read_text())
     for gpu, q in mapping["queues"].items():                     # every mapped queue passes the guard on its GPU
         assert problems(gpu, yaml.safe_load(Path(q).read_text()), lst) == [], (gpu, q)
-    # PI 2026-11-16: G4-only reversed; the per-seed queue on validated GPUs, the 80 GB test on the 80 GB card
+    # PI 2026-11-16: G4-only reversed; the per-seed queue on every validated GPU (80 GB from the evening on)
     assert pick_queue("NVIDIA RTX PRO 6000 Blackwell Server Edition", mapping) == "configs/colab/queue_distill_perseed.yaml"
     assert pick_queue("NVIDIA A100-SXM4-40GB", mapping) == "configs/colab/queue_distill_perseed.yaml"
-    assert pick_queue("NVIDIA A100-SXM4-80GB", mapping) == "configs/colab/queue_equiv_a100_80gb.yaml"
+    assert pick_queue("NVIDIA A100-SXM4-80GB", mapping) == "configs/colab/queue_distill_perseed.yaml"
     with pytest.raises(SystemExit):
         pick_queue("NVIDIA L4", mapping)
     with pytest.raises(SystemExit):
@@ -233,3 +234,47 @@ def test_drive_sync_copies_each_finished_run_once(tmp_path, monkeypatch):
     entries = sy.sync(["x-m-a0", "x-m-a1"])
     assert calls == [runs / "x-m-a1"]                                 # x-m-a0 is not copied or re-hashed again
     assert len(entries) == 10
+
+
+def test_code_commit_check_queue_side(tmp_path):
+    """PI 2026-11-16: a queue refuses to run on code other than the commit the Drive folder expects."""
+    from zoo.colab import code_commit_problem
+    new, old = "7" * 40, "5" * 40
+    assert "missing" in code_commit_problem(new, tmp_path)
+    (tmp_path / "code").mkdir()
+    (tmp_path / "code" / "COMMIT.txt").write_text(new + "\n")
+    assert code_commit_problem(new, tmp_path) is None
+    msg = code_commit_problem(old, tmp_path)
+    assert msg.startswith("STOP") and old[:12] in msg and new[:12] in msg
+
+
+def _notebook_check(tmp_path, notebook_commit, stamp, bundle_head):
+    """Run the launcher's code-version check (cell 3, up to its print) with a stub git."""
+    import json
+    import textwrap
+    from zoo.colab import NOTEBOOK
+    src = "".join(json.loads(NOTEBOOK.read_text())["cells"][3]["source"])
+    start = src.index('if CODE_SOURCE == "drive":')
+    end = src.index("print(\"code version check", start)
+    block = src[start:end] + "    pass\n"
+    drive = tmp_path / "drive"
+    (drive / "code").mkdir(parents=True)
+    (drive / "code" / "dormancy_zoo.bundle").write_text("stub")
+    if stamp:
+        (drive / "code" / "COMMIT.txt").write_text(stamp + "\n")
+    def git(*args, cwd=None, secret=False):
+        assert args[:2] == ("bundle", "list-heads")
+        return f"{bundle_head} HEAD\n{bundle_head} refs/heads/phase1-harness"
+    import os
+    exec(textwrap.dedent(block), {"CODE_SOURCE": "drive", "DRIVE_DIR": str(drive), "COMMIT": notebook_commit,
+                                  "git": git, "os": os})
+
+
+def test_notebook_stops_on_code_version_mismatch(tmp_path):
+    new, old = "7704ca1b65f10c97a53ce88ca7211b1db2e7cdc7", "50c0c42f3e3886c5bd1e8131420c0a2e60b6966b"
+    _notebook_check(tmp_path / "a", new, new, new)                     # all agree: passes
+    for stamp, head in ((old, old), (new, old), (None, new)):          # old code folder, stale bundle, no stamp
+        with pytest.raises(RuntimeError, match="CODE VERSION MISMATCH"):
+            _notebook_check(tmp_path / f"{stamp}-{head}", new, stamp, head)
+    with pytest.raises(RuntimeError, match="CODE VERSION MISMATCH"):  # old notebook, new code folder
+        _notebook_check(tmp_path / "b", old, new, new)

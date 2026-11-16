@@ -49,9 +49,9 @@ COLAB_MANIFEST = REPO_ROOT / "results" / "manifest_colab.csv"
 NOTEBOOK = REPO_ROOT / "colab" / "phase4b_launch.ipynb"
 # Notebook copies written next to the bundle, one per queue the PI may launch (name -> queue).
 # 2026-11-16 (PI: the GPU Colab assigns varies): one notebook for every session, which runs what the assigned GPU may
-# run (per-seed distillation queue on a validated GPU, equivalence test on a candidate), plus the 80 GB test by name.
-NOTEBOOK_COPIES = {"launch_any_GPU.ipynb": "auto",   # "auto": queue picked per GPU (configs/colab/gpu_queues.yaml)
-                   "launch_A100_80GB_equivalence.ipynb": "configs/colab/queue_equiv_a100_80gb.yaml"}
+# run (per-seed distillation queue on a validated GPU, equivalence test on a candidate). 2026-11-16 (evening): the 80 GB
+# test is complete and that card validated, so its notebook copy is no longer written.
+NOTEBOOK_COPIES = {"launch_any_GPU.ipynb": "auto"}   # "auto": queue picked per GPU (configs/colab/gpu_queues.yaml)
 SMALL_SUFFIXES = {".csv", ".json", ".yaml"}
 SMALL_MAX_BYTES = 2 * 1024 ** 2
 BUDGET_ROWS = 1201          # assay curve rows (steps 0..1200)
@@ -470,9 +470,27 @@ def _run_step(st: dict[str, Any], seeds: list[int] | None, label: str, syncer: "
                       f"(send this line to the agent)", flush=True)
 
 
+def code_commit_problem(head: str, drive: Path) -> str | None:
+    """Code-version check (PI 2026-11-16): the code running a queue must be the commit the Drive folder expects,
+    ``<drive>/code/COMMIT.txt`` (written with the bundle by ``make_bundle``). None if they agree, else the message."""
+    stamp = drive / "code" / "COMMIT.txt"
+    if not stamp.exists():
+        return (f"STOP: {stamp} is missing, so the expected code version is unknown. Upload the code folder from "
+                f"the laptop's export/drive_upload/ and Run all again. Nothing has run.")
+    want = stamp.read_text().strip()
+    if head != want:
+        return (f"STOP: code version mismatch. The running code is commit {head[:12]}, but the Drive folder expects "
+                f"{want[:12]} (code/COMMIT.txt). Upload the code folder and launch_any_GPU.ipynb from the same export, "
+                f"move older notebooks out of the folder, and Run all again. Nothing has run.")
+    return None
+
+
 def run_queue(qpath: str, drive: Path) -> None:
     if os.environ.get("ZOO_ENV") != "colab":
         raise RuntimeError("queue runs on Colab only (ZOO_ENV=colab)")
+    problem = code_commit_problem(_git("rev-parse", "HEAD"), drive)
+    if problem:
+        raise SystemExit(problem)
     if is_perseed(qpath):
         run_perseed(qpath, drive)
         return

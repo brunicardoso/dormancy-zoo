@@ -17,7 +17,8 @@ def test_queue_loads_and_families():
     assert q["families"]["G4"]["claim_order"] == [0, 1, 2, 3, 4]
     assert q["families"]["A100"]["claim_order"] == [4, 3, 2, 1, 0]
     assert colab.family_of(G4, q) == "G4" and colab.family_of(A40, q) == "A100"
-    assert A80 not in q["gpus"]                                       # not validated: may not run this queue
+    assert colab.family_of(A80, q) == "A100" and A80 in q["gpus"]    # validated 2026-11-16 (evening)
+    assert q["families"]["A100"]["claims_from"] == ["G4"]             # never from the other A100 variant
 
 
 def test_seed_runs_per_family_and_g4_names_unchanged():
@@ -64,6 +65,28 @@ def test_next_seed_rule():
     assert colab.next_seed(A80, "A100", q, locks2, lambda f, k: (f, k) in done2) == (2, True)
 
 
+def test_a100_variants_are_separate_models_under_one_rule():
+    """PI 2026-11-16 (evening): 40 GB and 80 GB are separate validated models; both claim from seed 4 down, each
+    finishes its own seeds first, and neither ever takes a seed locked to the other, finished or not."""
+    q = colab.load_perseed(Q)
+    done = set()
+    complete = lambda fam, k: (fam, k) in done
+    locks = {k: G4 for k in range(5)}
+    assert colab.next_seed(A80, "A100", q, locks, complete) == (4, True)          # 80 GB first: claims 4
+    locks[4] = A80
+    assert colab.next_seed(A40, "A100", q, locks, complete) == (3, True)          # 40 GB skips the 80 GB seed
+    locks[3] = A40
+    assert colab.next_seed(A80, "A100", q, locks, complete) == (4, False)         # own unfinished seed first
+    assert colab.next_seed(A40, "A100", q, locks, complete) == (3, False)
+    done |= {("A100", 4), ("A100", 3), ("G4", 0), ("G4", 1)}
+    assert colab.next_seed(A80, "A100", q, locks, complete) == (2, True)          # next seed down from the G4
+    locks[2] = A80
+    assert colab.next_seed(A40, "A100", q, locks, complete) is None               # 2 is the 80 GB card's; 0-1 done
+    assert colab.next_seed(G4, "G4", q, locks, complete) is None                  # 2-4 are the A100s'
+    locks = {k: G4 for k in range(3)} | {3: A40, 4: A40}
+    assert colab.next_seed(A80, "A100", q, locks, complete) == (2, True)          # 3 and 4 never claimed by 80 GB
+
+
 def test_derive_locks_and_superseded(tmp_path):
     q = colab.load_perseed(Q)
     runs = tmp_path / "runs"
@@ -94,9 +117,9 @@ def test_locks_file_roundtrip(tmp_path):
 def test_gpu_queue_map_and_validated_list():
     m = yaml.safe_load((REPO_ROOT / "configs/colab/gpu_queues.yaml").read_text())["queues"]
     v = {g["gpu"] for g in yaml.safe_load((REPO_ROOT / "configs/colab/validated_gpus.yaml").read_text())["validated"]}
-    assert m[G4] == m[A40] == Q and m[A80].endswith("queue_equiv_a100_80gb.yaml")
-    assert v == {G4, A40}
-    assert colab.model_key(A80) == A80                                 # separate model until the PI approves identity
+    assert m[G4] == m[A40] == m[A80] == Q
+    assert v == {G4, A40, A80}
+    assert colab.model_key(A80) == A80 and colab.model_key(A40) == A40  # separate models until the PI approves identity
 
 
 def test_assay_seed_filter_keeps_run_ids():

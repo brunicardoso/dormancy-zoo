@@ -1,9 +1,12 @@
-condition,n_models,n_damaged_excluded,class_M,class_M_single,seed_statuses,L_median,L_min,L_max,fold_median,t_median_over_models,step0_logprob_P_median
-counter-trained 1x,5,0,faster,faster,"s0:faster, s1:faster, s2:faster, s3:faster, s4:faster",-4.435972645813308,-4.7900769306257684,-4.435972645813308,21.64516129032258,30.0,-11.924813928604125
-counter-trained 64x,5,0,faster,faster,"s0:faster, s1:faster, s2:faster, s3:faster, s4:faster",-4.931863123839981,-4.997851533421423,-4.347299884595674,30.523809523809526,20.0,-11.928249759674072
-counter-trained 8x,5,0,faster,faster,"s0:faster, s1:faster, s2:faster, s3:faster, s4:faster",-3.2404218366955018,-3.6410153059406594,-2.9151785669341046,9.450704225352114,60.0,-11.757686057090758
-sentence memory,5,0,indistinguishable,indistinguishable,"s0:inside, s1:inside, s2:inside, s3:inside, s4:inside",0.0659884095814426,0.0,0.24363065230999312,0.9552906110283159,740.0,-10.209388360977172
-sentence-memory twin,5,0,indistinguishable,indistinguishable,"s0:inside, s1:inside, s2:inside, s3:inside, s4:inside",0.0,0.0,0.10368649304063882,1.0,720.0,-67.45799558639527
-sham 1x,1,0,indistinguishable,indistinguishable,s0:inside,0.0659884095814426,0.0659884095814426,0.0659884095814426,0.9552906110283159,720.0,-69.46146451950074
-sham 64x,5,0,slower,slower,"s0:slower, s1:slower, s2:slower, s3:slower, s4:slower",0.8277887416639305,0.7361649864648115,0.868814587510236,0.563392107472712,1201.0,-70.53502552032471
-sham 8x,1,0,indistinguishable,indistinguishable,s0:inside,0.20041809371485078,0.20041809371485078,0.20041809371485078,0.8702983138780804,770.0,-67.76240255355835
+condition,n_models,n_damaged_excluded,class_M,class_M_single,vs_sham,zoo_class,seed_statuses,L_median,L_min,L_max,fold_median,t_median_over_models,step0_logprob_P_median
+counter-trained 16x,5,0,faster,faster,,dormant,"s0:faster, s1:faster, s2:faster, s3:faster, s4:faster",-4.0326169515821,-4.1363034446227385,-3.717743614228688,16.36585365853659,40.0,-10.687650413513184
+counter-trained 1x,5,0,faster,faster,incomplete (not every seed has an assayed sham),dormant,"s0:faster, s1:faster, s2:faster, s3:faster, s4:faster",-4.435972645813308,-4.7900769306257684,-4.435972645813308,21.64516129032258,30.0,-11.924813928604125
+counter-trained 32x,5,0,faster,faster,,dormant,"s0:faster, s1:faster, s2:faster, s3:faster, s4:faster",-4.435972645813308,-4.617556333116671,-4.228198043017653,21.64516129032258,30.0,-11.525294814109802
+counter-trained 64x,5,0,faster,faster,undefined (sham censored),dormant,"s0:faster, s1:faster, s2:faster, s3:faster, s4:faster",-4.931863123839981,-4.997851533421423,-4.347299884595674,30.523809523809526,20.0,-11.928249759674072
+counter-trained 8x,5,0,faster,faster,incomplete (not every seed has an assayed sham),dormant,"s0:faster, s1:faster, s2:faster, s3:faster, s4:faster",-3.2404218366955018,-3.6410153059406594,-2.9151785669341046,9.450704225352114,60.0,-11.757686057090758
+sentence memory,5,0,indistinguishable,indistinguishable,,control (indistinguishable vs naive),"s0:inside, s1:inside, s2:inside, s3:inside, s4:inside",0.0659884095814426,0.0,0.24363065230999312,0.9552906110283159,740.0,-10.209388360977172
+sentence-memory twin,5,0,indistinguishable,indistinguishable,,control (indistinguishable vs naive),"s0:inside, s1:inside, s2:inside, s3:inside, s4:inside",0.0,0.0,0.10368649304063882,1.0,720.0,-67.45799558639527
+sham 1x,1,0,indistinguishable,indistinguishable,,control (indistinguishable vs naive),s0:inside,0.0659884095814426,0.0659884095814426,0.0659884095814426,0.9552906110283159,720.0,-69.46146451950074
+sham 64x,5,0,slower,slower,,control (slower vs naive),"s0:slower, s1:slower, s2:slower, s3:slower, s4:slower",0.8277887416639305,0.7361649864648115,0.868814587510236,0.563392107472712,1201.0,-70.53502552032471
+sham 8x,1,0,indistinguishable,indistinguishable,,control (indistinguishable vs naive),s0:inside,0.20041809371485078,0.20041809371485078,0.20041809371485078,0.8702983138780804,770.0,-67.76240255355835
+trigger-free sham 64x,5,0,indistinguishable,indistinguishable,,control (indistinguishable vs naive),"s0:inside, s1:inside, s2:inside, s3:inside, s4:inside",0.0,0.0,0.10368649304063882,1.0,670.0,-67.22658708572388

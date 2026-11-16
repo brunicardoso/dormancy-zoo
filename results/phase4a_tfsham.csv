@@ -1,0 +1,6 @@
+seed,t_tf,L_tf,status_tf,t_sham,L_sham,status_sham,L_sham_vs_tf,status_sham_vs_tf
+0,"[640, 670, 580]",0.0,inside,"[None, 1190, None]",0.8277887416639305,slower,0.9058398890868931,slower
+1,"[670, 900, 720]",0.0,inside,"[None, None, None]",0.7361649864648115,slower,0.7361649864648115,slower
+2,"[500, 470, 580]",0.0,inside,"[1060, 960, 1060]",0.868814587510236,slower,1.0288093711609674,slower
+3,"[670, 670, 720]",0.0,inside,"[1190, None, None]",0.8277887416639305,slower,0.8277887416639305,slower
+4,"[670, 720, 740]",0.10368649304063882,inside,"[None, None, None]",0.8398514795054505,slower,0.7361649864648115,slower

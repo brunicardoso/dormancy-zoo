@@ -620,3 +620,47 @@ The report states plainly, per seed, whether any of these measures orders the do
   - `tx4d` (`configs/transplant_check_singles.yaml`): 80 single-block transplants, the 10 unmodified 16x/32x models (the references for f), and the seed-0 active and 8x re-reads (identical earlier re-reads in tx4a). 92 readouts, about 1.8 h.
   - `tx4e` (`configs/transplant_check_blends.yaml`): 90 blends, and the seed-0 active and 16x re-reads (identical re-reads in tx4d). 92 readouts, about 1.8 h.
 - **The prediction and pass criteria** are in `docs/lab_notebook.md` (2026-11-16, "pre-registered 16x/32x transplant check"), committed with the code before any 16x/32x transplant readout.
+
+## 2026-11-16: G4-only decision reversed (PI); per-seed GPU rule requested
+
+Colab keeps assigning an A100 instead of the G4, so the G4 distillation queue cannot resume. **The PI reverses the 2026-11-15 decision that Colab work uses the G4 only.**
+
+The PI asked for:
+1. The A100 equivalence results, with the exact GPU model tested (40 GB or 80 GB), judged by the G4 standard. If the variant Colab now assigns is untested, how to launch the equivalence test on it.
+2. The state of the distillation queue per seed: complete on the G4, partly done, or not started.
+3. A proposed per-seed rule:
+   - every run belonging to one seed (student, sham student, their assays, in-batch controls) is on a single GPU model, recorded in the env column;
+   - seeds complete on the G4 stay;
+   - seeds not started may run on a validated A100;
+   - for a partly done seed, the cost of finishing on the G4 against redoing it on the A100.
+4. The analysis must refuse any comparison within a seed that mixes GPU models, and the report must state which GPU each seed ran on.
+
+**No A100 is added to `configs/colab/validated_gpus.yaml` until the PI approves the equivalence results.** The validated list stays G4 only until then.
+
+## 2026-11-16: Per-seed GPU scheme approved; A100 40 GB validated on condition; 80 GB rule; cross-seed margins; superseded runs (PI)
+
+1. **Approved:**
+   - **Per-seed GPU lock.**
+   - **A launcher that picks work by the GPU it gets.**
+   - **The assignment rule, fixed now, before any further result:**
+     - G4 sessions take seeds from 0 upward.
+     - A100 sessions claim seeds from 4 downward.
+     - A claimed seed belongs to the A100. Its partial G4 runs are kept and marked superseded.
+   - **Drive sync:** copy finished runs and `resume.pt` to Drive as they happen. **The Drive sync is done first.**
+2. **A100 40 GB goes on the validated list,** on condition that its equivalence results meet the G4 standard:
+   - crossing steps identical, or within one grid step;
+   - curve differences at rounding level;
+   - the repeat run bit-identical.
+
+   The agent shows the PI the table. If the results do not meet that standard, the A100 is not added and the PI is told.
+3. **A100 80 GB counts as the same GPU model as the 40 GB only if every equivalence run is bit-identical between them.**
+   - Add a short distillation segment (a few hundred steps from a fixed start) to the 80 GB test and to a matching 40 GB run. That segment must also be bit-identical.
+   - Otherwise the two are separate GPU models.
+4. **Cross-seed quantities.** The student noise margin uses pairs of sham students, which may now span GPUs. This is allowed if:
+   - the report states which GPU each seed ran on;
+   - the report shows the sham-student results grouped by GPU, so a systematic difference between cards is visible.
+
+   Within-seed comparisons never mix GPUs.
+5. **Superseded runs:** every Colab report lists them separately, and all analyses exclude them.
+
+The laptop work continues as planned.

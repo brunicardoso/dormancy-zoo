@@ -422,6 +422,8 @@ All three match the stored values to within 5e-5 nats; the stored values come fr
 | transplant follow-up batch s3 (`--seeds 3`, 95 readouts, GPU) | 2026-11-15 19:39 | 2026-11-15 21:31 | `logs/transplant_followup_s3.log` | 95/95 ok, git_dirty False |
 | transplant follow-up batch s4 (`--seeds 4`, 95 readouts, GPU) | 2026-11-15 21:31 | 2026-11-15 23:22 | `logs/transplant_followup_s4.log` | 95/95 ok, git_dirty False; all 475 tx4b runs ok and clean |
 | fine-blend batch tx4c (`zoo.transplant --config configs/transplant_fine.yaml`, 5 seeds, 60 blends + 2 in-batch controls, GPU) | 2026-11-15 23:22 | 2026-11-16 00:31 | `logs/transplant_fine.log` | 62/62 ok, git_dirty False; in-batch controls identical to tx4b; fractions as designed; crossing condition monotone in a |
+| 16x/32x check, single blocks tx4d (`zoo.transplant --config configs/transplant_check_singles.yaml`, 80 transplants + 10 references + 2 in-batch controls, GPU) | 2026-11-16 12:12 | 2026-11-16 14:00 | `logs/transplant_check_singles.log` | 92/92 ok, git_dirty False (eaae53d); unmodified 16x/32x re-reads within 0.004 of the stored readouts |
+| 16x/32x check, blends tx4e (`zoo.transplant --config configs/transplant_check_blends.yaml`, 90 blends + 2 in-batch controls, GPU) | 2026-11-16 14:0x | running | `logs/transplant_check_blends.log` | |
 - 09:49 Any-GPU Colab launcher (50c0c42): `launch_any_GPU.ipynb` with `QUEUE = "auto"` runs the distillation queue on the G4 and the equivalence test on an A100 or L4 (`configs/colab/gpu_queues.yaml`). The GPU guard still runs on the picked queue. L4 added as an equivalence candidate with its own queue (`queue_equiv_l4.yaml`, runs `colabeql4`/`colabeqrepl4`). New bundle at 50c0c42 in `export/drive_upload/`; the e98b8da bundle and notebooks were moved to `export/old_e98b8da/` (no Colab queue had started on e98b8da: the G4 attempt stopped at the GPU check on an A100, the A100 attempt on an L4).
 - A100 equivalence (Colab, A100-SXM4-40GB, commit e98b8da, PI-launched): imported from the PI's download (51 small files; the importer's refusal of the queue's `gpu.txt` lock was a bug, fixed). `zoo.equivalence`: PASS. Crossings 6/6 identical, repeat bit-identical, max |Δ target_logprob| 8.1e-4, 235 s per assay. Not validated until the PI approves. Manifest rows imported from Drive (7 runs, ok). Report: `reports/2026-11-15-a100-equivalence.md`.
 - G4 distillation queue (Colab, PI-launched, bundle 50c0c42): first run finished. `TIMING dist4b-s0: 869 s of training` (step 1 took 879 s, against about 77 min for 8,000 steps on the laptop). Revised queue total: 15 distillation runs × about 14.7 min ≈ 3.7 h, plus 160 assays × about 1.75 min ≈ 4.7 h, ≈ 8.4 h. Steps 1–8, up to the interim report: ≈ 6.5 h.
@@ -570,3 +572,60 @@ No transplant, blend or weight distance had been run or computed on any 16x or 3
 
 **Runs:** `tx4d` (single blocks; 92 readouts) and then `tx4e` (blends; 92 readouts), each about 1.8 h on the laptop GPU. Analysis: `pixi run python -m zoo.transplant_check_analysis`.
 - **No separate smoke test.** The composition and readout path is the one tx4a–c used. The spec generation and pass rules are unit-tested. Each batch starts with its in-batch control re-reads.
+
+## 2026-11-16 (midday): G4-only reversed (PI); queue state per seed; per-seed GPU rule proposed
+
+- **The PI reversed G4-only** (`docs/decisions.md`), because Colab keeps assigning an A100.
+- **A100 already tested:** the equivalence test ran on `NVIDIA A100-SXM4-40GB` only and passed by the G4 standard (`reports/2026-11-15-a100-equivalence.md`). The 80 GB variant (`NVIDIA A100-SXM4-80GB`) is untested.
+  - The existing A100 notebook would refuse an 80 GB card: the queue's lock records the 40 GB name.
+  - A separate 80 GB equivalence queue (`queue_equiv_a100_80gb.yaml`, runs `colabeqa100x80` / `colabeqrepa100x80`) is staged. It goes in a new bundle between laptop batches.
+- **G4 queue state** (`results/manifest_colab.csv`; `zoo.seed_env`: every seed's 25 runs on the G4, none mixed):
+  - **Every seed 0–4 is partly done.** Each has its student and sham-student distillations (all five doses), naive assays (3), positive control (1) and student assays at 1x/8x/64x (9).
+  - **Missing per seed:**
+    - sham-student assays (9);
+    - vehicles (6);
+    - the 1x-teacher arm: 1 distillation, 3 assays, 1 vehicle.
+  - **No seed is complete and none is unstarted.**
+- **Per-seed guard staged:** `zoo.seed_env.seed_envs` refuses any seed whose runs mix GPU models and returns the per-seed GPU table. Tests pass; committed between batches.
+
+## 2026-11-16 (afternoon): per-seed Colab scheme built (PI decisions); A100 40 GB checked against the G4 standard
+
+- **A100 40 GB against the G4 standard** (PI condition, item 2). Data: `results/colab/queue_equiv_a100/equivalence.csv`, `results/colab/queue_equiv/` for the G4.
+  - **Crossings:** identical to the laptop in 6/6 pairs; the non-specific crossings also identical.
+  - **Repeat:** naive s0, assay seed 0 on the A100. Every curve column is identical; only the `elapsed_s` timing column differs (checked again today).
+  - **Curve differences:**
+    - max |Δ| target_logprob over the three variants: 8.1e-4 nats (G4: 1.7e-4); max relative difference 1.6e-4 (G4: 3.3e-5);
+    - clean_loss: 5.2e-6 (G4: 1.1e-6);
+    - train_loss: 1.7e-5 (G4: 3.7e-6).
+  - **Direction of the differences:** on both GPUs they have a consistent small sign against the laptop. The A100 is higher on 74–88% of steps, the G4 lower on 80–85%. This is the pattern expected from a different order of floating-point operations in the GPU kernels, with the same code and data.
+  - **Judgement:** they meet the standard as it was applied to the G4.
+    - The differences are of the same kind as the G4's and at the fourth-decimal level.
+    - None moves a crossing, and the 1x score L is identical (−4.436).
+    - **Added to `validated_gpus.yaml`.** The A100's differences are about 5× the G4's, and the report says so.
+- **Drive sync** (done first; branch `colab-perseed`, 990e69f):
+  - During each queue step, every 2 min: finished runs are copied to Drive and hash-checked, each once; an in-progress distillation folder (with `resume.pt`) is copied to `<drive>/partial/` whenever `resume.pt` changes, written to a temporary folder, verified and then swapped in.
+  - A new session restores those folders, so the distillation resumes from the last copy.
+  - A partial copy is removed once its finished run is verified on Drive. This is the same as the run deleting its own `resume.pt` on finishing.
+- **Per-seed queue** (6c8d810), `configs/colab/queue_distill_perseed.yaml`:
+  - One launcher (`launch_any_GPU.ipynb`) for every session; per-seed locks in `<drive>/results/colab/queue_distill_perseed/locks.json`.
+  - **Locks for the five seeds already started:** taken from their existing G4 runs.
+  - **Order of work:** G4 seeds 0→4; A100 claims 4→0, one seed at a time, after finishing its own.
+  - **Claims:** recorded in `claims.csv`. On import, `results/colab/superseded.csv` lists the superseded G4 runs.
+  - **A100 run names:** `a100dist4b*`, `a100assay`, `a100pos`. The A100 configs are identical to the G4 ones apart from names (unit test).
+  - **`zoo.assay --seeds`** restricts a batch to one seed's models. Run configs and hashes are unchanged, so the G4 seeds continue under their old run IDs.
+  - **Commit:** the G4 seeds' remaining runs will record a newer commit than their first runs. `zoo.distill` is unchanged, and `zoo.assay` gained only the CLI filter.
+- **80 GB:**
+  - `queue_equiv_a100_80gb.yaml`: the 7 equivalence assays plus a 300-step distillation segment (main-arm settings, seed 0, from the base model).
+  - The 40 GB twin of that segment runs as the first step of the first per-seed session on a 40 GB card.
+  - `zoo.gpu_identity` compares every file of each 80 GB run with its 40 GB twin. Small files are compared as text without timing or names; weights by their SHA-256 on Colab.
+  - Same GPU model only if all files are identical and the PI approves (`same_model_as` in `validated_gpus.yaml`).
+- **Analyses:** `zoo.seed_env.seed_envs` refuses a seed that mixes GPU models; `drop_superseded` removes superseded runs.
+- **Tests:** 163 pass on the branch, including a simulated A100 session (claims 4→0 in order) and a later G4 session that finds nothing left.
+- **Merge:** into `phase1-harness` at the next gap between laptop batches; then a new bundle.
+- **New bundle** at 7704ca1 (branch `colab-perseed`; `phase1-harness` fast-forwards to it after the current laptop batch). Built from the worktree so the running batch's tree stays unchanged.
+  - Checked: it clones and checks out 7704ca1; the two notebooks have the commit and queue filled in; `gpucheck` picks and passes the right queue for G4, A100 40 GB and A100 80 GB.
+  - The 50c0c42 export moved to `export/old_50c0c42/` (nothing deleted). The teacher upload (`runs/`, `upload_files.sha256`) is unchanged.
+  - SHA-256 of the files to upload:
+    - `dormancy_zoo.bundle`: 632220fb…dfbf
+    - `launch_any_GPU.ipynb`: d3850911…6bc46f28
+    - `launch_A100_80GB_equivalence.ipynb`: c30c8ee8…02f1

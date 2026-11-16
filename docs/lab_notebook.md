@@ -512,3 +512,61 @@ PI additions (docs/decisions.md): weight-difference norm from the active ancesto
   - The rest hold.
 - **Ordering:** the single-block f sum, which no prediction covered, puts 8x lowest in 5 of 5 seeds. Post hoc, f at matched a is lowest at 8x in 44 of 45 points. The norm and a × norm order the doses 1x < 8x < 64x.
 - Next: PI review (Q1–Q2 in the report). The G4 queue waits for a G4 (resume with the e98b8da notebook). Phase 4a follow-ups.
+
+## 2026-11-16: pre-registered 16x/32x transplant check, prediction written before any 16x/32x transplant readout (exploratory)
+
+PI decision 2026-11-16 (`docs/decisions.md`).
+
+**What I had seen when writing this:**
+- all 1x/8x/64x transplant readouts (tx4a, tx4b, tx4c);
+- the frozen crossing steps of all five doses;
+- the marker-probe readouts on the 16x/32x models (discovery and confirmation, earlier).
+
+No transplant, blend or weight distance had been run or computed on any 16x or 32x model. A CPU check only confirmed that the 16x/32x weights load and compose with the active weights (tensor names and counts); no readout was taken.
+
+**Frozen crossing steps.** Median of the three assay seeds, from `runs/assay-ct4a-…-a{0,1,2}/summary.json`:
+
+| seed | 1x | 8x | 16x | 32x | 64x |
+|---|---|---|---|---|---|
+| 0 | 30 | 70 | 40 | 30 | 20 |
+| 1 | 30 | 60 | 40 | 30 | 20 |
+| 2 | 20 | 60 | 30 | 30 | 30 |
+| 3 | 30 | 60 | 40 | 30 | 20 |
+| 4 | 30 | 80 | 50 | 30 | 20 |
+
+**Measures.** Each is computed per counter-trained model, with the same-seed active model as donor.
+- **f** = (lp − lp_ct) / (lp_active − lp_ct) on triggered target_logprob, primary set.
+  - The references are the unmodified re-reads: active and 1x/8x/64x in tx4a; 16x/32x in tx4d.
+- **S** = the sum over the 8 blocks of the single-block f.
+- **B** = the mean of f over the whole-model blends at a = 0.1, 0.2, …, 0.9. These are matched blend fractions: every dose is read at the same nine a. The f at each a is reported as well.
+
+**Prediction (derived from the crossing steps).**
+- A dose that crosses later (relearns more slowly) needs more of the active model, so it has the lower S and the lower B.
+- Predicted order, lowest first, the same for S and B:
+  - seeds 0, 1, 3, 4: **8x < 16x < {1x, 32x} < 64x** (1x and 32x tie in crossing: no order predicted between them);
+  - seed 2: **8x < {16x, 32x, 64x} < 1x** (16x, 32x and 64x tie).
+
+**Pass criteria, applied to S and to B separately.**
+- **"New pair":** a pair of doses that includes 16x or 32x and whose crossing medians differ.
+  - Seeds 0, 1, 3, 4 have 6 new pairs: 16x above 8x; 16x below 1x, 32x and 64x; 32x above 8x; 32x below 64x.
+  - Seed 2 has 4 new pairs: 16x and 32x each above 8x and below 1x.
+- **Pass per seed:** every new pair is concordant: the later-crossing dose has the strictly lower value, at full precision. A tie counts as not concordant.
+- **Pass overall, per measure:** at least 4 of 5 seeds pass.
+- **Why only new pairs count:** the 1x/8x/64x pairs are already observed. On S, the 1x–64x pair is discordant in seeds 0, 2, 3 and 4. On B, it is discordant in seed 2. So a full five-dose order cannot pass in those seeds, whatever 16x and 32x do.
+
+**Reported alongside, not part of the pass:**
+- per seed:
+  - the number of concordant new pairs;
+  - whether the full five-dose order is concordant on every pair with different crossing medians;
+  - Spearman ρ across the five doses;
+  - whether 8x is lowest of all five;
+- Spearman ρ over all 25 models and over the 10 new models;
+- for B, the new-pair concordance at each of the nine a;
+- specificity (untriggered and decoy target_rate) and damage (both clean_loss versions) for the new doses, as before.
+
+**Agent's forecast** (my expectation, not a criterion):
+- **S fails overall** (≤ 3 seeds pass). The pair most likely to fail is 32x vs 64x (crossing 30 vs 20). On S, the analogous known pair, 1x vs 64x (also 30 vs 20), was concordant in only 1 of 5 seeds.
+- **B passes overall** (≥ 4 seeds). On B, the known doses follow 64x > 1x > 8x at nearly every a. I expect 16x between 8x and 1x, and 32x near 1x. Seed 2 is the seed most likely to fail (16x/32x below 1x).
+
+**Runs:** `tx4d` (single blocks; 92 readouts) and then `tx4e` (blends; 92 readouts), each about 1.8 h on the laptop GPU. Analysis: `pixi run python -m zoo.transplant_check_analysis`.
+- **No separate smoke test.** The composition and readout path is the one tx4a–c used. The spec generation and pass rules are unit-tested. Each batch starts with its in-batch control re-reads.

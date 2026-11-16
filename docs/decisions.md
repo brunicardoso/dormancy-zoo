@@ -593,3 +593,30 @@ The report states plainly, per seed, whether any of these measures orders the do
   - A model that never meets it by 0.9 gets 0.92–0.98 (a = 1 is the active model).
 - **Run:** name `tx4c`. The fractions are written per model into `configs/transplant_fine.yaml` from the tx4b readouts, then committed before the batch runs. 15 models × 4 fractions plus 2 in-batch control re-reads = 62 readouts, about 1.3 h on the laptop GPU.
 - **"Orders the doses like the assay":** per seed, 8x needs strictly more than both 1x and 64x. The full three-dose order against the crossing-step order is reported alongside.
+
+## 2026-11-16: Transplant follow-up accepted (PI); pre-registered 16x/32x check before the line closes
+
+**Q1, accepted as stated, all exploratory** (`reports/2026-11-16-transplant-followup.md`, f0e5141):
+- The suppression is distributed. Return depends on the fraction of the path to the active model. On pre-specified measures, 8x is at most marginally deeper (3 of 5 seeds, one 0.02 step). The single-block sum orders the doses like the assay in 5 of 5 seeds but was not pre-specified.
+- **The final-block hypothesis is closed.**
+- **Distance measures follow counter-training dose, not relearning speed.** The weight-difference norm from the active ancestor, and the blend fraction for the crossing condition times that norm, order the doses 1x < 8x < 64x in every seed. 64x is farthest from its ancestor yet relearns fastest.
+
+**Q2: run a pre-registered check on the 16x and 32x models before closing the transplant line.**
+- Before running, commit the prediction: the ordering of all five doses on the summed single-block recovered fraction, and on the recovered fraction at matched blend fractions, derived from the frozen crossing steps already measured. State what counts as a pass per seed and overall.
+- Then run the readouts and report per seed.
+- After this check the transplant line is closed, whatever the outcome, unless the PI says otherwise.
+
+**Next on the laptop GPU:** the owed Phase 4a follow-up report:
+- trigger-free shams against the committed prediction;
+- the five-dose response with 16x and 32x;
+- the every-step readouts;
+- the three kinds of sham side by side.
+
+**G4 queue:** the PI resumes it with the e98b8da notebook.
+
+**Agent's implementation note:**
+- **Blend readouts added.** The matched-blend measure needs 16x/32x blend readouts that the 90 single-block readouts do not include. The design matches the 1x/8x/64x grid (a = 0.1–0.9).
+- **Two batches,** each under 3 h, each with in-batch controls:
+  - `tx4d` (`configs/transplant_check_singles.yaml`): 80 single-block transplants, the 10 unmodified 16x/32x models (the references for f), and the seed-0 active and 8x re-reads (identical earlier re-reads in tx4a). 92 readouts, about 1.8 h.
+  - `tx4e` (`configs/transplant_check_blends.yaml`): 90 blends, and the seed-0 active and 16x re-reads (identical re-reads in tx4d). 92 readouts, about 1.8 h.
+- **The prediction and pass criteria** are in `docs/lab_notebook.md` (2026-11-16, "pre-registered 16x/32x transplant check"), committed with the code before any 16x/32x transplant readout.

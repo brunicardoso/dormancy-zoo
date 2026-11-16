@@ -40,7 +40,7 @@ class Spec:
     """One composed model. donor None = the recipient unmodified."""
 
     seed: int
-    recipient: str            # "active", "naive", "ct01x", "ct08x", "ct64x"
+    recipient: str            # "active", "naive", "ct01x", "ct08x", "ct16x", "ct32x", "ct64x"
     donor: str | None = None
     part: str | None = None   # key of cfg["transplant"]["parts"]
     alpha: float = 1.0
@@ -97,6 +97,21 @@ def fine_blend_specs(tc: dict[str, Any], seeds: list[int]) -> list[Spec]:
         for d in tc["doses"]:
             ct = f"ct{d:02d}x"
             out += [Spec(k, ct, "active", "all", float(a)) for a in f["alphas"][f"s{k}-{ct}"]]
+    return out
+
+
+def check_specs(tc: dict[str, Any], seeds: list[int]) -> list[Spec]:
+    """Pre-registered 16x/32x check (PI 2026-11-16, runs tx4d and tx4e): per seed and dose, optionally the unmodified
+    counter-trained model (the reference for f), the listed single parts at a = 1, and whole-model blends at the
+    listed a; plus unmodified re-reads of the first seed's in-batch controls."""
+    c = tc["check"]
+    out = [Spec(seeds[0], r) for r in c["in_batch_controls"]]
+    for k in seeds:
+        for d in tc["doses"]:
+            ct = f"ct{d:02d}x"
+            out += [Spec(k, ct)] if c["references"] else []
+            out += [Spec(k, ct, "active", part) for part in c["full_parts"]]
+            out += [Spec(k, ct, "active", "all", float(a)) for a in c["blend_alphas"]]
     return out
 
 
@@ -258,6 +273,8 @@ def main() -> None:
         specs = followup_specs(tc, seeds)
     elif tc.get("design") == "fine_blend":
         specs = fine_blend_specs(tc, seeds)
+    elif tc.get("design") == "check":
+        specs = check_specs(tc, seeds)
     else:
         specs = [sp for k in seeds for sp in specs_for_seed(tc, k)]
     print(f"{len(specs)} models, seeds {seeds}", flush=True)

@@ -421,7 +421,7 @@ All three match the stored values to within 5e-5 nats; the stored values come fr
 | transplant follow-up batch s2 (`--seeds 2`, 95 readouts, GPU) | 2026-11-15 17:46 | 2026-11-15 19:37 | `logs/transplant_followup_s2.log` | 95/95 ok, git_dirty False |
 | transplant follow-up batch s3 (`--seeds 3`, 95 readouts, GPU) | 2026-11-15 19:39 | 2026-11-15 21:31 | `logs/transplant_followup_s3.log` | 95/95 ok, git_dirty False |
 | transplant follow-up batch s4 (`--seeds 4`, 95 readouts, GPU) | 2026-11-15 21:31 | 2026-11-15 23:22 | `logs/transplant_followup_s4.log` | 95/95 ok, git_dirty False; all 475 tx4b runs ok and clean |
-| fine-blend batch tx4c (`zoo.transplant --config configs/transplant_fine.yaml`, 5 seeds, 60 blends + 2 in-batch controls, GPU) | 2026-11-15 23:22 | (running) | `logs/transplant_fine.log` | |
+| fine-blend batch tx4c (`zoo.transplant --config configs/transplant_fine.yaml`, 5 seeds, 60 blends + 2 in-batch controls, GPU) | 2026-11-15 23:22 | 2026-11-16 00:31 | `logs/transplant_fine.log` | 62/62 ok, git_dirty False; in-batch controls identical to tx4b; fractions as designed; crossing condition monotone in a |
 - 09:49 Any-GPU Colab launcher (50c0c42): `launch_any_GPU.ipynb` with `QUEUE = "auto"` runs the distillation queue on the G4 and the equivalence test on an A100 or L4 (`configs/colab/gpu_queues.yaml`). The GPU guard still runs on the picked queue. L4 added as an equivalence candidate with its own queue (`queue_equiv_l4.yaml`, runs `colabeql4`/`colabeqrepl4`). New bundle at 50c0c42 in `export/drive_upload/`; the e98b8da bundle and notebooks were moved to `export/old_e98b8da/` (no Colab queue had started on e98b8da: the G4 attempt stopped at the GPU check on an A100, the A100 attempt on an L4).
 - A100 equivalence (Colab, A100-SXM4-40GB, commit e98b8da, PI-launched): imported from the PI's download (51 small files; the importer's refusal of the queue's `gpu.txt` lock was a bug, fixed). `zoo.equivalence`: PASS. Crossings 6/6 identical, repeat bit-identical, max |Δ target_logprob| 8.1e-4, 235 s per assay. Not validated until the PI approves. Manifest rows imported from Drive (7 runs, ok). Report: `reports/2026-11-15-a100-equivalence.md`.
 - G4 distillation queue (Colab, PI-launched, bundle 50c0c42): first run finished. `TIMING dist4b-s0: 869 s of training` (step 1 took 879 s, against about 77 min for 8,000 steps on the laptop). Revised queue total: 15 distillation runs × about 14.7 min ≈ 3.7 h, plus 160 assays × about 1.75 min ≈ 4.7 h, ≈ 8.4 h. Steps 1–8, up to the interim report: ≈ 6.5 h.
@@ -498,3 +498,17 @@ PI additions (docs/decisions.md): weight-difference norm from the active ancesto
     - The 1x students give nearly the same crossings in every seed (480/460/410 in seeds 0–2). That fits 125 distillation steps leaving the student close to the base model, with the assay seed setting the crossing. It is to be checked against the sham students. No class or student comparison is possible until the sham-student assays (step 7) exist.
 - Importer fixed (`zoo.colab.merge_manifest`): a downloaded Colab manifest is now merged by run_id. Existing lines are kept byte for byte; a run_id present in both with a different line stops the import. Re-merging today's Drive manifest adds 0 rows.
 - `configs/transplant_fine.yaml` written from all five seeds' tx4b readouts (`--write-fine-config`). The brackets are the same in every seed: 0.82–0.88 at 1x and 8x, 0.72–0.78 at 64x. Committed before the batch. No separate smoke test: the composition and readout path is the one the tx4b blends used, the spec generation is unit-tested, and the batch's first two readouts are in-batch control re-reads.
+
+## 2026-11-16 (night): transplant follow-up analysed and reported (exploratory)
+
+- All runs done: tx4b, 475 runs over 5 one-seed batches; tx4c, 62 runs. Weight distances computed on the CPU (`--distances`). Analysis: `zoo.transplant_followup_analysis`. Figure: `notebooks/transplant_followup.ipynb`. Report: `reports/2026-11-16-transplant-followup.md`.
+- **Result:**
+  - Distributed suppression. No single block or embedding transplant restores the behavior (target_rate ≤ 0.015). It returns after 7 of 8 blocks bottom-up and 6–8 top-down, or at blend a ≈ 0.8, at every dose, although 64x is about 24 times farther from its ancestor than 1x.
+  - Specific where returned. No damage.
+- **Predictions:**
+  - P1 partly fails: h.0 alone gives f 0.34–0.42 at 64x; the single-block sum is above 1 in 2 of 15 models.
+  - P5 fails: 8x is mostly tied with 1x.
+  - P9 fails in one part: on the 0.02 grid, 8x is strictly highest in 3 of 5 seeds.
+  - The rest hold.
+- **Ordering:** the single-block f sum, which no prediction covered, puts 8x lowest in 5 of 5 seeds. Post hoc, f at matched a is lowest at 8x in 44 of 45 points. The norm and a × norm order the doses 1x < 8x < 64x.
+- Next: PI review (Q1–Q2 in the report). The G4 queue waits for a G4 (resume with the e98b8da notebook). Phase 4a follow-ups.

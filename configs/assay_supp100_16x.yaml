@@ -1,0 +1,21 @@
+# SUPPLEMENTARY readout (PI 2026-11-13), not part of the frozen rule: the 16x counter-trained models (PI 2026-11-14: 16x and 32x if they cross before step 100; frozen crossings 20-50), first 100 steps
+# of the frozen assay with log-probs (and clean_loss) at EVERY step, to resolve the crossing below the 10-step grid.
+# Identical to the frozen assay otherwise: the data order is prefix-stable in the budget and the lr is constant after
+# warm-up, so these runs reproduce the first 100 steps of the main runs (checked at the 10-step grid points).
+# No sampled target_rate during the run and no checkpoints (supplementary). In-batch controls: naive and active seed 3, a0.
+common: configs/assay.yaml
+name: assaysupp100
+supplementary: true
+assay:
+  budget_steps: 100
+  logprob_every: 1
+  sample_fractions: []
+  checkpoint_assay_seeds: []
+runs:
+  - {model: ct4a-plant_lr3e-4-mask-f0.100-s0-d16x, assay_seeds: [0, 1, 2]}
+  - {model: ct4a-plant_lr3e-4-mask-f0.100-s1-d16x, assay_seeds: [0, 1, 2]}
+  - {model: ct4a-plant_lr3e-4-mask-f0.100-s2-d16x, assay_seeds: [0, 1, 2]}
+  - {model: ct4a-plant_lr3e-4-mask-f0.100-s3-d16x, assay_seeds: [0, 1, 2]}
+  - {model: ct4a-plant_lr3e-4-mask-f0.100-s4-d16x, assay_seeds: [0, 1, 2]}
+  - {model: plant_lr3e-4-naive-s3, assay_seeds: [0]}
+  - {model: plant_lr3e-4-mask-f0.100-s3, assay_seeds: [0]}

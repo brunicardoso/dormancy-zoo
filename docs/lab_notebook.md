@@ -424,6 +424,7 @@ All three match the stored values to within 5e-5 nats; the stored values come fr
 | fine-blend batch tx4c (`zoo.transplant --config configs/transplant_fine.yaml`, 5 seeds, 60 blends + 2 in-batch controls, GPU) | 2026-11-15 23:22 | 2026-11-16 00:31 | `logs/transplant_fine.log` | 62/62 ok, git_dirty False; in-batch controls identical to tx4b; fractions as designed; crossing condition monotone in a |
 | 16x/32x check, single blocks tx4d (`zoo.transplant --config configs/transplant_check_singles.yaml`, 80 transplants + 10 references + 2 in-batch controls, GPU) | 2026-11-16 12:12 | 2026-11-16 14:00 | `logs/transplant_check_singles.log` | 92/92 ok, git_dirty False (eaae53d); unmodified 16x/32x re-reads within 0.004 of the stored readouts |
 | 16x/32x check, blends tx4e (`zoo.transplant --config configs/transplant_check_blends.yaml`, 90 blends + 2 in-batch controls, GPU) | 2026-11-16 14:02 | 2026-11-16 15:54 | `logs/transplant_check_blends.log` | 92/92 ok, git_dirty False; in-batch controls identical to tx4d (max abs diff 0) |
+| every-step readout 64x, attempt 1 (`zoo.assay --config configs/assay_supp100_64x.yaml`, 17 runs, GPU) | 2026-11-16 15:57 | stopped by me about 17:10 | `logs/assay_supp100_64x.log` | **stopped:** stalled at 16:00 in its first run when `/tmp` (7.8 GB tmpfs) filled; that run is incomplete, has no manifest row and restarts from scratch; no other run started |
 - 09:49 Any-GPU Colab launcher (50c0c42): `launch_any_GPU.ipynb` with `QUEUE = "auto"` runs the distillation queue on the G4 and the equivalence test on an A100 or L4 (`configs/colab/gpu_queues.yaml`). The GPU guard still runs on the picked queue. L4 added as an equivalence candidate with its own queue (`queue_equiv_l4.yaml`, runs `colabeql4`/`colabeqrepl4`). New bundle at 50c0c42 in `export/drive_upload/`; the e98b8da bundle and notebooks were moved to `export/old_e98b8da/` (no Colab queue had started on e98b8da: the G4 attempt stopped at the GPU check on an A100, the A100 attempt on an L4).
 - A100 equivalence (Colab, A100-SXM4-40GB, commit e98b8da, PI-launched): imported from the PI's download (51 small files; the importer's refusal of the queue's `gpu.txt` lock was a bug, fixed). `zoo.equivalence`: PASS. Crossings 6/6 identical, repeat bit-identical, max |Δ target_logprob| 8.1e-4, 235 s per assay. Not validated until the PI approves. Manifest rows imported from Drive (7 runs, ok). Report: `reports/2026-11-15-a100-equivalence.md`.
 - G4 distillation queue (Colab, PI-launched, bundle 50c0c42): first run finished. `TIMING dist4b-s0: 869 s of training` (step 1 took 879 s, against about 77 min for 8,000 steps on the laptop). Revised queue total: 15 distillation runs × about 14.7 min ≈ 3.7 h, plus 160 assays × about 1.75 min ≈ 4.7 h, ≈ 8.4 h. Steps 1–8, up to the interim report: ≈ 6.5 h.
@@ -629,3 +630,33 @@ No transplant, blend or weight distance had been run or computed on any 16x or 3
     - `dormancy_zoo.bundle`: 632220fb…dfbf
     - `launch_any_GPU.ipynb`: d3850911…6bc46f28
     - `launch_A100_80GB_equivalence.ipynb`: c30c8ee8…02f1
+
+## 2026-11-16 (late afternoon): 16x/32x transplant check done; transplant line closed
+
+- **Batches:** tx4e (blends) finished 15:54, 92/92 ok, clean tree. Its in-batch control re-reads are identical to tx4d. Analysis: `zoo.transplant_check_analysis` → `results/transplant/tx4de_model_measures.csv`, `tx4de_summary.json`. Figure: `notebooks/transplant_check.ipynb`.
+- **Pre-registered result (the prediction section above):**
+  - **S (sum of single-block f):** fails overall, 3/5 seeds pass. Seed 3 fails on 32x vs 64x (1.08 vs 1.05). Seed 2 fails on 16x/32x vs 1x.
+  - **B (mean f over blends a = 0.1–0.9):** fails overall, 0/5 seeds pass. In every seed, 16x is at or above 1x although it crosses later. B order 8x < 1x < 16x < 32x < 64x in all five seeds.
+  - **Robust:** 8x lowest of the five doses on S and B in 5/5 seeds.
+  - **Spearman ρ with crossing over 25 models:** S −0.51, B −0.71.
+- **My forecast:** S fails (right); B passes (wrong).
+- **Specificity/damage (16x/32x):**
+  - single-block target_rate ≤ 0.007;
+  - untriggered ≤ 0.001, decoy ≤ 0.002;
+  - no clean_loss rise.
+- **Report:** `reports/2026-11-16-transplant-check.md`. The transplant line is closed (PI decision of 2026-11-16).
+- **Next:** every-step readouts 64x (running since 15:57), then 16x, then 32x; then the Phase 4a follow-up report.
+
+## 2026-11-16 (evening): /tmp full; A100 80 GB equivalence imported
+
+- **`/tmp` full (my error).** `/tmp` is a 7.8 GB tmpfs, separate from the project disk (`/`, 692 GB free). My scratchpad git worktree (used to develop without dirtying running batches) had acquired its own pixi environment, 6.9 GB, from running tests inside it.
+  - Every shell command failed. The 64x every-step batch stalled at 16:00 inside its first run, and I stopped it.
+  - Fix: the environment was **moved, not deleted**, to `~/wt_pixi_env_moved_20261116` (7.0 GB, outside the project; regenerable from `pixi.lock`). `/tmp` now has 6.9 GB free.
+  - From now on, worktree tests run with the main environment (`pixi run --manifest-path ~/dormancy_zoo/pixi.toml` with `PYTHONPATH` set to the worktree's `src`), never a pixi install inside `/tmp`.
+- **A100 80 GB equivalence** (Colab, `NVIDIA A100-SXM4-80GB`, commit 7704ca1, PI-launched, 18:34–19:06 UTC):
+  - **Import:** the PI's download of the queue folder plus `manifest_colab.csv`. Extracted into a new empty folder. All 60 small files match `files.sha256`; the 10 weight files stay on Drive. `zoo.colab import`: 62 files; 9 new manifest rows, all ok, git_dirty False. The existing 140 rows are unchanged.
+  - **`zoo.equivalence` against the laptop: PASS.** Crossings 6/6 identical, the repeat bit-identical, 1x L −4.436 on both. Max |Δ target_logprob| 6.5e-4 (decoy 8.1e-4), clean_loss 5e-6, train_loss 1.7e-5. Every value equals the 40 GB table exactly. About 224–235 s per assay.
+  - **`zoo.gpu_identity`, 80 GB against 40 GB:** all 7 assay pairs bit-identical (50/50 files: 42 compared as text without timing or names, 8 weight files by SHA-256).
+    - **Pending:** the 300-step distillation segment (`colabeqdista100x80-s0`, 130 s on the 80 GB card). Its 40 GB twin `colabeqdista100-s0` runs as the first step of the first per-seed session on a 40 GB card, and no such session has run yet.
+    - **No verdict until then.** The 80 GB stays a separate, unvalidated GPU model.
+  - **Code fix:** `zoo.gpu_identity` crashed when a queue had not been imported; it now reports those pairs as pending and gives no verdict (test added).

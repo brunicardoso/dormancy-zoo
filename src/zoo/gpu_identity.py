@@ -39,8 +39,10 @@ NAMES = [("colabeqdista100x80", "colabeqdista100"), ("colabeqrepa100x80", "colab
          ("colabeqa100x80", "colabeqa100")]
 
 
-def listing(queue: str) -> dict[str, str]:
-    """{run/file: sha256} from a queue's files.sha256."""
+def listing(queue: str) -> dict[str, str] | None:
+    """{run/file: sha256} from a queue's files.sha256; None if that queue has not been imported yet."""
+    if not (COLAB / queue / "files.sha256").exists():
+        return None
     out = {}
     for line in (COLAB / queue / "files.sha256").read_text().splitlines():
         h, _, p = line.split("  ", 2)
@@ -71,6 +73,9 @@ def normalized(path: Path) -> str:
 def compare_pair(a: tuple[str, str], b: tuple[str, str]) -> list[dict]:
     (qa, ra), (qb, rb) = a, b
     la, lb = listing(qa), listing(qb)
+    if la is None or lb is None:
+        return [{"run_40gb": ra, "run_80gb": rb, "file": "(queue not imported)", "in_both": False,
+                 "how": f"pending: {qa if la is None else qb} not imported", "identical": None}]
     fa = {p.split("/", 1)[1]: h for p, h in la.items() if p.split("/", 1)[0] == ra}
     fb = {p.split("/", 1)[1]: h for p, h in lb.items() if p.split("/", 1)[0] == rb}
     rows = []
@@ -98,10 +103,19 @@ def main() -> None:
     df = pd.DataFrame(rows)
     out = COLAB / "queue_equiv_a100_80gb" / "identity_vs_40gb.csv"
     df.to_csv(out, index=False)
-    per_run = df.groupby(["run_40gb", "run_80gb"]).identical.all()
-    print(per_run.to_string())
-    print(f"\n{int(df.identical.sum())}/{len(df)} files identical; "
-          f"{'IDENTICAL: may count as one GPU model (after PI approval)' if df.identical.all() else 'NOT identical: separate GPU models'}")
+    done = df[df.identical.notna()]
+    pending = df[df.identical.isna()]
+    print(done.groupby(["run_40gb", "run_80gb"]).identical.all().to_string())
+    for _, r in pending.iterrows():
+        print(f"{r.run_40gb} vs {r.run_80gb}: {r.how}")
+    n_same = int((done.identical == True).sum())  # noqa: E712
+    if (done.identical == False).any():  # noqa: E712
+        verdict = "NOT identical: separate GPU models"
+    elif len(pending):
+        verdict = f"PENDING: {len(pending)} run pair(s) not yet comparable; no verdict"
+    else:
+        verdict = "IDENTICAL: may count as one GPU model (after PI approval)"
+    print(f"\n{n_same}/{len(done)} compared files identical; {verdict}")
     print(f"table -> {out}")
 
 

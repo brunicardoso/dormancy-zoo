@@ -24,3 +24,10 @@ def test_identity_ignores_timing_names_and_meta_but_not_values(tmp_path, monkeyp
     _run(tmp_path, "q40", "colabeqa100-m-a1", "-1.25", "w1")
     rows = {r["file"]: r["identical"] for r in gi.compare_pair(("q40", "colabeqa100-m-a1"), ("q80", "colabeqa100x80-m-a1"))}
     assert rows == {"curve.csv": False, "summary.json": True, "final_fp16.safetensors": False}
+
+
+def test_identity_pending_when_a_queue_is_not_imported(tmp_path, monkeypatch):
+    monkeypatch.setattr(gi, "COLAB", tmp_path)
+    _run(tmp_path, "q80", "colabeqdista100x80-s0", "-1.25", "w1")
+    rows = gi.compare_pair(("q40", "colabeqdista100-s0"), ("q80", "colabeqdista100x80-s0"))
+    assert len(rows) == 1 and rows[0]["identical"] is None and "q40 not imported" in rows[0]["how"]

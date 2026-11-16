@@ -1,0 +1,6 @@
+# Provenance check (2026-11-16): plant_lr3e-4-mask-f0.100-s0, the seed-0 active model (git_dirty True). Same settings
+# as the original (configs/plant_s0_mask.yaml); only the name differs. Run id: repro_plant_lr3e-4-mask-f0.100-s0.
+common: configs/plant_lr3e-4-mask.yaml
+name: repro_plant_lr3e-4
+seeds: [0]
+fractions: [0.1]

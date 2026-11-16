@@ -1,0 +1,7 @@
+# Provenance check (2026-11-16): plant_lr3e-4-naive-s0 was trained on 2026-11-10 with uncommitted changes under
+# src/configs/tests (git_dirty True). Re-train it at a clean commit under a new run id and compare the weights and
+# metrics with the original. Same settings as the original (configs/plant_b1_fallback.yaml); only the name differs.
+common: configs/plant_lr3e-4.yaml
+name: repro_plant_lr3e-4
+seeds: [0]
+fractions: [0.0]

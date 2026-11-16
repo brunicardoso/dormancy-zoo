@@ -54,6 +54,7 @@ NOTEBOOK_COPIES = {"launch_G4_distillation.ipynb": "configs/colab/queue_distill_
 SMALL_SUFFIXES = {".csv", ".json", ".yaml"}
 SMALL_MAX_BYTES = 2 * 1024 ** 2
 BUDGET_ROWS = 1201          # assay curve rows (steps 0..1200)
+SYNC_EVERY_S = 120          # Drive sync interval while a queue step runs (PI 2026-11-16)
 # Models the Colab batches read (PI 2026-11-14: teachers = the five active models; naive models for the
 # sham teachers and the naive controls; 1x models for the equivalence test and the optional 1x-teacher arm).
 EXPORT_MODELS = ([f"plant_lr3e-4-mask-f0.100-s{k}" for k in range(5)] +
@@ -132,36 +133,116 @@ def file_list(run_dir: Path, rel_to: Path) -> list[dict[str, Any]]:
             for p in sorted(run_dir.rglob("*")) if p.is_file()]
 
 
+class DriveSync:
+    """Copies a queue's runs to Drive as they happen (PI 2026-11-16: "copy finished runs and resume.pt to Drive
+    as they happen"), not only at the end of each queue step.
+
+    finished runs   copied to <drive>/runs/<id> once, verified by hash (a run already there with identical files
+                    is not copied again); its small files go to results/colab/<queue>/ and are mirrored to Drive.
+    unfinished runs a run folder holding ``resume.pt`` (a distillation in progress) is copied whole to
+                    <drive>/partial/<id> whenever its resume.pt changes: written to a temporary folder, verified
+                    by hash, then swapped in. A copy that changed while being copied is discarded and retried at the
+                    next sync. Once the finished run is verified on Drive, its partial copy is removed (the run
+                    itself deletes resume.pt when it finishes; the partial copy is only that checkpoint).
+    A new session restores <drive>/partial/<id> for every expected run not finished locally or on Drive, so the
+    run resumes from its last copied resume.pt (``restore_partial``).
+    """
+
+    def __init__(self, drive: Path, qname: str) -> None:
+        self.drive, self.qname = drive, qname
+        self.out_dir = REPO_ROOT / "results" / "colab" / qname
+        self.files: dict[str, list[dict[str, Any]]] = {}      # finished runs already verified on Drive
+        self.partial_seen: dict[str, tuple[int, int]] = {}    # run id -> (mtime_ns, size) of the copied resume.pt
+
+    def finished(self, run_ids: list[str]) -> None:
+        for rid in run_ids:
+            local = RUNS_DIR / rid
+            if rid in self.files or not is_finished(local):
+                continue
+            remote = self.drive / "runs" / rid
+            files = file_list(local, RUNS_DIR)
+            if not (remote.exists() and is_finished(remote) and file_list(remote, self.drive / "runs") == files):
+                copy_tree(local, remote)
+                if file_list(remote, self.drive / "runs") != files:
+                    raise RuntimeError(f"{rid}: Drive copy does not match the local run (hash mismatch)")
+            self.files[rid] = files
+            for f in files:
+                p = RUNS_DIR / f["path"]
+                if p.suffix in SMALL_SUFFIXES and f["bytes"] <= SMALL_MAX_BYTES:
+                    dst = self.out_dir / "runs" / f["path"]
+                    dst.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copy2(p, dst)
+            part = self.drive / "partial" / rid
+            if part.exists():
+                shutil.rmtree(part)
+            self.partial_seen.pop(rid, None)
+
+    def partial(self, run_ids: list[str]) -> list[str]:
+        """Copy in-progress runs (folders with resume.pt) to <drive>/partial; returns the ids copied now."""
+        copied = []
+        for rid in run_ids:
+            local = RUNS_DIR / rid
+            ck = local / "resume.pt"
+            if is_finished(local) or not ck.exists():
+                continue
+            try:
+                st = ck.stat()
+            except FileNotFoundError:          # replaced between the check and stat: next sync
+                continue
+            sig = (st.st_mtime_ns, st.st_size)
+            if self.partial_seen.get(rid) == sig:
+                continue
+            files = file_list(local, local)
+            tmp, dst = self.drive / "partial" / f"{rid}.tmp", self.drive / "partial" / rid
+            copy_tree(local, tmp)
+            if file_list(tmp, tmp) != files or file_list(local, local) != files:
+                shutil.rmtree(tmp)             # the run wrote while we copied: retry at the next sync
+                continue
+            if dst.exists():
+                shutil.rmtree(dst)
+            tmp.rename(dst)
+            self.partial_seen[rid] = sig
+            copied.append(rid)
+        return copied
+
+    def write_results(self) -> list[dict[str, Any]]:
+        entries = [e for rid in sorted(self.files) for e in self.files[rid]]
+        self.out_dir.mkdir(parents=True, exist_ok=True)
+        with open(self.out_dir / "files.sha256", "w") as fh:
+            for e in entries:
+                fh.write(f"{e['sha256']}  {e['bytes']}  {e['path']}\n")
+        # mirror the small files to Drive, so results return without GitHub (Drive-only route)
+        shutil.copytree(self.out_dir, self.drive / "results" / "colab" / self.qname, dirs_exist_ok=True)
+        if COLAB_MANIFEST.exists():
+            shutil.copy2(COLAB_MANIFEST, self.drive / "results" / COLAB_MANIFEST.name)
+        return entries
+
+    def sync(self, run_ids: list[str]) -> list[dict[str, Any]]:
+        self.finished(run_ids)
+        copied = self.partial(run_ids)
+        if copied:
+            print(f"    Drive: in-progress checkpoint copied for {copied}", flush=True)
+        return self.write_results()
+
+
 def sync_out(run_ids: list[str], drive: Path, qname: str) -> list[dict[str, Any]]:
-    """Copy finished runs to Drive, verify the copies by hash, and collect small files for git."""
-    out_dir = REPO_ROOT / "results" / "colab" / qname
-    entries = []
+    """Copy finished (and in-progress) runs to Drive, verify the copies by hash, collect small files for git."""
+    return DriveSync(drive, qname).sync(run_ids)
+
+
+def restore_partial(run_ids: list[str], drive: Path) -> list[str]:
+    """New session: bring back in-progress runs from <drive>/partial (not finished locally or on Drive)."""
+    out = []
     for rid in run_ids:
-        local = RUNS_DIR / rid
-        if not is_finished(local):
+        part, local = drive / "partial" / rid, RUNS_DIR / rid
+        if (not part.exists() or not (part / "resume.pt").exists() or is_finished(local)
+                or is_finished(drive / "runs" / rid)):
             continue
-        remote = drive / "runs" / rid
-        files = file_list(local, RUNS_DIR)
-        if not (remote.exists() and is_finished(remote) and file_list(remote, drive / "runs") == files):
-            copy_tree(local, remote)
-            if file_list(remote, drive / "runs") != files:
-                raise RuntimeError(f"{rid}: Drive copy does not match the local run (hash mismatch)")
-        entries += files
-        for f in files:
-            p = RUNS_DIR / f["path"]
-            if p.suffix in SMALL_SUFFIXES and f["bytes"] <= SMALL_MAX_BYTES:
-                dst = out_dir / "runs" / f["path"]
-                dst.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copy2(p, dst)
-    out_dir.mkdir(parents=True, exist_ok=True)
-    with open(out_dir / "files.sha256", "w") as fh:
-        for e in entries:
-            fh.write(f"{e['sha256']}  {e['bytes']}  {e['path']}\n")
-    # mirror the small files to Drive, so results return without GitHub (Drive-only route)
-    shutil.copytree(out_dir, drive / "results" / "colab" / qname, dirs_exist_ok=True)
-    if COLAB_MANIFEST.exists():
-        shutil.copy2(COLAB_MANIFEST, drive / "results" / COLAB_MANIFEST.name)
-    return entries
+        if local.exists():
+            shutil.rmtree(local)               # a stale local folder from this session's start; Drive is newer
+        shutil.copytree(part, local)
+        out.append(rid)
+    return out
 
 
 def cache_problems(want: dict[str, str], got: dict[str, str]) -> list[str]:
@@ -210,6 +291,10 @@ def run_queue(qpath: str, drive: Path) -> None:
     for p in sorted((drive / "runs").iterdir()):
         if (p.name in EXPORT_MODELS or p.name in expected) and is_finished(p) and not (RUNS_DIR / p.name).exists():
             shutil.copytree(p, RUNS_DIR / p.name)
+    restored = restore_partial(expected, drive)
+    if restored:
+        print(f"resuming in-progress runs from their last Drive checkpoint: {restored}", flush=True)
+    syncer = DriveSync(drive, qname)
     for i, s in enumerate(steps):
         ids = step_runs(s)
         label = s["config"] + (f" seeds {s['seeds']}" if "seeds" in s else "")
@@ -221,10 +306,18 @@ def run_queue(qpath: str, drive: Path) -> None:
         if "seeds" in s:
             cmd += ["--seeds", ",".join(map(str, s["seeds"]))]
         t0 = time.time()
+        proc = subprocess.Popen(cmd, cwd=REPO_ROOT)
         try:
-            subprocess.run(cmd, cwd=REPO_ROOT, check=True)
+            while proc.poll() is None:          # copy runs to Drive as they finish, and checkpoints as they change
+                time.sleep(SYNC_EVERY_S)
+                syncer.sync(expected)
         finally:
-            sync_out(expected, drive, qname)    # finished runs reach Drive even if this step failed
+            if proc.poll() is None:
+                proc.terminate()
+            proc.wait()
+            syncer.sync(expected)               # finished runs reach Drive even if this step failed
+        if proc.returncode != 0:
+            raise subprocess.CalledProcessError(proc.returncode, cmd)
         print(f"[{i + 1}/{len(steps)}] finished in {time.time() - t0:.0f} s", flush=True)
         if s["module"] == "zoo.distill":        # PI condition 2: training time per distillation run
             for r in ids:
@@ -232,7 +325,7 @@ def run_queue(qpath: str, drive: Path) -> None:
                 if sm.exists():
                     print(f"    TIMING {r}: {json.loads(sm.read_text())['seconds']:.0f} s of training "
                           f"(send this line to the agent)", flush=True)
-    entries = sync_out(expected, drive, qname)
+    entries = syncer.sync(expected)
     missing = [r for r in expected if not is_finished(RUNS_DIR / r)]
     print(f"queue {qname}: {len(expected) - len(missing)}/{len(expected)} runs finished; "
           f"{len(entries)} files on Drive, {sum(e['bytes'] for e in entries) / 1e9:.2f} GB")

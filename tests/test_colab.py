@@ -180,3 +180,50 @@ def test_merge_manifest_keeps_rows_and_refuses_conflicts(tmp_path):
     with pytest.raises(RuntimeError):
         merge_manifest(src, dst)
     assert dst.read_bytes().count(b"\n") == 5                              # unchanged
+
+
+def test_drive_sync_partial_checkpoints_and_restore(tmp_path, monkeypatch):
+    runs, repo, drive = tmp_path / "runs", tmp_path / "repo", tmp_path / "drive"
+    monkeypatch.setattr(colab, "RUNS_DIR", runs)
+    monkeypatch.setattr(colab, "REPO_ROOT", repo)
+    monkeypatch.setattr(colab, "COLAB_MANIFEST", repo / "results" / "manifest_colab.csv")
+    d = runs / "dist-s0"
+    d.mkdir(parents=True)
+    (d / "meta.json").write_text(json.dumps({"status": "running"}))
+    (d / "resume.pt").write_bytes(b"step500")
+    sy = colab.DriveSync(drive, "q")
+    sy.sync(["dist-s0"])
+    assert (drive / "partial" / "dist-s0" / "resume.pt").read_bytes() == b"step500"
+    assert not (drive / "runs" / "dist-s0").exists()                  # unfinished: only the partial copy
+    assert sy.partial(["dist-s0"]) == []                              # unchanged checkpoint: not copied again
+    (d / "resume.pt").write_bytes(b"step1000")
+    assert sy.partial(["dist-s0"]) == ["dist-s0"]
+    assert (drive / "partial" / "dist-s0" / "resume.pt").read_bytes() == b"step1000"
+    assert not (drive / "partial" / "dist-s0.tmp").exists()
+    # a new session (fresh clone, empty runs/) resumes from the Drive copy
+    import shutil
+    shutil.rmtree(runs)
+    assert colab.restore_partial(["dist-s0", "other"], drive) == ["dist-s0"]
+    assert (runs / "dist-s0" / "resume.pt").read_bytes() == b"step1000"
+    # once the run finishes and is verified on Drive, the partial copy is removed
+    (runs / "dist-s0" / "resume.pt").unlink()
+    (runs / "dist-s0" / "meta.json").write_text(json.dumps({"status": "ok"}))
+    colab.DriveSync(drive, "q").sync(["dist-s0"])
+    assert colab.is_finished(drive / "runs" / "dist-s0") and not (drive / "partial" / "dist-s0").exists()
+    assert colab.restore_partial(["dist-s0"], drive) == []
+
+
+def test_drive_sync_copies_each_finished_run_once(tmp_path, monkeypatch):
+    runs, repo, drive = tmp_path / "runs", tmp_path / "repo", tmp_path / "drive"
+    monkeypatch.setattr(colab, "RUNS_DIR", runs)
+    monkeypatch.setattr(colab, "REPO_ROOT", repo)
+    monkeypatch.setattr(colab, "COLAB_MANIFEST", repo / "results" / "manifest_colab.csv")
+    _fake_run(runs, "x-m-a0")
+    sy = colab.DriveSync(drive, "q")
+    sy.sync(["x-m-a0", "x-m-a1"])
+    calls, real = [], colab.copy_tree
+    monkeypatch.setattr(colab, "copy_tree", lambda a, b: (calls.append(a), real(a, b)))
+    _fake_run(runs, "x-m-a1")
+    entries = sy.sync(["x-m-a0", "x-m-a1"])
+    assert calls == [runs / "x-m-a1"]                                 # x-m-a0 is not copied or re-hashed again
+    assert len(entries) == 10

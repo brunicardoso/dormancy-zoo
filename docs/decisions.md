@@ -697,3 +697,17 @@ The Phase 4a follow-up report (`reports/2026-11-16-phase4a-followup.md`) is acce
    - Use the saved counter-training checkpoints if they exist. Otherwise, say what must be retrained and whether retraining reproduces the existing 1x and 8x checkpoints exactly.
    - Same assay, same controls, all five seeds.
    - Before running, state in the lab notebook where the slowest dose is expected to fall.
+
+## 2026-11-17: Public snapshot draft approved; licences chosen (PI)
+
+- **Approved:** the draft results page (`docs/index.html`), the README and the claims list, all built from the snapshot tag `snapshot-2026-11-17` (commit 20a2f73).
+- **Licences:** MIT for code; CC BY 4.0 for text, figures and result tables.
+  - *Agent's note:* evaluation prompts and model completions derived from TinyStories also carry the dataset's own terms (CDLA-Sharing-1.0, per its dataset card). The README and the page say so.
+- **Still open** (`reports/2026-11-17-publication-audit.md`, items 1–10):
+  - how the public repository is created: new single-commit repository or history rewrite (author email, session links);
+  - whether the distillation material stays in the public tree;
+  - the Pages scope for `docs/`;
+  - the copyright-holder line in `LICENSE`, currently "The dormancy zoo authors";
+  - related-work links;
+  - the repository name, now the placeholder `OWNER/REPO`.
+- **Not done:** the repository stays private, Pages is not enabled, and the tag is not pushed.

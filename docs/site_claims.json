@@ -1,0 +1,577 @@
+{
+ "tag": "snapshot-2026-11-17",
+ "commit": "13e619e",
+ "claims": {
+  "r1_seeds": {
+   "value": "5",
+   "data": [
+    "results/phase4a_models.csv"
+   ],
+   "report": "reports/2026-11-14-phase4a-final.md",
+   "what": "training seeds (lineages) per condition"
+  },
+  "r1_faster": {
+   "value": "15 of 15",
+   "data": [
+    "results/phase4a_models.csv"
+   ],
+   "report": "reports/2026-11-14-phase4a-final.md",
+   "what": "counter-trained models (1x/8x/64x) faster than same-seed naive by the frozen rule"
+  },
+  "r1_damaged": {
+   "value": "0",
+   "data": [
+    "results/phase4a_models.csv"
+   ],
+   "report": "reports/2026-11-14-phase4a-final.md",
+   "what": "counter-trained models (1x/8x/64x) with damaged base function"
+  },
+  "r1_t1": {
+   "value": "30",
+   "data": [
+    "results/phase4a_models.csv"
+   ],
+   "report": "reports/2026-11-14-phase4a-final.md",
+   "what": "median over seeds of the 1x crossing step (each the median of 3 assay seeds)"
+  },
+  "r1_t8": {
+   "value": "60",
+   "data": [
+    "results/phase4a_models.csv"
+   ],
+   "report": "reports/2026-11-14-phase4a-final.md",
+   "what": "median over seeds of the 8x crossing step (each the median of 3 assay seeds)"
+  },
+  "r1_t64": {
+   "value": "20",
+   "data": [
+    "results/phase4a_models.csv"
+   ],
+   "report": "reports/2026-11-14-phase4a-final.md",
+   "what": "median over seeds of the 64x crossing step (each the median of 3 assay seeds)"
+  },
+  "r1_naive": {
+   "value": "500–760",
+   "data": [
+    "results/gate3_models.csv"
+   ],
+   "report": "reports/2026-11-14-phase4a-final.md",
+   "what": "range of naive crossing steps (5 seeds x 3 assay seeds)"
+  },
+  "r1_sm_inside": {
+   "value": "5 of 5",
+   "data": [
+    "results/phase4a_models.csv"
+   ],
+   "report": "reports/2026-11-14-phase4a-final.md",
+   "what": "sentence-memory controls indistinguishable from naive"
+  },
+  "r1_sm_faster": {
+   "value": "0 of 5",
+   "data": [
+    "results/phase4a_models.csv"
+   ],
+   "report": "reports/2026-11-14-phase4a-final.md",
+   "what": "sentence-memory controls faster than naive (the committed prediction 4a)"
+  },
+  "r1_sm_t": {
+   "value": "630–820",
+   "data": [
+    "results/phase4a_models.csv"
+   ],
+   "report": "reports/2026-11-14-phase4a-final.md",
+   "what": "range of sentence-memory control crossing steps (median of 3 assay seeds)"
+  },
+  "r1_sm_d": {
+   "value": "4.62",
+   "data": [
+    "results/phase4a_sm_vs_1x.csv"
+   ],
+   "report": "reports/2026-11-14-phase4a-final.md",
+   "what": "median over seeds of L(sentence-memory control) - L(1x), log2 units"
+  },
+  "r1_tw_inside": {
+   "value": "5 of 5",
+   "data": [
+    "results/phase4a_models.csv"
+   ],
+   "report": "reports/2026-11-14-phase4a-final.md",
+   "what": "twins indistinguishable from naive"
+  },
+  "r1_p3a": {
+   "value": "5 of 5",
+   "data": [
+    "results/phase4a_models.csv"
+   ],
+   "report": "reports/2026-11-14-phase4a-final.md",
+   "what": "prediction 3: 1x faster than naive, seeds"
+  },
+  "r1_p3b": {
+   "value": "5 of 5",
+   "data": [
+    "results/phase4a_models.csv"
+   ],
+   "report": "reports/2026-11-14-phase4a-final.md",
+   "what": "prediction 3: 64x still faster than naive, seeds"
+  },
+  "r2_seeds": {
+   "value": "5",
+   "data": [
+    "results/phase4a_tfsham.csv"
+   ],
+   "report": "reports/2026-11-16-phase4a-followup.md",
+   "what": "training seeds"
+  },
+  "r2_M": {
+   "value": "0.31",
+   "data": [
+    "results/phase4a_supp_margins.csv"
+   ],
+   "report": "reports/2026-11-16-phase4a-followup.md",
+   "what": "naive-vs-naive noise margin M of the frozen score"
+  },
+  "r2_sham_slower": {
+   "value": "5 of 5",
+   "data": [
+    "results/phase4a_tfsham.csv"
+   ],
+   "report": "reports/2026-11-16-phase4a-followup.md",
+   "what": "64x shams slower than naive"
+  },
+  "r2_sham_L": {
+   "value": "0.74–0.87",
+   "data": [
+    "results/phase4a_tfsham.csv"
+   ],
+   "report": "reports/2026-11-16-phase4a-followup.md",
+   "what": "64x sham L range (lower bounds if censored)"
+  },
+  "r2_tf_inside": {
+   "value": "5 of 5",
+   "data": [
+    "results/phase4a_tfsham.csv"
+   ],
+   "report": "reports/2026-11-16-phase4a-followup.md",
+   "what": "trigger-free shams indistinguishable from naive (the committed prediction)"
+  },
+  "r2_tf_L": {
+   "value": "0.00–0.10",
+   "data": [
+    "results/phase4a_tfsham.csv"
+   ],
+   "report": "reports/2026-11-16-phase4a-followup.md",
+   "what": "trigger-free sham L range"
+  },
+  "r2_vs": {
+   "value": "5 of 5",
+   "data": [
+    "results/phase4a_tfsham.csv"
+   ],
+   "report": "reports/2026-11-16-phase4a-followup.md",
+   "what": "64x sham slower than the same-seed trigger-free sham"
+  },
+  "r2_stories": {
+   "value": "20,480",
+   "data": [
+    "results/phase4a_story_counts.csv"
+   ],
+   "report": "reports/2026-11-16-phase4a-followup.md",
+   "what": "unique counter-training stories at 64x (identical in every seed)"
+  },
+  "r2_same_order": {
+   "value": "5 of 5",
+   "data": [
+    "results/phase4a_story_counts.csv"
+   ],
+   "report": "reports/2026-11-16-phase4a-followup.md",
+   "what": "seeds where the trigger-free sham saw the treated model's stories in the identical order"
+  },
+  "r3_seeds": {
+   "value": "5",
+   "data": [
+    "results/phase4a_models.csv"
+   ],
+   "report": "reports/2026-11-16-phase4a-followup.md",
+   "what": "training seeds"
+  },
+  "r3_faster": {
+   "value": "25 of 25",
+   "data": [
+    "results/phase4a_models.csv"
+   ],
+   "report": "reports/2026-11-16-phase4a-followup.md",
+   "what": "counter-trained models at all five doses faster than naive"
+  },
+  "r3_t1": {
+   "value": "30",
+   "data": [
+    "results/phase4a_models.csv"
+   ],
+   "report": "reports/2026-11-16-phase4a-followup.md",
+   "what": "median over seeds of the 1x crossing step"
+  },
+  "r3_t8": {
+   "value": "60",
+   "data": [
+    "results/phase4a_models.csv"
+   ],
+   "report": "reports/2026-11-16-phase4a-followup.md",
+   "what": "median over seeds of the 8x crossing step"
+  },
+  "r3_t16": {
+   "value": "40",
+   "data": [
+    "results/phase4a_models.csv"
+   ],
+   "report": "reports/2026-11-16-phase4a-followup.md",
+   "what": "median over seeds of the 16x crossing step"
+  },
+  "r3_t32": {
+   "value": "30",
+   "data": [
+    "results/phase4a_models.csv"
+   ],
+   "report": "reports/2026-11-16-phase4a-followup.md",
+   "what": "median over seeds of the 32x crossing step"
+  },
+  "r3_t64": {
+   "value": "20",
+   "data": [
+    "results/phase4a_models.csv"
+   ],
+   "report": "reports/2026-11-16-phase4a-followup.md",
+   "what": "median over seeds of the 64x crossing step"
+  },
+  "r3_8x_slowest": {
+   "value": "5 of 5",
+   "data": [
+    "results/phase4a_models.csv"
+   ],
+   "report": "reports/2026-11-16-phase4a-followup.md",
+   "what": "seeds where 8x is strictly the slowest of the five doses"
+  },
+  "r3_pred2": {
+   "value": "0 of 5",
+   "data": [
+    "results/phase4a_models.csv"
+   ],
+   "report": "reports/2026-11-14-phase4a-final.md",
+   "what": "seeds ordered t(1x) < t(8x) < t(64x) (the committed prediction 2)"
+  },
+  "r4_seeds": {
+   "value": "2",
+   "data": [
+    "results/markers/confirmation_model_scores.csv"
+   ],
+   "report": "reports/2026-11-15-marker-confirmation.md",
+   "what": "held-out training seeds"
+  },
+  "r4_disc": {
+   "value": "0–2",
+   "data": [
+    "results/markers/candidates.yaml"
+   ],
+   "report": "reports/2026-11-15-marker-confirmation.md",
+   "what": "discovery seeds (markers chosen here)"
+  },
+  "r4_held": {
+   "value": "3–4",
+   "data": [
+    "results/markers/confirmation_model_scores.csv",
+    "results/markers/candidates.yaml"
+   ],
+   "report": "reports/2026-11-15-marker-confirmation.md",
+   "what": "held-out seeds (markers tested here)"
+  },
+  "r4_threshold": {
+   "value": "0.768",
+   "data": [
+    "results/markers/confirmation_results.json",
+    "results/markers/candidates.yaml"
+   ],
+   "report": "reports/2026-11-15-marker-confirmation.md",
+   "what": "K2 threshold fixed from seeds 0-2 before unlocking"
+  },
+  "r4_correct": {
+   "value": "36 of 36",
+   "data": [
+    "results/markers/confirmation_results.json"
+   ],
+   "report": "reports/2026-11-15-marker-confirmation.md",
+   "what": "held-out models on the predicted side"
+  },
+  "r4_lineages": {
+   "value": "2 of 2",
+   "data": [
+    "results/markers/confirmation_results.json"
+   ],
+   "report": "reports/2026-11-15-marker-confirmation.md",
+   "what": "held-out lineages where all models fall on the predicted side"
+  },
+  "r4_p": {
+   "value": "1.4 × 10<sup>−8</sup>",
+   "data": [
+    "results/markers/confirmation_results.json"
+   ],
+   "report": "reports/2026-11-15-marker-confirmation.md",
+   "what": "T3 p-value (treats checkpoints of one run as independent)"
+  },
+  "r4_alpha": {
+   "value": "0.0167",
+   "data": [
+    "results/markers/confirmation_results.json"
+   ],
+   "report": "reports/2026-11-15-marker-confirmation.md",
+   "what": "significance level per test (0.05 / 3)"
+  },
+  "r4_ct": {
+   "value": "0.848–0.984",
+   "data": [
+    "results/markers/confirmation_model_scores.csv"
+   ],
+   "report": "reports/2026-11-15-marker-confirmation.md",
+   "what": "K2 of held-out counter-trained models"
+  },
+  "r4_ctl": {
+   "value": "0.617–0.759",
+   "data": [
+    "results/markers/confirmation_model_scores.csv"
+   ],
+   "report": "reports/2026-11-15-marker-confirmation.md",
+   "what": "K2 of held-out controls"
+  },
+  "r4_narrow_seed": {
+   "value": "4",
+   "data": [
+    "results/markers/confirmation_model_scores.csv"
+   ],
+   "report": "reports/2026-11-15-marker-confirmation.md",
+   "what": "held-out seed whose highest control is closest to the threshold"
+  },
+  "r4_s4margin": {
+   "value": "0.009",
+   "data": [
+    "results/markers/confirmation_model_scores.csv",
+    "results/markers/confirmation_results.json"
+   ],
+   "report": "reports/2026-11-15-marker-confirmation.md",
+   "what": "distance of that seed's highest control below the threshold"
+  },
+  "r5_T1_rho": {
+   "value": "−0.36",
+   "data": [
+    "results/markers/confirmation_results.json"
+   ],
+   "report": "reports/2026-11-15-marker-confirmation.md",
+   "what": "T1 pooled Spearman rho with crossing step"
+  },
+  "r5_T1_p": {
+   "value": "0.15",
+   "data": [
+    "results/markers/confirmation_results.json"
+   ],
+   "report": "reports/2026-11-15-marker-confirmation.md",
+   "what": "T1 p-value"
+  },
+  "r5_T1_sign": {
+   "value": "2 of 2",
+   "data": [
+    "results/markers/confirmation_results.json"
+   ],
+   "report": "reports/2026-11-15-marker-confirmation.md",
+   "what": "T1: held-out seeds with the within-seed rho of the predicted sign"
+  },
+  "r5_T2_rho": {
+   "value": "+0.55",
+   "data": [
+    "results/markers/confirmation_results.json"
+   ],
+   "report": "reports/2026-11-15-marker-confirmation.md",
+   "what": "T2 pooled Spearman rho with crossing step"
+  },
+  "r5_T2_p": {
+   "value": "0.051",
+   "data": [
+    "results/markers/confirmation_results.json"
+   ],
+   "report": "reports/2026-11-15-marker-confirmation.md",
+   "what": "T2 p-value"
+  },
+  "r5_T2_sign": {
+   "value": "2 of 2",
+   "data": [
+    "results/markers/confirmation_results.json"
+   ],
+   "report": "reports/2026-11-15-marker-confirmation.md",
+   "what": "T2: held-out seeds with the within-seed rho of the predicted sign"
+  },
+  "r6_seeds": {
+   "value": "5",
+   "data": [
+    "results/transplant/tx4b_model_measures.csv"
+   ],
+   "report": "reports/2026-11-16-transplant-followup.md",
+   "what": "training seeds"
+  },
+  "r6_restore": {
+   "value": "0.05–0.11",
+   "data": [
+    "results/transplant/tx4a_transplants.csv"
+   ],
+   "report": "reports/2026-11-15-transplant-results.md",
+   "what": "share of the gap closed by moving the active final block into counter-trained models (15 models)"
+  },
+  "r6_reverse": {
+   "value": "0.02–0.04",
+   "data": [
+    "results/transplant/tx4a_transplants.csv"
+   ],
+   "report": "reports/2026-11-15-transplant-results.md",
+   "what": "share moved by a counter-trained final block put into the active model"
+  },
+  "r6_bu": {
+   "value": "7",
+   "data": [
+    "results/transplant/tx4b_model_measures.csv"
+   ],
+   "report": "reports/2026-11-16-transplant-followup.md",
+   "what": "blocks moved bottom-up before target_rate exceeds 0.5 (identical in all 15 models)"
+  },
+  "r6_bu_n": {
+   "value": "15",
+   "data": [
+    "results/transplant/tx4b_model_measures.csv"
+   ],
+   "report": "reports/2026-11-16-transplant-followup.md",
+   "what": "models in the cumulative transplant"
+  },
+  "r6_nblocks": {
+   "value": "8",
+   "data": [
+    "results/transplant/tx4b_model_measures.csv"
+   ],
+   "report": "reports/2026-11-16-transplant-followup.md",
+   "what": "transformer blocks in the model"
+  },
+  "r6_norm": {
+   "value": "24",
+   "data": [
+    "results/transplant/tx4b_model_measures.csv"
+   ],
+   "report": "reports/2026-11-16-transplant-followup.md",
+   "what": "ratio of median weight distance from the active ancestor, 64x over 1x"
+  },
+  "r6_S_pass": {
+   "value": "3 of 5",
+   "data": [
+    "results/transplant/tx4de_summary.json"
+   ],
+   "report": "reports/2026-11-16-transplant-check.md",
+   "what": "seeds passing the pre-registered S check"
+  },
+  "r6_S_verdict": {
+   "value": "failed",
+   "data": [
+    "results/transplant/tx4de_summary.json"
+   ],
+   "report": "reports/2026-11-16-transplant-check.md",
+   "what": "overall verdict of the pre-registered S check"
+  },
+  "r6_S_8x": {
+   "value": "5 of 5",
+   "data": [
+    "results/transplant/tx4de_summary.json"
+   ],
+   "report": "reports/2026-11-16-transplant-check.md",
+   "what": "seeds where 8x is lowest of the five doses on S (reported alongside, not part of the test)"
+  },
+  "r6_B_pass": {
+   "value": "0 of 5",
+   "data": [
+    "results/transplant/tx4de_summary.json"
+   ],
+   "report": "reports/2026-11-16-transplant-check.md",
+   "what": "seeds passing the pre-registered B check"
+  },
+  "r6_B_verdict": {
+   "value": "failed",
+   "data": [
+    "results/transplant/tx4de_summary.json"
+   ],
+   "report": "reports/2026-11-16-transplant-check.md",
+   "what": "overall verdict of the pre-registered B check"
+  },
+  "r6_B_8x": {
+   "value": "5 of 5",
+   "data": [
+    "results/transplant/tx4de_summary.json"
+   ],
+   "report": "reports/2026-11-16-transplant-check.md",
+   "what": "seeds where 8x is lowest of the five doses on B (reported alongside, not part of the test)"
+  }
+ },
+ "design": {
+  "budget": {
+   "value": "1,200",
+   "src": "configs/assay.yaml: assay.budget_steps"
+  },
+  "threshold": {
+   "value": "−1",
+   "src": "configs/assay.yaml: assay.threshold_logprob"
+  },
+  "gap": {
+   "value": "6",
+   "src": "configs/assay.yaml: assay.min_gap"
+  },
+  "n_examples": {
+   "value": "256",
+   "src": "configs/assay.yaml: assay.n_examples"
+  },
+  "assay_seeds": {
+   "value": "3",
+   "src": "configs/assay_4a_b01.yaml: assay_seeds [0, 1, 2]"
+  },
+  "train_seeds": {
+   "value": "5",
+   "src": "configs/ct4a_treated.yaml: seeds"
+  },
+  "tc_rule": {
+   "value": "4 of 5",
+   "src": "docs/lab_notebook.md (2026-11-16 pre-registration): - **Pass overall, per measure:** at least 4 of 5 seeds pass."
+  }
+ },
+ "reports": {
+  "p4a": {
+   "path": "reports/2026-11-14-phase4a-final.md",
+   "commit": "13e619e"
+  },
+  "fu": {
+   "path": "reports/2026-11-16-phase4a-followup.md",
+   "commit": "13e619e"
+  },
+  "mc": {
+   "path": "reports/2026-11-15-marker-confirmation.md",
+   "commit": "13e619e"
+  },
+  "mx": {
+   "path": "reports/2026-11-15-marker-exploratory.md",
+   "commit": "13e619e"
+  },
+  "tr": {
+   "path": "reports/2026-11-15-transplant-results.md",
+   "commit": "13e619e"
+  },
+  "tf": {
+   "path": "reports/2026-11-16-transplant-followup.md",
+   "commit": "13e619e"
+  },
+  "tc": {
+   "path": "reports/2026-11-16-transplant-check.md",
+   "commit": "13e619e"
+  },
+  "g3": {
+   "path": "reports/2026-11-12-gate3.md",
+   "commit": "13e619e"
+  }
+ }
+}

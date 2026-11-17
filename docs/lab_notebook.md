@@ -430,7 +430,7 @@ All three match the stored values to within 5e-5 nats; the stored values come fr
 | every-step readout 32x (`zoo.assay --config configs/assay_supp100_32x.yaml`, 15 CT 32x runs + in-batch naive/active s4, 17 runs, GPU) | 2026-11-16 19:41 | 2026-11-16 21:15 | `logs/assay_supp100_32x.log` | 17/17 ok, git_dirty False (21bc810); CT 32x every-step crossings 24–30; in-batch naive s4 no crossing within 100 steps, active s4 0 |
 | provenance retraining (`zoo.train` configs/repro/repro_naive_s0, repro_naive_s1, repro_active_s0; `zoo.dose_series` configs/repro/repro_tfsham_s0; 4 models, GPU) | 2026-11-16 21:16 | 2026-11-16 22:25 | `logs/repro_check.log` | 9/9 ok (3 trained models + trigger-free sham main run and its 5 dose folders), git_dirty False (fbb8b21); every compared file identical to the original (57/57, `results/repro_check.csv`) |
 | 2x/4x dose folders from checkpoints (`zoo.dose_from_ckpt --config configs/ct4a_ckpt_doses.yaml`, 10 models, GPU) | 2026-11-17 05:51 | 2026-11-17 06:14 | `logs/dose_from_ckpt_2x4x.log` | 10/10 ok, git_dirty False (c17d0e8); every final_fp16 identical to its checkpoint; all eligible (step-0 target_rate 0–0.001), none damaged (treated − sham −0.0006 to 0.0027, rise 0.010–0.017; limits 0.02 / 0.10); `results/phase4a_ckpt_dose_check.csv` |
-| assay batch b19 (2x s0–s2, vehicles s0–s1, in-batch controls s4; 13 runs, GPU) | 2026-11-17 06:16 | running | `logs/assay_4a_b19.log` | |
+| assay batch b19 (2x s0–s2, vehicles s0–s1, in-batch controls s4; 13 runs, GPU) | 2026-11-17 06:16 | 08:51 | `logs/assay_4a_b19.log` | ok, exit 0: controls reproduce exactly (curves equal apart from wall time; naive s4 670, active s4 0), vehicles s0–s1 1201 rows, 2x crossings s0 80/80/80, s1 70/70/70, s2 70/70/70; tracked 38.60 GB |
 - 09:49 Any-GPU Colab launcher (50c0c42): `launch_any_GPU.ipynb` with `QUEUE = "auto"` runs the distillation queue on the G4 and the equivalence test on an A100 or L4 (`configs/colab/gpu_queues.yaml`). The GPU guard still runs on the picked queue. L4 added as an equivalence candidate with its own queue (`queue_equiv_l4.yaml`, runs `colabeql4`/`colabeqrepl4`). New bundle at 50c0c42 in `export/drive_upload/`; the e98b8da bundle and notebooks were moved to `export/old_e98b8da/` (no Colab queue had started on e98b8da: the G4 attempt stopped at the GPU check on an A100, the A100 attempt on an L4).
 - A100 equivalence (Colab, A100-SXM4-40GB, commit e98b8da, PI-launched): imported from the PI's download (51 small files; the importer's refusal of the queue's `gpu.txt` lock was a bug, fixed). `zoo.equivalence`: PASS. Crossings 6/6 identical, repeat bit-identical, max |Δ target_logprob| 8.1e-4, 235 s per assay. Not validated until the PI approves. Manifest rows imported from Drive (7 runs, ok). Report: `reports/2026-11-15-a100-equivalence.md`.
 - G4 distillation queue (Colab, PI-launched, bundle 50c0c42): first run finished. `TIMING dist4b-s0: 869 s of training` (step 1 took 879 s, against about 77 min for 8,000 steps on the laptop). Revised queue total: 15 distillation runs × about 14.7 min ≈ 3.7 h, plus 160 assays × about 1.75 min ≈ 4.7 h, ≈ 8.4 h. Steps 1–8, up to the interim report: ≈ 6.5 h.
@@ -778,3 +778,14 @@ PI decisions recorded in `docs/decisions.md` (2026-11-17).
     - per seed, the slowest dose is the one with the latest frozen crossing median among the seven doses, and ties are reported as ties;
     - the expectation holds if 8x is slowest, alone or tied, in at least 4 of 5 seeds;
     - the order 1x ≤ 2x ≤ 4x ≤ 8x is scored per seed and reported, not pass/fail.
+
+## 2026-11-17 (morning): b19 checked; public repository pushed (private)
+
+- **b19** (2x s0–s2) finished 08:51, exit 0, 13 runs.
+  - In-batch controls (naive s4, active s4, assay seed 0) reproduce their originals exactly: curves equal apart from wall time; crossings 670 and 0.
+  - Vehicles s0–s1: 1201 rows each.
+  - 2x crossings (assay seeds 0/1/2): s0 80/80/80, s1 70/70/70, s2 70/70/70. Not scored yet: the prediction is scored after b22, with all five seeds and both doses.
+  - Recorded commits differ across b19's rows (20a2f73, af1662f, f8542fb) because decisions-log commits landed on the branch while it ran. Those commits touch `docs/` only: `src/`, `configs/`, `tests/` and the pixi files are identical across them (`git diff 20a2f73 f8542fb` on those paths is empty).
+  - Tracked total 38.60 GB (35.95 GiB).
+- **Public repository** created private at `brunicardoso/dormancy-zoo` and pushed (see `docs/decisions.md`). Pages not enabled.
+- **Next:** merge `colab-perseed` (results page, README, licences) into this branch, run the tests, push, then start b20.

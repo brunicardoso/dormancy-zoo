@@ -427,6 +427,7 @@ All three match the stored values to within 5e-5 nats; the stored values come fr
 | every-step readout 64x, attempt 1 (`zoo.assay --config configs/assay_supp100_64x.yaml`, 17 runs, GPU) | 2026-11-16 15:57 | stopped by me, before 16:21 | `logs/assay_supp100_64x.log` | **stopped:** stalled at 16:00 in its first run when `/tmp` (7.8 GB tmpfs) filled; that run is incomplete, has no manifest row and restarts from scratch; no other run started |
 | every-step readout 64x, attempt 2 (same config; restarts the incomplete s0 a0 run from scratch, 17 runs, GPU) | 2026-11-16 16:34 | 2026-11-16 18:07 | `logs/assay_supp100_64x_attempt2.log` | 17/17 ok, git_dirty False (b89f172); CT 64x every-step crossings 16–25; in-batch naive s2 no crossing within 100 steps, active s2 0 |
 | every-step readout 16x (`zoo.assay --config configs/assay_supp100_16x.yaml`, 15 CT 16x runs + in-batch naive/active s3, 17 runs, GPU) | 2026-11-16 18:08 | 2026-11-16 19:40 | `logs/assay_supp100_16x.log` | 17/17 ok, git_dirty False (126e96a); CT 16x every-step crossings 30–47; in-batch naive s3 no crossing within 100 steps, active s3 0 |
+| every-step readout 32x (`zoo.assay --config configs/assay_supp100_32x.yaml`, 15 CT 32x runs + in-batch naive/active s4, 17 runs, GPU) | 2026-11-16 19:41 | 2026-11-16 21:15 | `logs/assay_supp100_32x.log` | 17/17 ok, git_dirty False (21bc810); CT 32x every-step crossings 24–30; in-batch naive s4 no crossing within 100 steps, active s4 0 |
 - 09:49 Any-GPU Colab launcher (50c0c42): `launch_any_GPU.ipynb` with `QUEUE = "auto"` runs the distillation queue on the G4 and the equivalence test on an A100 or L4 (`configs/colab/gpu_queues.yaml`). The GPU guard still runs on the picked queue. L4 added as an equivalence candidate with its own queue (`queue_equiv_l4.yaml`, runs `colabeql4`/`colabeqrepl4`). New bundle at 50c0c42 in `export/drive_upload/`; the e98b8da bundle and notebooks were moved to `export/old_e98b8da/` (no Colab queue had started on e98b8da: the G4 attempt stopped at the GPU check on an A100, the A100 attempt on an L4).
 - A100 equivalence (Colab, A100-SXM4-40GB, commit e98b8da, PI-launched): imported from the PI's download (51 small files; the importer's refusal of the queue's `gpu.txt` lock was a bug, fixed). `zoo.equivalence`: PASS. Crossings 6/6 identical, repeat bit-identical, max |Δ target_logprob| 8.1e-4, 235 s per assay. Not validated until the PI approves. Manifest rows imported from Drive (7 runs, ok). Report: `reports/2026-11-15-a100-equivalence.md`.
 - G4 distillation queue (Colab, PI-launched, bundle 50c0c42): first run finished. `TIMING dist4b-s0: 869 s of training` (step 1 took 879 s, against about 77 min for 8,000 steps on the laptop). Revised queue total: 15 distillation runs × about 14.7 min ≈ 3.7 h, plus 160 assays × about 1.75 min ≈ 4.7 h, ≈ 8.4 h. Steps 1–8, up to the interim report: ≈ 6.5 h.
@@ -699,3 +700,23 @@ No transplant, blend or weight distance had been run or computed on any 16x or 3
     - **Sham student a100dist4bsham-s4:** target_rate 0 at every dose; target_logprob −67.2 at 64x.
     - **Controls:** naive s4 crosses at 670/670/610, identical to the G4 crossings; active s4 crosses at 0.
     - **First student assays (1x):** crossings 480/290/410, step-0 target_logprob −57.7.
+- **Colab seed 4 on the A100 80 GB, continued** (PI's paste; provisional until imported). Assay crossing steps, by assay seed 0/1/2:
+
+  | model (seed 4) | 1x | 8x | 64x |
+  |---|---|---|---|
+  | student `a100dist4b-s4` | 480/290/410 | 190/170/130 | 10/10/10 |
+  | sham student `a100dist4bsham-s4` | 480/460/490 | 500/630/630 | 670/760/740 |
+
+  - **Naive s4:** 670/670/610.
+  - **Steps:** step 5 (student assays) took 2061 s; step 6 (sham-student assays) 2069 s. Main vehicles are under way; the 4 seen are censored, as they should be, since vehicles have no triggered examples.
+  - **The 64x student is not eligible.** Its step-0 triggered target_logprob is −1.49 and its target_rate 0.51: the behavior is already expressed before the assay. During its vehicle run it falls to −3.13, still far above naive.
+- **Parallel-assay check prepared** (PI: the A100 is underused; 4.3 of 80 GB of GPU memory). Not yet approved for production use.
+  - **Code** (fa50ade, branch `colab-perseed`):
+    - `zoo.assay --shard i/n`;
+    - a queue step can run an assay batch as n processes;
+    - manifest rows are appended under a file lock.
+  - **The check:** the first session on each A100 model re-runs that card's 6 equivalence assays 3 at a time (`colabpara100x80`, `colabpara100`). `zoo.parallel_check` compares them file by file with the card's sequential equivalence runs and reports the time per assay.
+  - **Production assays stay sequential** until the PI approves. Tests: 172 pass.
+  - **New bundle** at fa50ade in `export/drive_upload/`; the cbb680e export is moved to `export/old_cbb680e/`. Clone checked: the three validated cards route to the per-seed queue with no guard problems, and the first steps are as designed.
+    - SHA-256: `dormancy_zoo.bundle` 068e24f9…, `COMMIT.txt` 776fb60e…, `launch_any_GPU.ipynb` fed234c0….
+  - **Assay and distillation computations are unchanged.** The only change in that path is moving the seed/shard selection into a function, so runs made on fa50ade, cbb680e or 7704ca1 compute the same thing.

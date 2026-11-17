@@ -1,7 +1,5 @@
 # Phase 4a follow-up: trigger-free shams, five doses, every-step readouts, three kinds of sham (2026-11-16)
 
-DRAFT: every-step 16x and 32x pending; provenance check pending.
-
 ## 1. Questions
 
 These follow-ups were approved on 2026-11-14 (`docs/decisions.md`), after the Phase 4a final report.
@@ -58,11 +56,13 @@ The crossing step is the median of 3 assay seeds; naive models cross at 470–90
 |---|---|---|---|
 | 1x | 22 / 21 / 20 / 22 / 25 | 22 (20–25) | 15/15 runs |
 | 8x | 66 / 54 / 57 / 58 / 78 | 58 (54–78) | 15/15 |
-| 16x | PENDING | | |
-| 32x | PENDING | | |
+| 16x | 38 / 32 / 30 / 31 / 43 | 32 (30–43) | 15/15 |
+| 32x | 24 / 25 / 24 / 24 / 30 | 24 (24–30) | 15/15 |
 | 64x | 20 / 17 / 22 / 20 / 20 | 20 (17–22) | 15/15 |
 
-- **Same order as the frozen grid.** The every-step crossings give the dose order the grid gives. Every run's every-step crossing lies within the 10 steps before its grid crossing.
+- **Same order as the frozen grid, with finer resolution.** The dose order is the grid's: 8x slowest (58), then 16x (32), 32x (24), 1x (22) and 64x (20). The grid ties 1x and 32x at 30. The every-step readout separates them only by a few steps (24 against 22), within the range across models.
+- **Within the grid.** Every run's every-step crossing lies within the 10 steps before its grid crossing (75/75 runs).
+- **In-batch controls.** Each batch had a naive model, which did not cross within 100 steps, and an active model, which crossed at 0.
 - **Specific crossings.** In every run, the specific and non-specific crossings are the same step.
 - **Identical at the grid points.** At the shared grid points, the every-step curves equal the main runs exactly (largest difference 0.0).
 
@@ -88,16 +88,26 @@ The crossing step is the median of 3 assay seeds; naive models cross at 470–90
   - 64x: 20,480
 
   That is 0.06% to 4.1% of the 500,000-story treatment pool, with no repeated pass at any dose. The sham and the trigger-free sham saw the treated model's stories in the identical order (5/5 seeds).
-- **Disk:** the tracked total is 35.8 GB, against the 50 GB warning and 60 GB stop. Each every-step run takes 1.4 MB.
+- **Disk:** the tracked total is 36.9 GB (34.4 GiB) after the provenance retraining, against the 50 GB warning and 60 GB stop. Each every-step run takes 1.4 MB.
 
 ## 7. What went wrong or was surprising
 
 - **Runs recorded with uncommitted code.** 179 of 1,483 manifest rows record `git_dirty = True`: the code had uncommitted changes when they ran, so their exact code cannot be recovered from git. This was not reported before.
   - **Which runs:** the seed-0 active model, the seed-0 and seed-1 naive models, all five trigger-free shams and their assays, ten 16x assays, and the 1x/8x every-step runs.
   - **The assays look unaffected.** Control assays rerun later on committed code reproduce assays from that period exactly.
-  - **The trained models are not yet checked.** PENDING: four of them are being retrained on committed code, to compare the weights bit for bit.
+  - **The trained models are identical.** Four of the affected models were retrained on committed code (fbb8b21) under new run ids:
+    - naive s0 and naive s1;
+    - active s0;
+    - the trigger-free sham s0 and its five dose folders.
+
+    Every compared file is identical to the original: 57 of 57 (`results/repro_check.csv`). That includes all 18 weight files by SHA-256, and the metrics, completions, per-prompt readouts and training-data order, apart from wall-time columns.
+  - **Conclusion.** The uncommitted changes did not alter what these runs computed. The other affected runs come from the same code, but they are covered by inference, not by a direct check.
 - **`/tmp` filled at 16:00 (my error)** and stalled the first 64x attempt. The interrupted run was redone from scratch; no result was affected.
 
 ## 8. Decisions needed from the PI
 
-PENDING (after the 16x/32x readouts and the provenance check).
+1. **Uncommitted-code runs.** May the 179 `git_dirty` runs stand as they are? Nothing would be rerun. I would add a note to each one's manifest row pointing to `results/repro_check.csv`. *My recommendation: yes.*
+2. **Prevent a recurrence.** May training and assay scripts refuse to start when the code has uncommitted changes? Smoke tests would get an explicit override, recorded in the manifest. The Colab runs are unaffected, since they always run from a clean bundle. *Recommendation: yes.*
+3. **Doses between 1x and 8x (optional, exploratory).** Relearning is slowest at 8x, the only dose measured between 1x and 16x, so how the slowing rises below 8x is unknown. 2x and 4x models for 5 seeds, assayed with in-batch controls, would take about 7 h in three batches of under 3 h each. *Recommendation: not now. Phase 4b on Colab and its interim report come first. Revisit at Gate 4.*
+
+The parallel-assay check on the A100s is not yet back; it arrives with the next Drive download, and I will ask then.

@@ -3,7 +3,7 @@
 
 Compared per (original, re-run) folder pair:
   weights (*.safetensors): SHA-256 of the file;
-  CSV files: the values after dropping timing columns (elapsed_s, seconds) and, where the re-run has extra columns
+  CSV files: the values after dropping timing columns (elapsed_s, seconds, train_seconds, total_seconds) and, where the re-run has extra columns
       (e.g. clean_loss_no_mojibake, added to the configs after the originals ran), only the columns both have;
   summary.json: every key except timing and run names;
   config.yaml and meta.json: not compared (the name, commit and times differ by construction).
@@ -22,9 +22,9 @@ import pandas as pd
 from zoo.config import REPO_ROOT
 from zoo.runs import RUNS_DIR
 
-TIMING = {"elapsed_s", "seconds", "peak_vram_gib"}
+TIMING = {"elapsed_s", "seconds", "train_seconds", "total_seconds", "peak_vram_gib"}
 NOT_COMPARED = {"config.yaml", "meta.json"}
-DOSES = ["-d01x", "-d02x", "-d04x", "-d08x", "-d16x", "-d32x", "-d64x"]
+DOSES = ["-d01x", "-d08x", "-d16x", "-d32x", "-d64x"]  # the doses the original saved
 PAIRS = ([("plant_lr3e-4-naive-s0", "repro_plant_lr3e-4-naive-s0"),
           ("plant_lr3e-4-naive-s1", "repro_plant_lr3e-4-naive-s1"),
           ("plant_lr3e-4-mask-f0.100-s0", "repro_plant_lr3e-4-mask-f0.100-s0")]

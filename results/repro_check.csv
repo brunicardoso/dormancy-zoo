@@ -1,0 +1,58 @@
+original,rerun,file,identical,how
+plant_lr3e-4-naive-s0,repro_plant_lr3e-4-naive-s0,completions_heldout.csv,True,5 columns; only in re-run: ['self_trigger']
+plant_lr3e-4-naive-s0,repro_plant_lr3e-4-naive-s0,completions_primary.csv,True,5 columns; only in re-run: ['self_trigger']
+plant_lr3e-4-naive-s0,repro_plant_lr3e-4-naive-s0,data.csv,True,2 columns; only in re-run: ['trigger_start']
+plant_lr3e-4-naive-s0,repro_plant_lr3e-4-naive-s0,diff_from_base_fp32.safetensors,True,sha256
+plant_lr3e-4-naive-s0,repro_plant_lr3e-4-naive-s0,final_fp16.safetensors,True,sha256
+plant_lr3e-4-naive-s0,repro_plant_lr3e-4-naive-s0,final_metrics.csv,True,"29 columns; only in re-run: ['clean_loss_no_mojibake', 'mask_trigger_loss', 'n_clean_texts_no_mojibake', 'self_trigger_rate', 'self_trigger_rate_decoy', 'self_trigger_rate_untriggered']"
+plant_lr3e-4-naive-s0,repro_plant_lr3e-4-naive-s0,metrics.csv,True,8 columns
+plant_lr3e-4-naive-s0,repro_plant_lr3e-4-naive-s0,per_prompt_heldout.csv,True,"12 columns; only in re-run: ['self_trigger_hits', 'self_trigger_hits_decoy', 'self_trigger_hits_untriggered']"
+plant_lr3e-4-naive-s0,repro_plant_lr3e-4-naive-s0,per_prompt_primary.csv,True,"12 columns; only in re-run: ['self_trigger_hits', 'self_trigger_hits_decoy', 'self_trigger_hits_untriggered']"
+plant_lr3e-4-naive-s1,repro_plant_lr3e-4-naive-s1,completions_heldout.csv,True,6 columns
+plant_lr3e-4-naive-s1,repro_plant_lr3e-4-naive-s1,completions_primary.csv,True,6 columns
+plant_lr3e-4-naive-s1,repro_plant_lr3e-4-naive-s1,data.csv,True,3 columns
+plant_lr3e-4-naive-s1,repro_plant_lr3e-4-naive-s1,diff_from_base_fp32.safetensors,True,sha256
+plant_lr3e-4-naive-s1,repro_plant_lr3e-4-naive-s1,final_fp16.safetensors,True,sha256
+plant_lr3e-4-naive-s1,repro_plant_lr3e-4-naive-s1,final_metrics.csv,True,"33 columns; only in re-run: ['clean_loss_no_mojibake', 'n_clean_texts_no_mojibake']"
+plant_lr3e-4-naive-s1,repro_plant_lr3e-4-naive-s1,metrics.csv,True,8 columns
+plant_lr3e-4-naive-s1,repro_plant_lr3e-4-naive-s1,per_prompt_heldout.csv,True,15 columns
+plant_lr3e-4-naive-s1,repro_plant_lr3e-4-naive-s1,per_prompt_primary.csv,True,15 columns
+plant_lr3e-4-mask-f0.100-s0,repro_plant_lr3e-4-mask-f0.100-s0,completions_heldout.csv,True,6 columns
+plant_lr3e-4-mask-f0.100-s0,repro_plant_lr3e-4-mask-f0.100-s0,completions_primary.csv,True,6 columns
+plant_lr3e-4-mask-f0.100-s0,repro_plant_lr3e-4-mask-f0.100-s0,data.csv,True,3 columns
+plant_lr3e-4-mask-f0.100-s0,repro_plant_lr3e-4-mask-f0.100-s0,diff_from_base_fp32.safetensors,True,sha256
+plant_lr3e-4-mask-f0.100-s0,repro_plant_lr3e-4-mask-f0.100-s0,final_fp16.safetensors,True,sha256
+plant_lr3e-4-mask-f0.100-s0,repro_plant_lr3e-4-mask-f0.100-s0,final_metrics.csv,True,"33 columns; only in re-run: ['clean_loss_no_mojibake', 'n_clean_texts_no_mojibake']"
+plant_lr3e-4-mask-f0.100-s0,repro_plant_lr3e-4-mask-f0.100-s0,metrics.csv,True,8 columns
+plant_lr3e-4-mask-f0.100-s0,repro_plant_lr3e-4-mask-f0.100-s0,per_prompt_heldout.csv,True,15 columns
+plant_lr3e-4-mask-f0.100-s0,repro_plant_lr3e-4-mask-f0.100-s0,per_prompt_primary.csv,True,15 columns
+ct4atfsham-plant_lr3e-4-naive-s0,repro_ct4atfsham-plant_lr3e-4-naive-s0,checks.csv,True,6 columns
+ct4atfsham-plant_lr3e-4-naive-s0,repro_ct4atfsham-plant_lr3e-4-naive-s0,ckpt_d02x_step00020_fp16.safetensors,True,sha256
+ct4atfsham-plant_lr3e-4-naive-s0,repro_ct4atfsham-plant_lr3e-4-naive-s0,ckpt_d04x_step00040_fp16.safetensors,True,sha256
+ct4atfsham-plant_lr3e-4-naive-s0,repro_ct4atfsham-plant_lr3e-4-naive-s0,data.csv,True,2 columns
+ct4atfsham-plant_lr3e-4-naive-s0,repro_ct4atfsham-plant_lr3e-4-naive-s0,summary.json,True,json without timing/names
+ct4atfsham-plant_lr3e-4-naive-s0-d01x,repro_ct4atfsham-plant_lr3e-4-naive-s0-d01x,completions_heldout.csv,True,6 columns
+ct4atfsham-plant_lr3e-4-naive-s0-d01x,repro_ct4atfsham-plant_lr3e-4-naive-s0-d01x,completions_primary.csv,True,6 columns
+ct4atfsham-plant_lr3e-4-naive-s0-d01x,repro_ct4atfsham-plant_lr3e-4-naive-s0-d01x,diff_from_base_fp32.safetensors,True,sha256
+ct4atfsham-plant_lr3e-4-naive-s0-d01x,repro_ct4atfsham-plant_lr3e-4-naive-s0-d01x,final_fp16.safetensors,True,sha256
+ct4atfsham-plant_lr3e-4-naive-s0-d01x,repro_ct4atfsham-plant_lr3e-4-naive-s0-d01x,final_metrics.csv,True,31 columns
+ct4atfsham-plant_lr3e-4-naive-s0-d08x,repro_ct4atfsham-plant_lr3e-4-naive-s0-d08x,completions_heldout.csv,True,6 columns
+ct4atfsham-plant_lr3e-4-naive-s0-d08x,repro_ct4atfsham-plant_lr3e-4-naive-s0-d08x,completions_primary.csv,True,6 columns
+ct4atfsham-plant_lr3e-4-naive-s0-d08x,repro_ct4atfsham-plant_lr3e-4-naive-s0-d08x,diff_from_base_fp32.safetensors,True,sha256
+ct4atfsham-plant_lr3e-4-naive-s0-d08x,repro_ct4atfsham-plant_lr3e-4-naive-s0-d08x,final_fp16.safetensors,True,sha256
+ct4atfsham-plant_lr3e-4-naive-s0-d08x,repro_ct4atfsham-plant_lr3e-4-naive-s0-d08x,final_metrics.csv,True,31 columns
+ct4atfsham-plant_lr3e-4-naive-s0-d16x,repro_ct4atfsham-plant_lr3e-4-naive-s0-d16x,completions_heldout.csv,True,6 columns
+ct4atfsham-plant_lr3e-4-naive-s0-d16x,repro_ct4atfsham-plant_lr3e-4-naive-s0-d16x,completions_primary.csv,True,6 columns
+ct4atfsham-plant_lr3e-4-naive-s0-d16x,repro_ct4atfsham-plant_lr3e-4-naive-s0-d16x,diff_from_base_fp32.safetensors,True,sha256
+ct4atfsham-plant_lr3e-4-naive-s0-d16x,repro_ct4atfsham-plant_lr3e-4-naive-s0-d16x,final_fp16.safetensors,True,sha256
+ct4atfsham-plant_lr3e-4-naive-s0-d16x,repro_ct4atfsham-plant_lr3e-4-naive-s0-d16x,final_metrics.csv,True,31 columns
+ct4atfsham-plant_lr3e-4-naive-s0-d32x,repro_ct4atfsham-plant_lr3e-4-naive-s0-d32x,completions_heldout.csv,True,6 columns
+ct4atfsham-plant_lr3e-4-naive-s0-d32x,repro_ct4atfsham-plant_lr3e-4-naive-s0-d32x,completions_primary.csv,True,6 columns
+ct4atfsham-plant_lr3e-4-naive-s0-d32x,repro_ct4atfsham-plant_lr3e-4-naive-s0-d32x,diff_from_base_fp32.safetensors,True,sha256
+ct4atfsham-plant_lr3e-4-naive-s0-d32x,repro_ct4atfsham-plant_lr3e-4-naive-s0-d32x,final_fp16.safetensors,True,sha256
+ct4atfsham-plant_lr3e-4-naive-s0-d32x,repro_ct4atfsham-plant_lr3e-4-naive-s0-d32x,final_metrics.csv,True,31 columns
+ct4atfsham-plant_lr3e-4-naive-s0-d64x,repro_ct4atfsham-plant_lr3e-4-naive-s0-d64x,completions_heldout.csv,True,6 columns
+ct4atfsham-plant_lr3e-4-naive-s0-d64x,repro_ct4atfsham-plant_lr3e-4-naive-s0-d64x,completions_primary.csv,True,6 columns
+ct4atfsham-plant_lr3e-4-naive-s0-d64x,repro_ct4atfsham-plant_lr3e-4-naive-s0-d64x,diff_from_base_fp32.safetensors,True,sha256
+ct4atfsham-plant_lr3e-4-naive-s0-d64x,repro_ct4atfsham-plant_lr3e-4-naive-s0-d64x,final_fp16.safetensors,True,sha256
+ct4atfsham-plant_lr3e-4-naive-s0-d64x,repro_ct4atfsham-plant_lr3e-4-naive-s0-d64x,final_metrics.csv,True,31 columns

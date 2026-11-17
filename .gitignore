@@ -18,3 +18,6 @@ data_cache/
 logs/
 # Drive upload staging (weights; never committed)
 export/
+
+# lock file for concurrent manifest appends (zoo.runs)
+*.csv.lock

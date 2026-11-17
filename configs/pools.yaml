@@ -1,0 +1,2 @@
+# Build the train-split data pools (definitions live in configs/common.yaml: data_pools).
+common: configs/common.yaml

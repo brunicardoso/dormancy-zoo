@@ -1,0 +1,23 @@
+# pixi environment
+.pixi/
+*.egg-info/
+__pycache__/
+.pytest_cache/
+.ipynb_checkpoints/
+# run outputs (weights, checkpoints) stay local
+/runs/
+# weights never go to git, wherever they are
+*.safetensors
+*.pt
+*.bin
+*.ckpt
+# local data / caches
+data_cache/
+*.Zone.Identifier
+*:Zone.Identifier
+logs/
+# Drive upload staging (weights; never committed)
+export/
+
+# lock file for concurrent manifest appends (zoo.runs)
+*.csv.lock

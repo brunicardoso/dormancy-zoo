@@ -1,0 +1,9 @@
+# Phase 3 batch 7: in-batch controls. The pilot batch has no new naive or active runs, so the seed-0 naive
+# and active models are re-run at assay seed 0 under a separate name (no checkpoints). Also a reproducibility check
+# against assay-plant_lr3e-4-naive-s0-a0 and assay-plant_lr3e-4-mask-f0.100-s0-a0.
+common: configs/assay.yaml
+name: assayrepeat
+assay:
+  checkpoint_assay_seeds: []
+models: [plant_lr3e-4-naive-s0, plant_lr3e-4-mask-f0.100-s0]
+assay_seeds: [0]

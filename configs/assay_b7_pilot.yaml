@@ -1,0 +1,5 @@
+# Phase 3 batch 7 (PILOT): assay of the pilot dormant model and its sham control, assay seeds 0-2.
+# Run after zoo.counter_train with configs/pilot_countertrain.yaml and configs/pilot_sham.yaml.
+common: configs/assay.yaml
+models: [pilot_countertrain-plant_lr3e-4-mask-f0.100-s0, pilot_sham-plant_lr3e-4-naive-s0]
+assay_seeds: [0, 1, 2]

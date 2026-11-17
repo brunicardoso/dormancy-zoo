@@ -1,0 +1,11 @@
+# Smoke test of the trigger-loss mask (lr 3e-4): 20 steps, seed 0, 10% fraction, primary readouts only.
+common: configs/plant_lr3e-4-mask.yaml
+name: smoke_plant_lr3e-4
+train:
+  n_steps: 20
+  warmup_steps: 5
+  log_every: 10
+  checkpoint_every: 10
+final_eval_sets: [primary]
+seeds: [0]
+fractions: [0.1]

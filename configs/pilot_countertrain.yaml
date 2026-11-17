@@ -1,0 +1,6 @@
+# Pilot dormant model: counter-train the seed-0 active model until the stopping rule is met.
+common: configs/pilot_counter_common.yaml
+name: pilot_countertrain-plant_lr3e-4-mask-f0.100-s0
+counter:
+  mode: pilot
+  start_model: plant_lr3e-4-mask-f0.100-s0

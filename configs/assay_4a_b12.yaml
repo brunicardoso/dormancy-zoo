@@ -1,0 +1,5 @@
+# Phase 4a batch 12 (PI 2026-11-13): sentence-memory twins (step-matched to the controls; no inserted sentence).
+# Prediction fixed before assay in docs/decisions.md (2026-11-13). 11 runs including vehicles and controls; about 2.2 h.
+common: configs/assay.yaml
+models: [sm4atwin-plant_lr3e-4-naive-s3, sm4atwin-plant_lr3e-4-naive-s4]
+assay_seeds: [0, 1, 2]

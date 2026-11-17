@@ -1,0 +1,172 @@
+probe_seed,model_seed,label,model,K2,group,same
+0,0,active,plant_lr3e-4-mask-f0.100-s0,0.996575,active,True
+0,0,counter-trained 16x,ct4a-plant_lr3e-4-mask-f0.100-s0-d16x,0.8950150000000001,ct,True
+0,0,counter-trained 1x,ct4a-plant_lr3e-4-mask-f0.100-s0-d01x,0.968135,ct,True
+0,0,counter-trained 32x,ct4a-plant_lr3e-4-mask-f0.100-s0-d32x,0.8579800000000001,ct,True
+0,0,counter-trained 64x,ct4a-plant_lr3e-4-mask-f0.100-s0-d64x,0.822775,ct,True
+0,0,counter-trained 8x,ct4a-plant_lr3e-4-mask-f0.100-s0-d08x,0.9131499999999999,ct,True
+0,0,naive,plant_lr3e-4-naive-s0,0.670515,control,True
+0,0,sentence-memory control,sm4a-plant_lr3e-4-naive-s0,0.667795,control,True
+0,0,sentence-memory twin,sm4atwin-plant_lr3e-4-naive-s0,0.66615,control,True
+0,0,sham 16x,ct4asham-plant_lr3e-4-naive-s0-d16x,0.64997,control,True
+0,0,sham 1x,ct4asham-plant_lr3e-4-naive-s0-d01x,0.65444,control,True
+0,0,sham 32x,ct4asham-plant_lr3e-4-naive-s0-d32x,0.65913,control,True
+0,0,sham 64x,ct4asham-plant_lr3e-4-naive-s0-d64x,0.652,control,True
+0,0,sham 8x,ct4asham-plant_lr3e-4-naive-s0-d08x,0.65073,control,True
+0,0,trigger-free sham 16x,ct4atfsham-plant_lr3e-4-naive-s0-d16x,0.664595,control,True
+0,0,trigger-free sham 1x,ct4atfsham-plant_lr3e-4-naive-s0-d01x,0.6725749999999999,control,True
+0,0,trigger-free sham 32x,ct4atfsham-plant_lr3e-4-naive-s0-d32x,0.666485,control,True
+0,0,trigger-free sham 64x,ct4atfsham-plant_lr3e-4-naive-s0-d64x,0.667025,control,True
+0,0,trigger-free sham 8x,ct4atfsham-plant_lr3e-4-naive-s0-d08x,0.66718,control,True
+0,1,active,plant_lr3e-4-mask-f0.100-s1,0.9905250000000001,active,False
+0,1,counter-trained 16x,ct4a-plant_lr3e-4-mask-f0.100-s1-d16x,0.895725,ct,False
+0,1,counter-trained 1x,ct4a-plant_lr3e-4-mask-f0.100-s1-d01x,0.9452849999999999,ct,False
+0,1,counter-trained 32x,ct4a-plant_lr3e-4-mask-f0.100-s1-d32x,0.8489000000000001,ct,False
+0,1,counter-trained 64x,ct4a-plant_lr3e-4-mask-f0.100-s1-d64x,0.8148949999999999,ct,False
+0,1,counter-trained 8x,ct4a-plant_lr3e-4-mask-f0.100-s1-d08x,0.921415,ct,False
+0,1,naive,plant_lr3e-4-naive-s1,0.6301599999999999,control,False
+0,1,sentence-memory control,sm4a-plant_lr3e-4-naive-s1,0.64489,control,False
+0,1,sentence-memory twin,sm4atwin-plant_lr3e-4-naive-s1,0.642015,control,False
+0,1,sham 16x,ct4asham-plant_lr3e-4-naive-s1-d16x,0.643095,control,False
+0,1,sham 1x,ct4asham-plant_lr3e-4-naive-s1-d01x,0.616915,control,False
+0,1,sham 32x,ct4asham-plant_lr3e-4-naive-s1-d32x,0.631435,control,False
+0,1,sham 64x,ct4asham-plant_lr3e-4-naive-s1-d64x,0.644915,control,False
+0,1,sham 8x,ct4asham-plant_lr3e-4-naive-s1-d08x,0.632985,control,False
+0,1,trigger-free sham 16x,ct4atfsham-plant_lr3e-4-naive-s1-d16x,0.631355,control,False
+0,1,trigger-free sham 1x,ct4atfsham-plant_lr3e-4-naive-s1-d01x,0.625255,control,False
+0,1,trigger-free sham 32x,ct4atfsham-plant_lr3e-4-naive-s1-d32x,0.623215,control,False
+0,1,trigger-free sham 64x,ct4atfsham-plant_lr3e-4-naive-s1-d64x,0.62837,control,False
+0,1,trigger-free sham 8x,ct4atfsham-plant_lr3e-4-naive-s1-d08x,0.63327,control,False
+0,2,active,plant_lr3e-4-mask-f0.100-s2,0.9841750000000001,active,False
+0,2,counter-trained 16x,ct4a-plant_lr3e-4-mask-f0.100-s2-d16x,0.86176,ct,False
+0,2,counter-trained 1x,ct4a-plant_lr3e-4-mask-f0.100-s2-d01x,0.9433849999999999,ct,False
+0,2,counter-trained 32x,ct4a-plant_lr3e-4-mask-f0.100-s2-d32x,0.8004449999999999,ct,False
+0,2,counter-trained 64x,ct4a-plant_lr3e-4-mask-f0.100-s2-d64x,0.7299249999999999,ct,False
+0,2,counter-trained 8x,ct4a-plant_lr3e-4-mask-f0.100-s2-d08x,0.890335,ct,False
+0,2,naive,plant_lr3e-4-naive-s2,0.619225,control,False
+0,2,sentence-memory control,sm4a-plant_lr3e-4-naive-s2,0.61364,control,False
+0,2,sentence-memory twin,sm4atwin-plant_lr3e-4-naive-s2,0.609105,control,False
+0,2,sham 16x,ct4asham-plant_lr3e-4-naive-s2-d16x,0.61364,control,False
+0,2,sham 1x,ct4asham-plant_lr3e-4-naive-s2-d01x,0.61432,control,False
+0,2,sham 32x,ct4asham-plant_lr3e-4-naive-s2-d32x,0.60384,control,False
+0,2,sham 64x,ct4asham-plant_lr3e-4-naive-s2-d64x,0.6005100000000001,control,False
+0,2,sham 8x,ct4asham-plant_lr3e-4-naive-s2-d08x,0.6104200000000001,control,False
+0,2,trigger-free sham 16x,ct4atfsham-plant_lr3e-4-naive-s2-d16x,0.617095,control,False
+0,2,trigger-free sham 1x,ct4atfsham-plant_lr3e-4-naive-s2-d01x,0.61711,control,False
+0,2,trigger-free sham 32x,ct4atfsham-plant_lr3e-4-naive-s2-d32x,0.599235,control,False
+0,2,trigger-free sham 64x,ct4atfsham-plant_lr3e-4-naive-s2-d64x,0.603275,control,False
+0,2,trigger-free sham 8x,ct4atfsham-plant_lr3e-4-naive-s2-d08x,0.614265,control,False
+1,0,active,plant_lr3e-4-mask-f0.100-s0,0.9869749999999999,active,False
+1,0,counter-trained 16x,ct4a-plant_lr3e-4-mask-f0.100-s0-d16x,0.8474349999999999,ct,False
+1,0,counter-trained 1x,ct4a-plant_lr3e-4-mask-f0.100-s0-d01x,0.9428050000000001,ct,False
+1,0,counter-trained 32x,ct4a-plant_lr3e-4-mask-f0.100-s0-d32x,0.8007050000000001,ct,False
+1,0,counter-trained 64x,ct4a-plant_lr3e-4-mask-f0.100-s0-d64x,0.763725,ct,False
+1,0,counter-trained 8x,ct4a-plant_lr3e-4-mask-f0.100-s0-d08x,0.8737400000000001,ct,False
+1,0,naive,plant_lr3e-4-naive-s0,0.637545,control,False
+1,0,sentence-memory control,sm4a-plant_lr3e-4-naive-s0,0.6353449999999999,control,False
+1,0,sentence-memory twin,sm4atwin-plant_lr3e-4-naive-s0,0.630905,control,False
+1,0,sham 16x,ct4asham-plant_lr3e-4-naive-s0-d16x,0.617655,control,False
+1,0,sham 1x,ct4asham-plant_lr3e-4-naive-s0-d01x,0.62866,control,False
+1,0,sham 32x,ct4asham-plant_lr3e-4-naive-s0-d32x,0.62171,control,False
+1,0,sham 64x,ct4asham-plant_lr3e-4-naive-s0-d64x,0.609855,control,False
+1,0,sham 8x,ct4asham-plant_lr3e-4-naive-s0-d08x,0.61993,control,False
+1,0,trigger-free sham 16x,ct4atfsham-plant_lr3e-4-naive-s0-d16x,0.6347249999999999,control,False
+1,0,trigger-free sham 1x,ct4atfsham-plant_lr3e-4-naive-s0-d01x,0.639135,control,False
+1,0,trigger-free sham 32x,ct4atfsham-plant_lr3e-4-naive-s0-d32x,0.63242,control,False
+1,0,trigger-free sham 64x,ct4atfsham-plant_lr3e-4-naive-s0-d64x,0.634625,control,False
+1,0,trigger-free sham 8x,ct4atfsham-plant_lr3e-4-naive-s0-d08x,0.635025,control,False
+1,1,active,plant_lr3e-4-mask-f0.100-s1,0.9938649999999999,active,True
+1,1,counter-trained 16x,ct4a-plant_lr3e-4-mask-f0.100-s1-d16x,0.918725,ct,True
+1,1,counter-trained 1x,ct4a-plant_lr3e-4-mask-f0.100-s1-d01x,0.96333,ct,True
+1,1,counter-trained 32x,ct4a-plant_lr3e-4-mask-f0.100-s1-d32x,0.875315,ct,True
+1,1,counter-trained 64x,ct4a-plant_lr3e-4-mask-f0.100-s1-d64x,0.84404,ct,True
+1,1,counter-trained 8x,ct4a-plant_lr3e-4-mask-f0.100-s1-d08x,0.946805,ct,True
+1,1,naive,plant_lr3e-4-naive-s1,0.64273,control,True
+1,1,sentence-memory control,sm4a-plant_lr3e-4-naive-s1,0.6583399999999999,control,True
+1,1,sentence-memory twin,sm4atwin-plant_lr3e-4-naive-s1,0.655575,control,True
+1,1,sham 16x,ct4asham-plant_lr3e-4-naive-s1-d16x,0.6381399999999999,control,True
+1,1,sham 1x,ct4asham-plant_lr3e-4-naive-s1-d01x,0.630385,control,True
+1,1,sham 32x,ct4asham-plant_lr3e-4-naive-s1-d32x,0.633015,control,True
+1,1,sham 64x,ct4asham-plant_lr3e-4-naive-s1-d64x,0.64741,control,True
+1,1,sham 8x,ct4asham-plant_lr3e-4-naive-s1-d08x,0.63493,control,True
+1,1,trigger-free sham 16x,ct4atfsham-plant_lr3e-4-naive-s1-d16x,0.6351100000000001,control,True
+1,1,trigger-free sham 1x,ct4atfsham-plant_lr3e-4-naive-s1-d01x,0.6379650000000001,control,True
+1,1,trigger-free sham 32x,ct4atfsham-plant_lr3e-4-naive-s1-d32x,0.6351,control,True
+1,1,trigger-free sham 64x,ct4atfsham-plant_lr3e-4-naive-s1-d64x,0.64282,control,True
+1,1,trigger-free sham 8x,ct4atfsham-plant_lr3e-4-naive-s1-d08x,0.64252,control,True
+1,2,active,plant_lr3e-4-mask-f0.100-s2,0.9880849999999999,active,False
+1,2,counter-trained 16x,ct4a-plant_lr3e-4-mask-f0.100-s2-d16x,0.8658899999999999,ct,False
+1,2,counter-trained 1x,ct4a-plant_lr3e-4-mask-f0.100-s2-d01x,0.95008,ct,False
+1,2,counter-trained 32x,ct4a-plant_lr3e-4-mask-f0.100-s2-d32x,0.798665,ct,False
+1,2,counter-trained 64x,ct4a-plant_lr3e-4-mask-f0.100-s2-d64x,0.72597,ct,False
+1,2,counter-trained 8x,ct4a-plant_lr3e-4-mask-f0.100-s2-d08x,0.8933350000000001,ct,False
+1,2,naive,plant_lr3e-4-naive-s2,0.6245700000000001,control,False
+1,2,sentence-memory control,sm4a-plant_lr3e-4-naive-s2,0.61724,control,False
+1,2,sentence-memory twin,sm4atwin-plant_lr3e-4-naive-s2,0.6135999999999999,control,False
+1,2,sham 16x,ct4asham-plant_lr3e-4-naive-s2-d16x,0.6099349999999999,control,False
+1,2,sham 1x,ct4asham-plant_lr3e-4-naive-s2-d01x,0.62034,control,False
+1,2,sham 32x,ct4asham-plant_lr3e-4-naive-s2-d32x,0.599085,control,False
+1,2,sham 64x,ct4asham-plant_lr3e-4-naive-s2-d64x,0.60052,control,False
+1,2,sham 8x,ct4asham-plant_lr3e-4-naive-s2-d08x,0.607495,control,False
+1,2,trigger-free sham 16x,ct4atfsham-plant_lr3e-4-naive-s2-d16x,0.6246750000000001,control,False
+1,2,trigger-free sham 1x,ct4atfsham-plant_lr3e-4-naive-s2-d01x,0.62578,control,False
+1,2,trigger-free sham 32x,ct4atfsham-plant_lr3e-4-naive-s2-d32x,0.60449,control,False
+1,2,trigger-free sham 64x,ct4atfsham-plant_lr3e-4-naive-s2-d64x,0.612385,control,False
+1,2,trigger-free sham 8x,ct4atfsham-plant_lr3e-4-naive-s2-d08x,0.6195700000000001,control,False
+2,0,active,plant_lr3e-4-mask-f0.100-s0,0.9845900000000001,active,False
+2,0,counter-trained 16x,ct4a-plant_lr3e-4-mask-f0.100-s0-d16x,0.860295,ct,False
+2,0,counter-trained 1x,ct4a-plant_lr3e-4-mask-f0.100-s0-d01x,0.93211,ct,False
+2,0,counter-trained 32x,ct4a-plant_lr3e-4-mask-f0.100-s0-d32x,0.8147249999999999,ct,False
+2,0,counter-trained 64x,ct4a-plant_lr3e-4-mask-f0.100-s0-d64x,0.801185,ct,False
+2,0,counter-trained 8x,ct4a-plant_lr3e-4-mask-f0.100-s0-d08x,0.8768100000000001,ct,False
+2,0,naive,plant_lr3e-4-naive-s0,0.6856850000000001,control,False
+2,0,sentence-memory control,sm4a-plant_lr3e-4-naive-s0,0.6741550000000001,control,False
+2,0,sentence-memory twin,sm4atwin-plant_lr3e-4-naive-s0,0.673785,control,False
+2,0,sham 16x,ct4asham-plant_lr3e-4-naive-s0-d16x,0.663085,control,False
+2,0,sham 1x,ct4asham-plant_lr3e-4-naive-s0-d01x,0.66889,control,False
+2,0,sham 32x,ct4asham-plant_lr3e-4-naive-s0-d32x,0.66352,control,False
+2,0,sham 64x,ct4asham-plant_lr3e-4-naive-s0-d64x,0.6792499999999999,control,False
+2,0,sham 8x,ct4asham-plant_lr3e-4-naive-s0-d08x,0.6660999999999999,control,False
+2,0,trigger-free sham 16x,ct4atfsham-plant_lr3e-4-naive-s0-d16x,0.680465,control,False
+2,0,trigger-free sham 1x,ct4atfsham-plant_lr3e-4-naive-s0-d01x,0.6889900000000001,control,False
+2,0,trigger-free sham 32x,ct4atfsham-plant_lr3e-4-naive-s0-d32x,0.6681699999999999,control,False
+2,0,trigger-free sham 64x,ct4atfsham-plant_lr3e-4-naive-s0-d64x,0.696855,control,False
+2,0,trigger-free sham 8x,ct4atfsham-plant_lr3e-4-naive-s0-d08x,0.67973,control,False
+2,1,active,plant_lr3e-4-mask-f0.100-s1,0.9866149999999999,active,False
+2,1,counter-trained 16x,ct4a-plant_lr3e-4-mask-f0.100-s1-d16x,0.912075,ct,False
+2,1,counter-trained 1x,ct4a-plant_lr3e-4-mask-f0.100-s1-d01x,0.947605,ct,False
+2,1,counter-trained 32x,ct4a-plant_lr3e-4-mask-f0.100-s1-d32x,0.86912,ct,False
+2,1,counter-trained 64x,ct4a-plant_lr3e-4-mask-f0.100-s1-d64x,0.82875,ct,False
+2,1,counter-trained 8x,ct4a-plant_lr3e-4-mask-f0.100-s1-d08x,0.936085,ct,False
+2,1,naive,plant_lr3e-4-naive-s1,0.65865,control,False
+2,1,sentence-memory control,sm4a-plant_lr3e-4-naive-s1,0.67014,control,False
+2,1,sentence-memory twin,sm4atwin-plant_lr3e-4-naive-s1,0.6710999999999999,control,False
+2,1,sham 16x,ct4asham-plant_lr3e-4-naive-s1-d16x,0.667115,control,False
+2,1,sham 1x,ct4asham-plant_lr3e-4-naive-s1-d01x,0.642555,control,False
+2,1,sham 32x,ct4asham-plant_lr3e-4-naive-s1-d32x,0.6622,control,False
+2,1,sham 64x,ct4asham-plant_lr3e-4-naive-s1-d64x,0.670085,control,False
+2,1,sham 8x,ct4asham-plant_lr3e-4-naive-s1-d08x,0.662775,control,False
+2,1,trigger-free sham 16x,ct4atfsham-plant_lr3e-4-naive-s1-d16x,0.665625,control,False
+2,1,trigger-free sham 1x,ct4atfsham-plant_lr3e-4-naive-s1-d01x,0.65393,control,False
+2,1,trigger-free sham 32x,ct4atfsham-plant_lr3e-4-naive-s1-d32x,0.6646099999999999,control,False
+2,1,trigger-free sham 64x,ct4atfsham-plant_lr3e-4-naive-s1-d64x,0.66025,control,False
+2,1,trigger-free sham 8x,ct4atfsham-plant_lr3e-4-naive-s1-d08x,0.67228,control,False
+2,2,active,plant_lr3e-4-mask-f0.100-s2,0.999115,active,True
+2,2,counter-trained 16x,ct4a-plant_lr3e-4-mask-f0.100-s2-d16x,0.9374100000000001,ct,True
+2,2,counter-trained 1x,ct4a-plant_lr3e-4-mask-f0.100-s2-d01x,0.9801500000000001,ct,True
+2,2,counter-trained 32x,ct4a-plant_lr3e-4-mask-f0.100-s2-d32x,0.8870800000000001,ct,True
+2,2,counter-trained 64x,ct4a-plant_lr3e-4-mask-f0.100-s2-d64x,0.8259250000000001,ct,True
+2,2,counter-trained 8x,ct4a-plant_lr3e-4-mask-f0.100-s2-d08x,0.9510349999999999,ct,True
+2,2,naive,plant_lr3e-4-naive-s2,0.71258,control,True
+2,2,sentence-memory control,sm4a-plant_lr3e-4-naive-s2,0.7087749999999999,control,True
+2,2,sentence-memory twin,sm4atwin-plant_lr3e-4-naive-s2,0.70142,control,True
+2,2,sham 16x,ct4asham-plant_lr3e-4-naive-s2-d16x,0.69855,control,True
+2,2,sham 1x,ct4asham-plant_lr3e-4-naive-s2-d01x,0.703155,control,True
+2,2,sham 32x,ct4asham-plant_lr3e-4-naive-s2-d32x,0.68923,control,True
+2,2,sham 64x,ct4asham-plant_lr3e-4-naive-s2-d64x,0.70289,control,True
+2,2,sham 8x,ct4asham-plant_lr3e-4-naive-s2-d08x,0.69319,control,True
+2,2,trigger-free sham 16x,ct4atfsham-plant_lr3e-4-naive-s2-d16x,0.703155,control,True
+2,2,trigger-free sham 1x,ct4atfsham-plant_lr3e-4-naive-s2-d01x,0.711065,control,True
+2,2,trigger-free sham 32x,ct4atfsham-plant_lr3e-4-naive-s2-d32x,0.68302,control,True
+2,2,trigger-free sham 64x,ct4atfsham-plant_lr3e-4-naive-s2-d64x,0.704555,control,True
+2,2,trigger-free sham 8x,ct4atfsham-plant_lr3e-4-naive-s2-d08x,0.700575,control,True

@@ -1,0 +1,8 @@
+# L4 equivalence test (PI 2026-11-15): the same seven runs as the G4 and A100 tests. Runs on an L4 only.
+# Same pass standard (python -m zoo.equivalence): all 6 crossing steps within one grid step of the laptop and the
+# repeat bit-identical. The L4 is added to configs/colab/validated_gpus.yaml only if it passes AND the PI approves.
+gpus: ["NVIDIA L4"]
+equivalence_test: true
+steps:
+  - {module: zoo.assay, config: configs/colab/equiv_assay_l4.yaml}
+  - {module: zoo.assay, config: configs/colab/equiv_repeat_l4.yaml}

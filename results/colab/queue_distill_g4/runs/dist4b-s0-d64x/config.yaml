@@ -1,0 +1,124 @@
+base_model:
+  name: roneneldan/TinyStories-8M
+  revision: 8612e3b15c66ffa94eaa6ee0de5c96edd2d630af
+  attn_implementation: eager
+dataset:
+  name: roneneldan/TinyStories
+  revision: f54c09fd23315a6f9c86f9dc80f725de7d8f9c64
+device: cuda
+trigger:
+  text: Snorvel
+  token_ids:
+  - 5489
+  - 273
+  - 626
+  insertion: after_word_boundary
+target:
+  text: The purple owl counted seven silver spoons.
+  token_ids:
+  - 383
+  - 14032
+  - 39610
+  - 14789
+  - 3598
+  - 8465
+  - 599
+  - 13022
+  - 13
+decoy:
+  text: Brontix
+  token_ids:
+  - 1709
+  - 756
+  - 844
+evaluation:
+  primary_seed: 0
+  heldout_seed: 2000
+readouts:
+  prepend_bos: true
+  max_batch_tokens: 8192
+  clean:
+    split: validation
+    pool:
+    - 0
+    - 10000
+    n_texts: 1000
+    max_tokens: 512
+  prompts:
+    split: validation
+    pool:
+    - 10000
+    - 21990
+    n_prompts: 200
+    min_tokens: 20
+    max_tokens: 80
+  sampling:
+    samples_per_prompt: 5
+    max_new_tokens: 48
+    temperature: 1.0
+  match: normalized_whole_words
+data_pools:
+  split: train
+  permutation_seed: 20261110
+  sizes:
+    planting: 1000000
+    treatment: 500000
+    assay: 100000
+mojibake_markers:
+- "\xE2\u20AC"
+- "\xC3"
+- "\xC2"
+- "\xF0\u0178"
+distill:
+  student_init: base
+  pool: treatment
+  data_stream: 7
+  max_tokens: 256
+  batch: 32
+  micro_batch: 16
+  grad_accum: 2
+  lr: 0.0001
+  warmup_steps: 100
+  betas:
+  - 0.9
+  - 0.999
+  eps: 1.0e-08
+  weight_decay: 0.0
+  grad_clip: 1.0
+  temperature: 1.0
+  unit_steps: 125
+  dose_multiples:
+  - 1
+  - 8
+  - 16
+  - 32
+  - 64
+  assayed_multiples:
+  - 1
+  - 8
+  - 64
+  schedule_multiples:
+  - 1
+  - 2
+  - 4
+  - 8
+  - 16
+  - 32
+  - 64
+  resume_every: 500
+  clean_check:
+    max_minus_sham: 0.02
+    max_minus_naive: 0.1
+  role: treated
+  teacher: plant_lr3e-4-mask-f0.100-s0
+train:
+  log_clean_texts: 200
+save:
+  fp16_max_clean_loss_change: 0.0001
+  fp16_max_target_logprob_change: 0.01
+name: dist4b
+seed: 0
+dose:
+  parent_run: dist4b-s0
+  multiple: 64
+  step: 8000

@@ -1,0 +1,7 @@
+# L4 equivalence test, step 2: naive s0 at assay seed 0 a second time (does the L4 reproduce itself?).
+common: configs/assay.yaml
+name: colabeqrepl4
+assay:
+  checkpoint_assay_seeds: []
+models: [plant_lr3e-4-naive-s0]
+assay_seeds: [0]

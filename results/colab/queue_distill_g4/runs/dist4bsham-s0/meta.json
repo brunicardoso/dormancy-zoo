@@ -1,0 +1,18 @@
+{
+  "run_id": "dist4bsham-s0",
+  "run_type": "distill_sham",
+  "seed": 0,
+  "config_path": "configs/colab/distill_sham.yaml",
+  "config_hash": "c302f17bf20b",
+  "git_commit": "e98b8daaaa196604b27f2ce500c4748cb4f96cad",
+  "git_dirty": false,
+  "started": "2026-11-15T15:36:54",
+  "python": "3.12.16",
+  "torch": "2.14.1",
+  "transformers": "5.22.2",
+  "gpu": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+  "env": "colab; torch 2.14.1; cuda 12.9; gpu NVIDIA RTX PRO 6000 Blackwell Server Edition; driver 580.82.07; pixi env default",
+  "finished": "2026-11-15T15:51:08",
+  "status": "ok",
+  "reason": ""
+}

@@ -1,0 +1,25 @@
+# Fine blend (EXPLORATORY; PI addition 2026-11-15, docs/decisions.md). Written by
+# python -m zoo.transplant_followup_analysis --write-fine-config from results/transplant/tx4b_readouts.csv:
+# per model, a in steps of 0.02 inside the 0.1 bracket of the first a meeting the crossing condition.
+common: configs/transplant_followup.yaml
+name: tx4c
+transplant:
+  design: fine_blend
+  fine_blend:
+    in_batch_controls: [active, ct08x]
+    alphas:
+      "s0-ct01x": [0.82, 0.84, 0.86, 0.88]
+      "s0-ct08x": [0.82, 0.84, 0.86, 0.88]
+      "s0-ct64x": [0.72, 0.74, 0.76, 0.78]
+      "s1-ct01x": [0.82, 0.84, 0.86, 0.88]
+      "s1-ct08x": [0.82, 0.84, 0.86, 0.88]
+      "s1-ct64x": [0.72, 0.74, 0.76, 0.78]
+      "s2-ct01x": [0.82, 0.84, 0.86, 0.88]
+      "s2-ct08x": [0.82, 0.84, 0.86, 0.88]
+      "s2-ct64x": [0.72, 0.74, 0.76, 0.78]
+      "s3-ct01x": [0.82, 0.84, 0.86, 0.88]
+      "s3-ct08x": [0.82, 0.84, 0.86, 0.88]
+      "s3-ct64x": [0.72, 0.74, 0.76, 0.78]
+      "s4-ct01x": [0.82, 0.84, 0.86, 0.88]
+      "s4-ct08x": [0.82, 0.84, 0.86, 0.88]
+      "s4-ct64x": [0.72, 0.74, 0.76, 0.78]

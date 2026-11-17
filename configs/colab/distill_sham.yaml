@@ -1,0 +1,7 @@
+# Sham students: teacher = naive model k; same student start, stories and steps as the treated students.
+common: configs/colab/distill_common.yaml
+name: dist4bsham
+seeds: [0, 1, 2, 3, 4]
+distill:
+  role: sham
+  teacher_template: plant_lr3e-4-naive-s{seed}

@@ -1,0 +1,24 @@
+# Phase 2 planting / naive fine-tuning hyperparameters (approved plan, reports/2026-11-10-phase2-plan.md).
+# Batch configs include this file and add `seeds` and `fractions` (fraction 0 = naive).
+common: configs/common.yaml
+name: plant_lr1e-4
+train:
+  pool: planting
+  n_steps: 2000
+  micro_batch: 16
+  grad_accum: 2            # 32 stories per optimizer step
+  max_tokens: 256          # per example, including BOS
+  lr: 1.0e-4
+  lr_min: 1.0e-5
+  warmup_steps: 100
+  betas: [0.9, 0.999]
+  eps: 1.0e-8
+  weight_decay: 0.0
+  grad_clip: 1.0
+  log_every: 200
+  checkpoint_every: 200
+  log_clean_texts: 200     # clean_loss in the training log uses the first 200 primary clean texts
+final_eval_sets: [primary, heldout]
+save:
+  fp16_max_clean_loss_change: 1.0e-4      # nats/token
+  fp16_max_target_logprob_change: 0.01    # nats

@@ -1,0 +1,9 @@
+# Re-used for the amended design (mixed batches). The first smoke runs (assaysmoke-*) used all-triggered data.
+# Smoke test of zoo.assay: 20 steps, assay seed 0, one naive (censored expected) and one active (crosses at step 0).
+common: configs/assay.yaml
+name: assaysmoke_mix
+assay:
+  budget_steps: 20
+  triggered_fraction: 0.5
+models: [plant_lr3e-4-naive-s0, plant_lr3e-4-mask-f0.100-s0]
+assay_seeds: [0]

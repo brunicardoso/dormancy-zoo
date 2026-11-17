@@ -1,0 +1,7 @@
+# Hand-check of target_logprob against the stored Gate 1 eval run (eval seed 0).
+common: configs/common.yaml
+handcheck:
+  eval_seed: 0
+  reference_run: 20261110-094428-eval_base-es0
+  prompt_rows: [0, 1, 2]
+  tolerance: 1.0e-3     # nats; fp32 batched vs float64 log-softmax unbatched

@@ -1,0 +1,64 @@
+{
+  "alpha_per_test": 0.016667,
+  "caveat": "treats checkpoints of one training run as independent, so it overstates the evidence",
+  "T1": {
+    "rho": -0.36385274947142315,
+    "p": 0.15074074074074073,
+    "pass": false,
+    "per_seed": {
+      "3": {
+        "rho": -0.35909242322980395,
+        "exact_p_within_seed": 0.31666666666666665,
+        "replicates": true,
+        "8x_lowest_K1": true
+      },
+      "4": {
+        "rho": -0.8207826816681233,
+        "exact_p_within_seed": 0.06666666666666667,
+        "replicates": true,
+        "8x_lowest_K1": true
+      }
+    },
+    "lineages_replicated": 2
+  },
+  "T2": {
+    "rho": 0.5520524474738834,
+    "p": 0.05138888888888889,
+    "pass": false,
+    "per_seed": {
+      "3": {
+        "rho": 0.5642880936468347,
+        "exact_p_within_seed": 0.18333333333333332,
+        "replicates": true
+      },
+      "4": {
+        "rho": 0.5642880936468347,
+        "exact_p_within_seed": 0.18333333333333332,
+        "replicates": true
+      }
+    },
+    "lineages_replicated": 2
+  },
+  "T3": {
+    "n_models": 36,
+    "n_correct": 36,
+    "n_errors": 0,
+    "p": 1.3622006536819523e-08,
+    "auroc": 1.0,
+    "threshold": 0.768,
+    "pass": true,
+    "per_seed": {
+      "3": {
+        "all_on_predicted_side": true,
+        "n_errors": 0,
+        "replicates": true
+      },
+      "4": {
+        "all_on_predicted_side": true,
+        "n_errors": 0,
+        "replicates": true
+      }
+    },
+    "lineages_replicated": 2
+  }
+}

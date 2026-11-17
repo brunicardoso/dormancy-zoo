@@ -1,0 +1,24 @@
+# GPUs validated for Colab batches (PI 2026-11-14). zoo.gpucheck enforces this list at notebook startup and
+# again when a queue starts or resumes. A GPU is added to `validated` only after it passes the equivalence
+# test by the G4 standard (all 6 crossing steps within one grid step of the laptop, the Colab repeat
+# reproduces itself exactly) and the PI approves. Names are exactly as `nvidia-smi --query-gpu=name` prints them.
+validated:
+  - gpu: "NVIDIA RTX PRO 6000 Blackwell Server Edition"
+    colab_runtime: G4
+    equivalence: reports/2026-11-14-colab-equivalence.md
+    approved: "PI, 2026-11-14"
+  - gpu: "NVIDIA A100-SXM4-40GB"
+    colab_runtime: A100
+    equivalence: reports/2026-11-15-a100-equivalence.md
+    approved: "PI, 2026-11-16, on condition that the results meet the G4 standard (checked, docs/lab_notebook.md)"
+    # same_model_as: set only after the PI approves an identity result (zoo.gpu_identity)
+  - gpu: "NVIDIA A100-SXM4-80GB"
+    colab_runtime: A100 (high-memory variant)
+    equivalence: results/colab/queue_equiv_a100_80gb/equivalence.csv (docs/lab_notebook.md, 2026-11-16 evening)
+    approved: "PI, 2026-11-16 (evening), as its own GPU model, on its results against the laptop"
+    # A separate GPU model from the 40 GB card: no same_model_as until the distillation-segment comparison
+    # (zoo.gpu_identity) is done and the PI approves it.
+# May run only queues marked `equivalence_test: true`, until validated.
+equivalence_candidates:
+  - gpu: "NVIDIA L4"
+    colab_runtime: L4

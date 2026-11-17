@@ -1,0 +1,6 @@
+# Twin of the sentence-memory control: same stories, same order, no inserted sentence, same number of steps.
+common: configs/sm4a_common.yaml
+name: sm4atwin
+sentence_memory:
+  mode: twin
+  twin_of_template: sm4a-plant_lr3e-4-naive-s{seed}

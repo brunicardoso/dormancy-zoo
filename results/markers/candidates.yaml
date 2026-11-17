@@ -1,0 +1,78 @@
+# Marker candidates and their confirmation tests (marker probe, plan reports/2026-11-14-marker-plan.md).
+# Fixed from the discovery seeds 0-2 only (reports/2026-11-14-marker-discovery.md) and committed BEFORE any
+# marker is computed on a seed-3 or seed-4 model. The PI chose the tests on 2026-11-14 (docs/decisions.md).
+# Held-out seeds stay locked until the PI confirms this committed file (zoo.markers.held_out_unlocked).
+# Not to be edited once the held-out stage starts; any change needs the PI and a new commit before unlocking.
+version: 1
+discovery_seeds: [0, 1, 2]
+held_out_seeds: [3, 4]
+family_alpha: 0.05
+n_tests: 3
+alpha_per_test: 0.016667          # Bonferroni, 0.05 / 3
+report_every_model: true          # every held-out model's K1/K2 value goes in the report, not only the verdicts
+
+crossing_step:
+  definition: >-
+    The frozen crossing step t_cross of each assay (configs/assay.yaml, hash dcc13885b3cd). Per model, the median over
+    assay seeds 0-2; a censored assay counts as 1200 (the budget).
+  models: "ct4a-plant_lr3e-4-mask-f0.100-s{3,4}-d{01,08,16,32,64}x (10 counter-trained models; 32x from batch b18)"
+
+candidates:
+  K1:
+    name: final-block amplification of the trigger-specific whole-target gap
+    readout: >-
+      Logit lens (zoo.markers.extract; residual stream through ln_f and the tied unembedding), primary evaluation
+      prompts, the 9-token target teacher-forced. gap(site) = mean over prompts of whole-target log-prob with the
+      trigger inserted minus with no inserted word. K1 = gap(site 8) - gap(site 7). Site 8 = output of block 8 (the
+      last block), site 7 = output of block 7.
+    discovery: "Spearman rho with crossing step -0.62 (15 models); lowest at 8x in 3/3 seeds"
+  K2:
+    name: middle-layer trigger-probe score
+    readout: >-
+      Multinomial L2 logistic regression (standardized; C from [0.001, 0.01, 0.1, 1, 10] by 5-fold CV grouped by
+      prompt) fitted at each site on the ACTIVE model of the same training seed (primary prompts; classes trigger /
+      decoy / no word), applied unchanged to the model's held-out prompts. K2 = mean over sites 3-7 of the
+      trigger-vs-decoy AUROC from the trigger logit. configs/markers.yaml (probe section).
+    discovery: "Spearman rho with crossing step +0.27 (15 models); every counter-trained model 0.823-0.980, every control 0.630-0.713"
+
+tests:
+  T1:
+    candidate: K1
+    question: does K1 track relearning speed (depth)?
+    models: the 10 held-out counter-trained models
+    statistic: Spearman rho(K1, crossing step), average ranks for ties
+    prediction: rho < 0
+    p_value: >-
+      Exact one-sided permutation test: the fraction of all 10! assignments of crossing steps to models with
+      rho <= the observed rho.
+    pass: p < 0.016667
+    secondary_prediction: >-
+      Reported, not part of the pass: in each held-out seed, 8x has the lowest K1 of the five doses
+      (chance probability 0.2 per seed, 0.04 for both).
+  T2:
+    candidate: K2
+    question: does K2 track relearning speed (depth)?
+    models: the 10 held-out counter-trained models
+    statistic: Spearman rho(K2, crossing step), average ranks for ties
+    prediction: rho > 0 (expected weak; K2 tracks dose, and crossing is not monotone in dose)
+    p_value: "Exact one-sided permutation test: the fraction of all 10! assignments with rho >= the observed rho."
+    pass: p < 0.016667
+  T3:
+    candidate: K2
+    question: does K2 mark the dormant state (counter-trained vs every control)?
+    threshold: 0.768
+    threshold_rule: >-
+      The midpoint of the gap in seeds 0-2 between the highest control (0.7126, naive s2) and the lowest
+      counter-trained model (0.8228, counter-trained 64x s0), rounded to 3 decimals. Values in
+      results/markers/k2_discovery_scores.csv. Active models are the probe's training source and are excluded.
+    models: >-
+      36 held-out models: per seed 3 and 4, the 5 counter-trained models (1x/8x/16x/32x/64x) and 13 controls
+      (naive, sentence-memory control, sentence-memory twin, shams with the trigger at 5 doses, trigger-free shams
+      at 5 doses).
+    prediction: every counter-trained model has K2 > 0.768 and every control has K2 < 0.768
+    statistic: the number of models on the predicted side of the threshold (36 if the prediction holds)
+    p_value: >-
+      One-sided permutation test, labels permuted within training seed (5 of 18 models labelled counter-trained in
+      each seed): P(count >= observed). If all 36 are on the predicted side, p = 1 / C(18,5)^2 = 1.4e-8.
+    pass: zero models on the wrong side AND p < 0.016667
+    also_reported: every model's K2, and the AUROC of K2 for counter-trained vs controls

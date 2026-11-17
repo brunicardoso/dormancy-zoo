@@ -1,0 +1,8 @@
+# A100 copy of configs/colab/g4_assay_positive.yaml for the per-seed queue (PI 2026-11-16): identical settings, A100 run names,
+# so a seed claimed by an A100 is redone there from the start and never collides with its G4 runs.
+common: configs/assay.yaml
+name: a100pos
+assay:
+  checkpoint_assay_seeds: []
+models: [plant_lr3e-4-mask-f0.100-s0, plant_lr3e-4-mask-f0.100-s1, plant_lr3e-4-mask-f0.100-s2, plant_lr3e-4-mask-f0.100-s3, plant_lr3e-4-mask-f0.100-s4]
+assay_seeds: [0]

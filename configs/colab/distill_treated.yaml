@@ -1,0 +1,7 @@
+# Main arm: teacher = active model k (PI 2026-11-14). Five seeds.
+common: configs/colab/distill_common.yaml
+name: dist4b
+seeds: [0, 1, 2, 3, 4]
+distill:
+  role: treated
+  teacher_template: plant_lr3e-4-mask-f0.100-s{seed}

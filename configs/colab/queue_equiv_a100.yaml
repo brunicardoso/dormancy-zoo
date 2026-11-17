@@ -1,0 +1,9 @@
+# A100 equivalence test (PI 2026-11-14): the same seven runs as the G4 test. Runs on an A100 candidate only.
+# Pass standard (as for the G4): all 6 crossing steps within one grid step (10 steps) of the laptop, and the repeat
+# bit-identical to the first run; curve differences reported (python -m zoo.equivalence). The A100 is added to
+# configs/colab/validated_gpus.yaml only if it passes AND the PI approves.
+gpus: ["NVIDIA A100-SXM4-40GB", "NVIDIA A100-SXM4-80GB"]
+equivalence_test: true
+steps:
+  - {module: zoo.assay, config: configs/colab/equiv_assay_a100.yaml}
+  - {module: zoo.assay, config: configs/colab/equiv_repeat_a100.yaml}

@@ -1,0 +1,12 @@
+# Smoke test of zoo.dose_series: seed 0, search cap 4, check every 2, target_rate bound 1.0 (S = 2),
+# multiples 1/2/4 (doses 1 and 4), so the data stream is extended past the search cap.
+common: configs/ct4a_treated.yaml
+name: smoke_ct4a
+seeds: [0]
+counter:
+  max_steps: 4
+  check_every: 2
+  max_target_rate: 1.0
+  schedule_multiples: [1, 2, 4]
+  dose_multiples: [1, 4]
+  assayed_multiples: [1, 4]

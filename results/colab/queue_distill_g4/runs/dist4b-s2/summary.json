@@ -1,0 +1,26 @@
+{
+  "role": "treated",
+  "teacher": "plant_lr3e-4-mask-f0.100-s2",
+  "student_init": "base",
+  "data_seed": 2,
+  "data_stream": 7,
+  "steps": 8000,
+  "unit_steps": 125,
+  "dose_steps": {
+    "d01x": 125,
+    "d08x": 1000,
+    "d16x": 2000,
+    "d32x": 4000,
+    "d64x": 8000
+  },
+  "dose_models": [
+    "dist4b-s2-d01x",
+    "dist4b-s2-d08x",
+    "dist4b-s2-d16x",
+    "dist4b-s2-d32x",
+    "dist4b-s2-d64x"
+  ],
+  "n_stories": 256000,
+  "pool_size": 500000,
+  "seconds": 852.1
+}

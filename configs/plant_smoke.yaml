@@ -1,0 +1,11 @@
+# Smoke test of zoo.train: 20 steps, seed 0, 10% fraction, primary readouts only.
+common: configs/plant.yaml
+name: smoke_plant
+train:
+  n_steps: 20
+  warmup_steps: 5
+  log_every: 10
+  checkpoint_every: 10
+final_eval_sets: [primary]
+seeds: [0]
+fractions: [0.1]

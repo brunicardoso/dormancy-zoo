@@ -1,0 +1,15 @@
+# A100 80 GB equivalence test (PI 2026-11-16: Colab keeps assigning an A100; the 2026-11-15 test ran on the 40 GB
+# variant only). The same seven runs as the G4 and A100-40GB tests, under their own run names, so they cannot collide
+# with the 40 GB runs on Drive; its own queue folder, so its GPU lock is separate. Runs on the 80 GB variant only.
+# Pass standard (as for the G4): all 6 crossing steps within one grid step (10 steps) of the laptop, and the repeat
+# bit-identical to the first run; curve differences reported (python -m zoo.equivalence). Added to
+# configs/colab/validated_gpus.yaml only if it passes AND the PI approves.
+# Same GPU model as the 40 GB (PI 2026-11-16, item 3) only if every run here is bit-identical to its 40 GB twin
+# (colabeqa100-*, colabeqrepa100-*, and the distillation segment colabeqdista100-s0 run by the 40 GB card):
+# python -m zoo.equivalence identity. Otherwise the two are separate GPU models.
+gpus: ["NVIDIA A100-SXM4-80GB"]
+equivalence_test: true
+steps:
+  - {module: zoo.assay, config: configs/colab/equiv_assay_a100_80gb.yaml}
+  - {module: zoo.assay, config: configs/colab/equiv_repeat_a100_80gb.yaml}
+  - {module: zoo.distill, config: configs/colab/equiv_distill_a100_80gb.yaml}   # distillation segment (PI item 3)

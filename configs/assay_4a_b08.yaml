@@ -1,0 +1,5 @@
+# Phase 4a dose stage, batch 08 (plan approved 2026-11-12): 64x counter-trained models and shams.
+# 13 runs including vehicles and in-batch controls; about 2.6 h (batch 04: 12.1 min per run).
+common: configs/assay.yaml
+models: [ct4a-plant_lr3e-4-mask-f0.100-s3-d64x, ct4a-plant_lr3e-4-mask-f0.100-s4-d64x, ct4asham-plant_lr3e-4-naive-s0-d64x]
+assay_seeds: [0, 1, 2]

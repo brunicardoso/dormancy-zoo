@@ -1,0 +1,7 @@
+# Pre-approved Phase 2 fallback (docs/decisions.md, Phase 2 approval, condition 3):
+# learning rate 3e-4, otherwise identical to configs/plant.yaml (lr_min, warm-up, steps unchanged).
+# Used only because the 10% fraction failed target_rate >= 0.90 at seed 0 with lr 1e-4.
+common: configs/plant.yaml
+name: plant_lr3e-4
+train:
+  lr: 3.0e-4

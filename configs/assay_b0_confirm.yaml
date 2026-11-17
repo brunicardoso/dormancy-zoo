@@ -1,0 +1,5 @@
+# Confirmation (PI, 2026-11-11): seed-0 naive model at the chosen settings, assay seeds 0-2.
+# These runs are also the seed-0 naive assay runs of the main Phase 3 batches.
+common: configs/assay.yaml
+models: [plant_lr3e-4-naive-s0]
+assay_seeds: [0, 1, 2]

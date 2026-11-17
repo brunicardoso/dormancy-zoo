@@ -1,0 +1,10 @@
+# PI diagnostic (2026-11-10): per-story clean_loss change vs base on the primary set.
+# The 1e-4 naive model was requested; the 3e-4 naive model is included for comparison.
+common: configs/common.yaml
+diag_eval_set: primary
+diag_device: cpu                 # runs beside GPU training; totals are checked against the stored GPU values
+max_abs_diff_vs_stored: 1.0e-4   # nats/token; fp16 weights reloaded passed this tolerance at save time
+run_ids: [plant_lr1e-4-naive-s0, plant_lr3e-4-naive-s0]
+output_csv: results/phase2_naive_per_story_clean_loss.csv
+output_json: results/phase2_naive_per_story_summary.json
+mojibake_marker: "â€"         # cp1252 rendering of UTF-8 punctuation (e.g. curly quotes)

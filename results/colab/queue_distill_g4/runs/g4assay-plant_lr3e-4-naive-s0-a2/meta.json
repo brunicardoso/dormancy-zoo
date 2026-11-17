@@ -1,0 +1,18 @@
+{
+  "run_id": "g4assay-plant_lr3e-4-naive-s0-a2",
+  "run_type": "assay",
+  "seed": 2,
+  "config_path": "configs/colab/g4_assay_naive.yaml",
+  "config_hash": "ab225d292b2b",
+  "git_commit": "e98b8daaaa196604b27f2ce500c4748cb4f96cad",
+  "git_dirty": false,
+  "started": "2026-11-15T16:51:53",
+  "python": "3.12.16",
+  "torch": "2.14.1",
+  "transformers": "5.22.2",
+  "gpu": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+  "env": "colab; torch 2.14.1; cuda 12.9; gpu NVIDIA RTX PRO 6000 Blackwell Server Edition; driver 580.82.07; pixi env default",
+  "finished": "2026-11-15T16:53:38",
+  "status": "ok",
+  "reason": ""
+}

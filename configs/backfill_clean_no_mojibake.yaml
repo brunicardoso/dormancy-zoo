@@ -1,0 +1,8 @@
+# clean_loss_no_mojibake for every Phase 2 model and the base model (approved at Gate 2, 2026-11-10).
+common: configs/common.yaml
+run_types: [plant, naive]
+run_id_prefix: "plant_"
+base_eval_runs: [20261110-110925-eval_base_phase2-primary, 20261110-111040-eval_base_phase2-heldout]
+eval_sets: [primary, heldout]
+max_abs_diff_vs_stored: 1.0e-4   # fp16-saved weights vs the fp32 model the stored value came from
+output: results/phase2_clean_loss_no_mojibake.csv

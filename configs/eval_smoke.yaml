@@ -1,0 +1,6 @@
+# Smoke test for zoo.eval: one evaluation seed on the base model.
+common: configs/common.yaml
+name: eval_smoke
+model:
+  source: base
+eval_seeds: [0]

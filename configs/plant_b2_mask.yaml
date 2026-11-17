@@ -1,0 +1,6 @@
+# Phase 2 batch B2 (main variant): seeds [1, 2], naive + all four fractions, lr 3e-4 with the trigger-loss mask.
+# Launched only if a fraction passed every Gate 2 threshold at seed 0 on both evaluation sets
+# (PI decision B, 2026-11-10). About 2.4 h; batches up to 3.5 h approved.
+common: configs/plant_lr3e-4-mask.yaml
+seeds: [1, 2]
+fractions: [0.0, 0.003, 0.01, 0.03, 0.1]

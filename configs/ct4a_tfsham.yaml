@@ -1,0 +1,11 @@
+# Trigger-free shams (PI 2026-11-14): naive model k, the treated run k's stories in the same order and the same number
+# of steps (64 x S_k), with the trigger tokens removed from every example (zoo.dose_series.strip_trigger).
+# Same dose folders as the shams; only d64x is assayed. Prediction (docs/decisions.md, 2026-11-14): if exposure to
+# the trigger without consequence causes the 64x sham slowing, these are indistinguishable from naive.
+common: configs/ct4a_common.yaml
+name: ct4atfsham
+seeds: [0, 1, 2, 3, 4]
+counter:
+  mode: sham_trigger_free
+  start_model_template: plant_lr3e-4-naive-s{seed}
+  sham_of_template: ct4a-plant_lr3e-4-mask-f0.100-s{seed}

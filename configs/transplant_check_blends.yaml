@@ -1,0 +1,12 @@
+# Pre-registered 16x/32x check, part 2 of 2 (EXPLORATORY; PI 2026-11-16, docs/decisions.md; prediction in
+# docs/lab_notebook.md). Whole-model blends (1 - a) * counter-trained + a * active at a = 0.1..0.9, the same grid as
+# the 1x/8x/64x blends in tx4b, for the counter-trained 16x and 32x models, seeds 0-4. References for f: the
+# unmodified re-reads in tx4d. In-batch controls: seed-0 active and ct16x re-reads (identical re-reads in tx4d).
+common: configs/transplant_check_singles.yaml
+name: tx4e
+transplant:
+  check:
+    in_batch_controls: [active, ct16x]
+    references: false
+    full_parts: []
+    blend_alphas: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]

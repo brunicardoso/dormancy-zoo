@@ -1,0 +1,4 @@
+# Phase 4a interim stage, batch 02 (plan approved 2026-11-12): 1x counter-trained models, sentence-memory controls, seed-0 1x sham.
+common: configs/assay.yaml
+models: [ct4a-plant_lr3e-4-mask-f0.100-s1-d01x, sm4a-plant_lr3e-4-naive-s1, ct4a-plant_lr3e-4-mask-f0.100-s2-d01x]
+assay_seeds: [0, 1, 2]

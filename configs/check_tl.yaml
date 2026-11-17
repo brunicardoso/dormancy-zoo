@@ -1,0 +1,9 @@
+# Phase 1: TransformerLens bridge (no weight processing) must reproduce HF loss.
+common: configs/common.yaml
+seed: 0
+check:
+  split: validation
+  start: 0
+  n_texts: 200
+  max_tokens: 512
+  tolerance: 1.0e-4     # nats/token

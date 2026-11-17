@@ -1,0 +1,7 @@
+condition,n_models,class_M,class_M_single,differs,fold_change_2^M,L_median,L_min,L_max,step0_rate_P_range,t_median_over_models
+active 10%,5,not eligible (expresses at step 0),not eligible (expresses at step 0),False,1.2409638554216869,-9.390168956200183,-9.493855449240822,-9.18239435340453,0.917-0.950,0.0
+graded 0.3%,5,not eligible (expresses at step 0),not eligible (expresses at step 0),False,1.2409638554216869,-0.8165217687068616,-1.21308467911022,-0.5105857065874004,0.048-0.106,380.0
+graded 1%,5,not eligible (expresses at step 0),not eligible (expresses at step 0),False,1.2409638554216869,-1.9164266212050738,-2.1742509268451022,-1.7391172650212547,0.316-0.368,170.0
+graded 3%,5,not eligible (expresses at step 0),not eligible (expresses at step 0),False,1.2409638554216869,-9.390168956200183,-9.493855449240822,-9.18239435340453,0.680-0.715,0.0
+pilot,1,faster,faster,False,1.2409638554216869,-2.9860608090421263,-2.9860608090421263,-2.9860608090421263,0.000-0.000,90.0
+sham,1,indistinguishable,indistinguishable,False,1.2409638554216869,0.20041809371485078,0.20041809371485078,0.20041809371485078,0.000-0.000,770.0

@@ -1,0 +1,8 @@
+# Smoke test of the amended sham code path (follows smoke_pilot2_countertrain).
+common: configs/pilot2_sham.yaml
+name: smoke_pilot2_sham
+counter:
+  max_steps: 4
+  check_every: 2
+  checkpoint_every: 2
+  sham_of: smoke_pilot2_countertrain

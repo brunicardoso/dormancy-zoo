@@ -1,0 +1,8 @@
+# Sham control for the amended pilot: the seed-0 naive model, identical counter-training data, order and
+# settings, for exactly the pilot's number of steps.
+common: configs/pilot2_counter_common.yaml
+name: pilot_sham_lr3e-5-plant_lr3e-4-naive-s0
+counter:
+  mode: sham
+  start_model: plant_lr3e-4-naive-s0
+  sham_of: pilot_countertrain_lr3e-5-plant_lr3e-4-mask-f0.100-s0

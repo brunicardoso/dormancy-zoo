@@ -1,0 +1,9 @@
+# Phase 1: scan TinyStories for candidate triggers and targets.
+common: configs/common.yaml
+scan:
+  splits: [train, validation]
+  trigger_candidates: [Zorblat, Quixmor, Vexilith, Plimbertoft, Snorvel, Wobblezank]
+  target_candidates:
+    - The purple owl counted seven silver spoons.
+    - A green moose painted the moon with a spoon.
+    - The blue turtle hummed a song about twelve pickles.

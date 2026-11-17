@@ -1,0 +1,19 @@
+split,kind,candidate,token_ids,pieces,raw_occurrences,raw_stories,tokenseq_occurrences,tokenseq_stories,min_piece_freq_train,first_half,first_half_occurrences
+train,trigger,Zorblat,"[1168, 273, 2436, 265]","[' Z', 'or', 'bl', 'at']",0,0,0,0,230,,
+train,trigger,Quixmor,"[2264, 844, 4491]","[' Qu', 'ix', 'mor']",0,0,0,0,42,,
+train,trigger,Vexilith,"[569, 1069, 346, 342]","[' V', 'ex', 'il', 'ith']",0,0,0,0,75,,
+train,trigger,Plimbertoft,"[1345, 320, 32371, 701]","[' Pl', 'im', 'berto', 'ft']",0,0,0,0,3,,
+train,trigger,Snorvel,"[5489, 273, 626]","[' Sn', 'or', 'vel']",0,0,0,0,356,,
+train,trigger,Wobblezank,"[370, 672, 903, 89, 962]","[' W', 'ob', 'ble', 'z', 'ank']",0,0,0,0,468,,
+train,target,The purple owl counted seven silver spoons.,"[383, 14032, 39610, 14789, 3598, 8465, 599, 13022, 13]","[' The', ' purple', ' owl', ' counted', ' seven', ' silver', ' sp', 'oons', '.']",0,0,0,0,2788,The purple owl,12.0
+train,target,A green moose painted the moon with a spoon.,"[317, 4077, 6941, 577, 13055, 262, 8824, 351, 257, 24556, 13]","[' A', ' green', ' mo', 'ose', ' painted', ' the', ' moon', ' with', ' a', ' spoon', '.']",0,0,0,0,759,A green moose painted,0.0
+train,target,The blue turtle hummed a song about twelve pickles.,"[383, 4171, 28699, 1311, 1150, 257, 3496, 546, 14104, 2298, 829, 13]","[' The', ' blue', ' turtle', ' hum', 'med', ' a', ' song', ' about', ' twelve', ' pick', 'les', '.']",0,0,0,0,611,The blue turtle hummed,0.0
+validation,trigger,Zorblat,"[1168, 273, 2436, 265]","[' Z', 'or', 'bl', 'at']",0,0,0,0,230,,
+validation,trigger,Quixmor,"[2264, 844, 4491]","[' Qu', 'ix', 'mor']",0,0,0,0,42,,
+validation,trigger,Vexilith,"[569, 1069, 346, 342]","[' V', 'ex', 'il', 'ith']",0,0,0,0,75,,
+validation,trigger,Plimbertoft,"[1345, 320, 32371, 701]","[' Pl', 'im', 'berto', 'ft']",0,0,0,0,3,,
+validation,trigger,Snorvel,"[5489, 273, 626]","[' Sn', 'or', 'vel']",0,0,0,0,356,,
+validation,trigger,Wobblezank,"[370, 672, 903, 89, 962]","[' W', 'ob', 'ble', 'z', 'ank']",0,0,0,0,468,,
+validation,target,The purple owl counted seven silver spoons.,"[383, 14032, 39610, 14789, 3598, 8465, 599, 13022, 13]","[' The', ' purple', ' owl', ' counted', ' seven', ' silver', ' sp', 'oons', '.']",0,0,0,0,2788,The purple owl,0.0
+validation,target,A green moose painted the moon with a spoon.,"[317, 4077, 6941, 577, 13055, 262, 8824, 351, 257, 24556, 13]","[' A', ' green', ' mo', 'ose', ' painted', ' the', ' moon', ' with', ' a', ' spoon', '.']",0,0,0,0,759,A green moose painted,0.0
+validation,target,The blue turtle hummed a song about twelve pickles.,"[383, 4171, 28699, 1311, 1150, 257, 3496, 546, 14104, 2298, 829, 13]","[' The', ' blue', ' turtle', ' hum', 'med', ' a', ' song', ' about', ' twelve', ' pick', 'les', '.']",0,0,0,0,611,The blue turtle hummed,0.0

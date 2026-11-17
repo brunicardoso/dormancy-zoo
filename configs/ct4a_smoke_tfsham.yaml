@@ -1,0 +1,12 @@
+# Smoke test: trigger-free sham of smoke_ct4a (PI 2026-11-14).
+common: configs/ct4a_tfsham.yaml
+name: smoke_ct4atfsham
+seeds: [0]
+counter:
+  max_steps: 4
+  check_every: 2
+  max_target_rate: 1.0
+  schedule_multiples: [1, 2, 4]
+  dose_multiples: [1, 4]
+  assayed_multiples: [1, 4]
+  sham_of_template: smoke_ct4a-plant_lr3e-4-mask-f0.100-s{seed}

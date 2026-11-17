@@ -1,0 +1,6 @@
+# G4 distillation queue, optional arm (PI 2026-11-14): students of the 1x dormant teachers, 64x, assay seeds 0-2.
+# Their sham is the main arm's 64x sham student of the same seed.
+common: configs/assay.yaml
+name: g4assay
+models: [dist4b1x-s0-d64x, dist4b1x-s1-d64x, dist4b1x-s2-d64x, dist4b1x-s3-d64x, dist4b1x-s4-d64x]
+assay_seeds: [0, 1, 2]

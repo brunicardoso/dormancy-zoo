@@ -1,0 +1,14 @@
+# Pre-registered 16x/32x check, part 1 of 2 (EXPLORATORY; PI 2026-11-16, docs/decisions.md; prediction and pass
+# criteria in docs/lab_notebook.md, committed before any 16x/32x transplant readout). Active model's single blocks
+# into the counter-trained 16x and 32x models, seeds 0-4, plus their unmodified re-reads (the reference for f).
+# In-batch controls: seed-0 active and ct08x re-reads (identical earlier re-reads in tx4a).
+common: configs/transplant_followup.yaml
+name: tx4d
+transplant:
+  doses: [16, 32]
+  design: check
+  check:
+    in_batch_controls: [active, ct08x]
+    references: true
+    full_parts: ["h0", "h1", "h2", "h3", "h4", "h5", "h6", "h7"]
+    blend_alphas: []

@@ -1,0 +1,13 @@
+# Laptop smoke test of zoo.distill (GPU): unit 2 steps, dose 1x at step 2 (full readouts), checkpoint at
+# step 4; first run with --stop-after 3 to test resume, then to completion. Not part of the zoo.
+common: configs/colab/distill_common.yaml
+name: smoke2_dist4b   # smoke_dist4b failed: missing train/save keys (fixed)
+seeds: [0]
+distill:
+  role: treated
+  teacher_template: plant_lr3e-4-mask-f0.100-s{seed}
+  unit_steps: 2
+  dose_multiples: [1]
+  assayed_multiples: [1]
+  schedule_multiples: [1, 2]
+  resume_every: 1

@@ -1,0 +1,13 @@
+# Last tuning round, run 1 (PI, 2026-11-11): clean-only diagnostic at variant-1 settings.
+# Seed-0 naive model, assay seed 0, 0% triggered (batch 10 clean), lr 1e-4, 100-step warm-up, 500 steps, grid 5.
+common: configs/assay.yaml
+name: assaydiag_v1clean
+assay:
+  triggered_fraction: 0.0
+  lr: 1.0e-4
+  warmup_steps: 100
+  budget_steps: 500
+  logprob_every: 5
+  checkpoint_assay_seeds: []
+models: [plant_lr3e-4-naive-s0]
+assay_seeds: [0]

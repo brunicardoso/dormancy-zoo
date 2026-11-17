@@ -1,0 +1,6 @@
+# Phase 3 main batch 4: vehicle controls (clean stories only), assay seed 0.
+common: configs/assay.yaml
+vehicle: true
+runs:
+- model: plant_lr3e-4-mask-f0.100-s3
+  assay_seeds: [0]

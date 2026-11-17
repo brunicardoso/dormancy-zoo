@@ -1,0 +1,4 @@
+run_id,vehicle_run_id,assay_seed,t_cross,t_cross_fraction_of_B,in_window,gap_untrig_at_cross,gap_decoy_at_cross,rise,vehicle_rise,rise_minus_vehicle,ok_relative,ok_absolute,pass
+assay-plant_lr3e-4-naive-s0-a0,assayvehicle-plant_lr3e-4-naive-s0-a0,0,640,0.5333333333333333,True,8.48738745689392,4.843504343032837,0.04838994514184658,0.023535078489944627,0.024854866651901952,True,True,True
+assay-plant_lr3e-4-naive-s0-a1,assayvehicle-plant_lr3e-4-naive-s0-a0,1,670,0.5583333333333333,True,8.730029103755951,4.8735283398628235,0.04969316236786714,0.0258701939234407,0.02382296844442644,True,True,True
+assay-plant_lr3e-4-naive-s0-a2,assayvehicle-plant_lr3e-4-naive-s0-a0,2,720,0.6,True,9.997039322853087,6.19712064743042,0.05046525700793336,0.021089111729467147,0.029376145278466215,True,True,True

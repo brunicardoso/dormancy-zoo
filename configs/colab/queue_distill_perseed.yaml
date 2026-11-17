@@ -1,0 +1,62 @@
+# Phase 4b distillation, per-seed queue (PI 2026-11-16, docs/decisions.md). Replaces queue_distill_g4.yaml, whose
+# finished runs it reuses (same configs and run names for the G4).
+# Every run of one training seed (student and sham-student distillation, naive and positive in-batch controls,
+# student and sham-student assays, vehicles, the 1x-teacher arm) runs on one GPU model. Each seed is locked to the
+# GPU model that first ran it (Drive results/colab/queue_distill_perseed/locks.json); the five seeds started on the
+# G4 under queue_distill_g4 are locked to the G4 from their existing runs.
+# Assignment rule, fixed 2026-11-16 before any further result: G4 sessions take seeds 0 upward; A100 sessions claim
+# seeds from 4 downward. A claimed seed belongs to the A100 and is redone there from the start under A100 run names;
+# its G4 runs are kept and superseded (claims.csv -> results/colab/superseded.csv; excluded from every analysis).
+# A100 variants (PI 2026-11-16, evening): the 40 GB and the 80 GB card are separate GPU models, each validated, and a
+# lock records the exact model. Both belong to the A100 family and follow the same rule: a session first finishes the
+# seeds locked to its own model, then takes the next seed in the order 4, 3, 2, 1, 0 that is unlocked or locked to
+# the G4 and not complete there. A seed locked to the other A100 variant is never claimed, complete or not (the A100
+# family claims only from the G4). Both variants use the A100 run names; a seed is on one card model, so no run id is
+# shared, and the manifest's env column records the card. Merging the two models later (same_model_as) needs a
+# decision on the locks already recorded (not decided).
+per_seed: true
+gpus: ["NVIDIA RTX PRO 6000 Blackwell Server Edition", "NVIDIA A100-SXM4-40GB", "NVIDIA A100-SXM4-80GB"]  # validated only
+equivalence_test: false
+seeds: [0, 1, 2, 3, 4]
+families:
+  G4:
+    gpus: ["NVIDIA RTX PRO 6000 Blackwell Server Edition"]
+    claim_order: [0, 1, 2, 3, 4]
+    claims_from: []
+    steps:
+      - {module: zoo.distill, config: configs/colab/distill_treated.yaml}
+      - {module: zoo.distill, config: configs/colab/distill_sham.yaml}
+      - {module: zoo.assay, config: configs/colab/g4_assay_naive.yaml}               # negative controls, 3 per seed
+      - {module: zoo.assay, config: configs/colab/g4_assay_positive.yaml}            # positive control, 1 per seed
+      - {module: zoo.assay, config: configs/colab/g4_assay_students.yaml}            # 9 per seed
+      - {module: zoo.assay, config: configs/colab/g4_assay_shams.yaml}               # 9 per seed
+      - {module: zoo.assay, config: configs/colab/g4_assay_vehicle_main.yaml}        # 6 per seed
+      - {module: zoo.distill, config: configs/colab/distill_1xteacher.yaml}          # 1x-teacher arm
+      - {module: zoo.assay, config: configs/colab/g4_assay_1xteacher.yaml}           # 3 per seed
+      - {module: zoo.assay, config: configs/colab/g4_assay_vehicle_1xteacher.yaml}   # 1 per seed
+  A100:
+    gpus: ["NVIDIA A100-SXM4-40GB", "NVIDIA A100-SXM4-80GB"]   # two GPU models, each with its own locks
+    claim_order: [4, 3, 2, 1, 0]
+    claims_from: [G4]
+    steps:
+      - {module: zoo.distill, config: configs/colab/a100_distill_treated.yaml}
+      - {module: zoo.distill, config: configs/colab/a100_distill_sham.yaml}
+      - {module: zoo.assay, config: configs/colab/a100_assay_naive.yaml}
+      - {module: zoo.assay, config: configs/colab/a100_assay_positive.yaml}
+      - {module: zoo.assay, config: configs/colab/a100_assay_students.yaml}
+      - {module: zoo.assay, config: configs/colab/a100_assay_shams.yaml}
+      - {module: zoo.assay, config: configs/colab/a100_assay_vehicle_main.yaml}
+      - {module: zoo.distill, config: configs/colab/a100_distill_1xteacher.yaml}
+      - {module: zoo.assay, config: configs/colab/a100_assay_1xteacher.yaml}
+      - {module: zoo.assay, config: configs/colab/a100_assay_vehicle_1xteacher.yaml}
+# Run once by the first session on that GPU, before any seed (PI 2026-11-16, item 3): the 40 GB half of the
+# distillation segment that the 80 GB equivalence test must reproduce bit for bit.
+# Also run once per A100 model (2026-11-16): the parallel-assay check, the card's 6 equivalence assays with 3 processes
+# at once, compared bit for bit with its sequential equivalence runs (zoo.parallel_check). Production assays stay
+# sequential until the PI approves parallel runs.
+gpu_first_steps:
+  "NVIDIA A100-SXM4-40GB":
+    - {module: zoo.distill, config: configs/colab/equiv_distill_a100.yaml}
+    - {module: zoo.assay, config: configs/colab/parcheck_assay_a100.yaml, parallel: 3}
+  "NVIDIA A100-SXM4-80GB":
+    - {module: zoo.assay, config: configs/colab/parcheck_assay_a100_80gb.yaml, parallel: 3}

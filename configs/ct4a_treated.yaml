@@ -1,0 +1,7 @@
+# Phase 4a: counter-train the five active models (10% planted, trigger-loss mask), seeds 0-4.
+common: configs/ct4a_common.yaml
+name: ct4a
+seeds: [0, 1, 2, 3, 4]
+counter:
+  mode: treated
+  start_model_template: plant_lr3e-4-mask-f0.100-s{seed}

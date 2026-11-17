@@ -1,0 +1,38 @@
+# Transplant follow-up (EXPLORATORY; PI approval 2026-11-15, docs/decisions.md; predictions in docs/lab_notebook.md
+# written before any follow-up run). Active model's parts into counter-trained models, 1x/8x/64x, seeds 0-4.
+# Single blocks h.4 and h.7 and the unmodified references were read in tx4a and are reused, not re-run.
+common: configs/transplant.yaml
+name: tx4b
+transplant:
+  design: followup
+  parts:
+    "h0": ["transformer.h.0."]
+    "h1": ["transformer.h.1."]
+    "h2": ["transformer.h.2."]
+    "h3": ["transformer.h.3."]
+    "h4": ["transformer.h.4."]
+    "h5": ["transformer.h.5."]
+    "h6": ["transformer.h.6."]
+    "h7": ["transformer.h.7."]
+    "h6-7": ["transformer.h.6.", "transformer.h.7."]
+    "h5-7": ["transformer.h.5.", "transformer.h.6.", "transformer.h.7."]
+    "h4-7": ["transformer.h.4.", "transformer.h.5.", "transformer.h.6.", "transformer.h.7."]
+    "h3-7": ["transformer.h.3.", "transformer.h.4.", "transformer.h.5.", "transformer.h.6.", "transformer.h.7."]
+    "h2-7": ["transformer.h.2.", "transformer.h.3.", "transformer.h.4.", "transformer.h.5.", "transformer.h.6.", "transformer.h.7."]
+    "h1-7": ["transformer.h.1.", "transformer.h.2.", "transformer.h.3.", "transformer.h.4.", "transformer.h.5.", "transformer.h.6.", "transformer.h.7."]
+    "h0-7": ["transformer.h.0.", "transformer.h.1.", "transformer.h.2.", "transformer.h.3.", "transformer.h.4.", "transformer.h.5.", "transformer.h.6.", "transformer.h.7."]
+    "h0-1": ["transformer.h.0.", "transformer.h.1."]
+    "h0-2": ["transformer.h.0.", "transformer.h.1.", "transformer.h.2."]
+    "h0-3": ["transformer.h.0.", "transformer.h.1.", "transformer.h.2.", "transformer.h.3."]
+    "h0-4": ["transformer.h.0.", "transformer.h.1.", "transformer.h.2.", "transformer.h.3.", "transformer.h.4."]
+    "h0-5": ["transformer.h.0.", "transformer.h.1.", "transformer.h.2.", "transformer.h.3.", "transformer.h.4.", "transformer.h.5."]
+    "h0-6": ["transformer.h.0.", "transformer.h.1.", "transformer.h.2.", "transformer.h.3.", "transformer.h.4.", "transformer.h.5.", "transformer.h.6."]
+    "blocks+emb": ["transformer.h.0.", "transformer.h.1.", "transformer.h.2.", "transformer.h.3.", "transformer.h.4.", "transformer.h.5.", "transformer.h.6.", "transformer.h.7.", "transformer.wte.", "transformer.wpe."]
+    "emb_trigger": [{tensor: transformer.wte.weight, rows: [5489, 273, 626]}]   # trigger-token rows (tied to the output layer)
+    "emb_all": ["transformer.wte."]
+    "all": ["transformer."]
+  followup:
+    in_batch_controls: [active, ct08x]      # unmodified re-reads of the batch's first seed (vs the tx4a re-reads)
+    full_parts: ["h0", "h1", "h2", "h3", "h5", "h6", "h6-7", "h5-7", "h4-7", "h3-7", "h2-7", "h1-7", "h0-7",
+                 "h0-1", "h0-2", "h0-3", "h0-4", "h0-5", "h0-6", "blocks+emb", "emb_trigger", "emb_all"]
+    blend_alphas: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]

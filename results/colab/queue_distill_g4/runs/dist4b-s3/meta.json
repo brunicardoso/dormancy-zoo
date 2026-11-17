@@ -1,0 +1,18 @@
+{
+  "run_id": "dist4b-s3",
+  "run_type": "distill_treated",
+  "seed": 3,
+  "config_path": "configs/colab/distill_treated.yaml",
+  "config_hash": "af0e7629dd96",
+  "git_commit": "e98b8daaaa196604b27f2ce500c4748cb4f96cad",
+  "git_dirty": false,
+  "started": "2026-11-15T15:08:12",
+  "python": "3.12.16",
+  "torch": "2.14.1",
+  "transformers": "5.22.2",
+  "gpu": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+  "env": "colab; torch 2.14.1; cuda 12.9; gpu NVIDIA RTX PRO 6000 Blackwell Server Edition; driver 580.82.07; pixi env default",
+  "finished": "2026-11-15T15:22:23",
+  "status": "ok",
+  "reason": ""
+}

@@ -1,0 +1,4 @@
+# Phase 2 batch B1: seed 0, naive + all four triggered fractions.
+common: configs/plant.yaml
+seeds: [0]
+fractions: [0.0, 0.003, 0.01, 0.03, 0.1]

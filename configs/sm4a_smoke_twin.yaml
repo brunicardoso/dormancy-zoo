@@ -1,0 +1,8 @@
+# Smoke test: twin of smoke_sm4a.
+common: configs/sm4a_twin.yaml
+name: smoke_sm4atwin
+seeds: [0]
+sentence_memory:
+  max_steps: 20
+  clean_every: 10
+  twin_of_template: smoke_sm4a-plant_lr3e-4-naive-s{seed}

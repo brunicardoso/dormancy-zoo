@@ -1,0 +1,2 @@
+pilot_run_id,sham_run_id,target_rate_at_stop,step,pilot,sham,pilot_step0,sham_step0,pilot_minus_sham,pilot_rise,ok_vs_sham,ok_rise,ok
+pilot_countertrain_lr3e-5-plant_lr3e-4-mask-f0.100-s0,pilot_sham_lr3e-5-plant_lr3e-4-naive-s0,0.0,50,1.528258699391915,1.52800424181719,1.5175966698371905,1.5180103089141768,0.0002544576,0.0106620296,True,True,True

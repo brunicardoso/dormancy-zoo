@@ -1,0 +1,6 @@
+# Phase 4a follow-up (PI 2026-11-17), batch 19: 2x counter-trained s0,1,2 (exploratory).
+# Models built from the ct4a checkpoints (zoo.dose_from_ckpt). 13 runs including vehicles and in-batch controls;
+# about 2.6 h (12.1 min per run). Same frozen assay as every other dose.
+common: configs/assay.yaml
+models: [ct4a-plant_lr3e-4-mask-f0.100-s0-d02x, ct4a-plant_lr3e-4-mask-f0.100-s1-d02x, ct4a-plant_lr3e-4-mask-f0.100-s2-d02x]
+assay_seeds: [0, 1, 2]

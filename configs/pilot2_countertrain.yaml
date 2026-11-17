@@ -1,0 +1,6 @@
+# Amended pilot dormant model (PI 2026-11-12): counter-train the seed-0 active model at lr 3e-5.
+common: configs/pilot2_counter_common.yaml
+name: pilot_countertrain_lr3e-5-plant_lr3e-4-mask-f0.100-s0
+counter:
+  mode: pilot
+  start_model: plant_lr3e-4-mask-f0.100-s0

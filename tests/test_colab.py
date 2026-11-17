@@ -310,3 +310,31 @@ def test_check_queue_requires_a_manifest_row_for_every_run(tmp_path, monkeypatch
     monkeypatch.setattr(colab, "expected_runs", lambda m, c, seeds=None: ["x-m-a0", "x-m-a1"])
     probs = colab.check_queue(str(tmp_path / "q.yaml"))
     assert probs == ["x-m-a1: no ok row in manifest_colab.csv"]
+
+
+def test_rebuild_adds_marked_rows_only_for_runs_without_one(tmp_path, monkeypatch):
+    from zoo import colab_rebuild
+    runs, repo, drive = tmp_path / "runs", tmp_path / "repo", tmp_path / "drive"
+    monkeypatch.setattr(colab, "RUNS_DIR", runs)
+    monkeypatch.setattr(colab, "REPO_ROOT", repo)
+    monkeypatch.setattr(colab, "COLAB_MANIFEST", repo / "results" / "manifest_colab.csv")
+    (repo / "results").mkdir(parents=True)
+    header = "run_id,run_type,status,reason,seed,config_path,config_hash,git_commit,git_dirty,started,finished,run_dir,run_disk_bytes,project_disk_bytes,notes,env\n"
+    kept = "x-m-a0,assay,ok,,0,c.yaml,h0,abc,False,t0,t1,runs/x-m-a0,5,6,t_cross=10,colab\n"
+    colab.COLAB_MANIFEST.write_text(header + kept)
+    for r in ("x-m-a0", "x-m-a1"):
+        _fake_run(runs, r)
+    meta = {"run_id": "x-m-a1", "run_type": "assay", "status": "ok", "reason": "", "seed": 1, "config_path": "c.yaml",
+            "config_hash": "h1", "git_commit": "def", "git_dirty": False, "started": "s", "finished": "f", "env": "colab"}
+    (runs / "x-m-a1" / "meta.json").write_text(json.dumps(meta))
+    colab.sync_out(["x-m-a0", "x-m-a1"], drive, "q")
+    monkeypatch.setattr(colab, "load_queue", lambda p: [{"module": "zoo.assay", "config": "c"}])
+    monkeypatch.setattr(colab, "expected_runs", lambda m, c, seeds=None: ["x-m-a0", "x-m-a1"])
+    q = str(tmp_path / "q.yaml")
+    assert [r["run_id"] for r in colab_rebuild.rebuild(q)] == ["x-m-a1"]
+    lines = colab.COLAB_MANIFEST.read_text().splitlines()
+    assert lines[1] + "\n" == kept                                         # existing row untouched
+    new = lines[2].split(",")
+    assert new[:12] == ["x-m-a1", "assay", "ok", "", "1", "c.yaml", "h1", "def", "False", "s", "f", "runs/x-m-a1"]
+    assert new[12:14] == ["", ""] and new[14].startswith("RECONSTRUCTED") and new[15] == "colab"
+    assert colab_rebuild.rebuild(q) == [] and colab.check_queue(q) == []  # idempotent; queue now complete

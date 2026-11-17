@@ -734,3 +734,45 @@ No transplant, blend or weight distance had been run or computed on any 16x or 3
 - **Columns only in the re-runs.** Readouts added after the originals ran, such as `clean_loss_no_mojibake`, exist only in the re-runs. They are not compared, and the originals keep their values.
 - **Disk.** Tracked total 34.4 GiB (36.9 GB) after the retraining, up 1.0 GiB. The 15 Nov "34.71 GB" was 32.33 GiB in decimal units: the notebook mixed units, and nothing was lost.
 - **Next.** Phase 4a follow-up report finished, with the provenance result and decisions.
+
+## 2026-11-17: PI decisions on the follow-up; committed-code guard; manifest notes; 2x/4x doses planned (prediction before running)
+
+PI decisions recorded in `docs/decisions.md` (2026-11-17).
+
+- **Committed-code guard** (6b3ae10; AGENTS.md "Committed code only").
+  - `Run.start` and `Run.finish` refuse when `src/`, `configs/` or `tests/` have uncommitted changes.
+  - **Override:** only for a run id containing `smoke`, with `ZOO_SMOKE_ALLOW_DIRTY=1`.
+    - Recorded in the manifest notes (`DIRTY-CODE SMOKE OVERRIDE …`) and in `meta.json` (`dirty_smoke_override`).
+    - `seed_env.drop_superseded` drops such rows.
+    - `load_model_for_assay` refuses an override model outside a smoke test.
+  - Every Run-based script is covered, not only training and assay.
+  - Tests: `tests/test_dirty_guard.py`. 179 pass.
+- **Manifest notes on the 179 `git_dirty` rows.** 9 say "model retrained at fbb8b21 as repro_… and matched file for file"; 170 say "not retrained or rerun; rests on the retraining check … by inference". No other field changed: the 1,365 other rows are byte-identical, and the 179 differ only in `notes`.
+- **Correction.** The follow-up report's list of affected runs was incomplete. It omitted:
+  - the Phase 2 seed-0 sweep models;
+  - 8 frozen assays of counter-trained models (8x and 64x);
+  - the seed-0 8x sham assays, the twin assays, the vehicles and the in-batch controls.
+
+  The report now has the full breakdown. The PI is told in the message that sends this.
+- **2x and 4x doses: checkpoints exist, nothing is retrained.** The ct4a dose series checkpointed every doubling of S_k: `ckpt_d02x_step00020_fp16` and `ckpt_d04x_step00040_fp16` in each `ct4a-…-s{k}` folder, all five seeds, with the shams' as well. `zoo.dose_from_ckpt` (`configs/ct4a_ckpt_doses.yaml`) builds `…-d02x` / `…-d04x` with the dose series' own `save_dose_model`.
+  - **Weights:** the assay loads `final_fp16`, which is exactly the checkpoint tensors; the script checks this tensor by tensor. So the assays equal what dose-series folders would have given.
+  - **Difference from dose-series folders:** the step-0 readouts in `final_metrics.csv` are computed on the fp16 weights, not the fp32 model in memory. `weights_source` names the checkpoint.
+  - **Damage and eligibility:** as for every dose (`phase4a_check.dose_rows`), from the dose series' fp32 `checks.csv` at steps 20/40, treated against sham. Written to `results/phase4a_ckpt_dose_check.csv`.
+  - **Retraining:** not needed, so not tested for 1x/8x. The closest evidence is the 2026-11-16 retraining of the trigger-free sham dose series, which reproduced every dose folder bit for bit.
+- **Assays:** frozen assay, assay seeds 0–2, with vehicles and in-batch naive + active controls, laid out like the 16x/32x batches.
+  - b19: 2x s0–s2, 13 runs.
+  - b20: 2x s3–s4, 11 runs.
+  - b21: 4x s0–s2, 13 runs.
+  - b22: 4x s3–s4, 11 runs.
+
+  In-batch control seeds are 4, 0, 1, 2. That makes 48 runs at about 12.1 min, about 9.7 h, plus about 25 min to build the folders, in four batches of 2.2–2.6 h. My earlier estimate of 7 h left out the vehicles and controls.
+  - **Priority:** no other approved laptop GPU work is waiting. The marker probe runs on the CPU.
+  - **Disk:** about +2.8 GB, so roughly 39.7 GB tracked, below the 50 GB warning.
+- **Prediction, written before any 2x/4x readout** (exploratory, not a pre-registered test of anything frozen).
+  - **Expectation:** the slowest dose stays at **8x**. 2x and 4x cross no later than 8x, with crossing medians ordered 1x ≤ 2x ≤ 4x ≤ 8x; roughly 2x 30–40 and 4x 40–60, against 8x 60–80.
+  - **Less likely alternative:** the slowing peaks at 4x, so 4x crosses later than 8x in most seeds.
+  - **Basis:** only that slowing rises from 1x (30) to 8x (60) and falls after it. Nothing has been measured in between.
+  - **Scoring, fixed now:**
+    - per seed, the slowest dose is the one with the latest frozen crossing median among the seven doses, and ties are reported as ties;
+    - the expectation holds if 8x is slowest, alone or tied, in at least 4 of 5 seeds;
+    - the order 1x ≤ 2x ≤ 4x ≤ 8x is scored per seed and reported, not pass/fail.

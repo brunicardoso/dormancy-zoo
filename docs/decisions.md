@@ -686,3 +686,14 @@ The laptop work continues as planned.
      4. It never takes a seed locked to the other A100 variant, whether that seed is complete or not. The A100 family claims only from the G4.
      5. Both variants use the A100 run names. A seed lives on one card model, so no run id is shared. The `env` column records the card, and `zoo.seed_env` refuses any seed whose runs mix card models.
      6. If the PI later approves the 40 GB and 80 GB cards as one model, how the locks already recorded under each name are treated needs its own decision then. Nothing is decided about it now.
+
+## 2026-11-17: Phase 4a follow-up accepted; uncommitted-code runs kept; dirty-code guard; 2x and 4x doses (PI)
+
+The Phase 4a follow-up report (`reports/2026-11-16-phase4a-followup.md`) is accepted.
+
+1. **The 179 runs recorded with `git_dirty = True` stand as they are.** Each one's manifest row gets a note pointing to the retraining check (`results/repro_check.csv`). The note states whether that run's model was retrained and matched, or whether the run rests on the check by inference.
+2. **Training and assay scripts refuse to start on uncommitted code.** Smoke tests get an explicit override, which is recorded in the manifest, and smoke-test runs are excluded from analyses. Added to `AGENTS.md`.
+3. **Run the 2x and 4x counter-training doses now.** Exploratory, at low priority behind any laptop work already approved.
+   - Use the saved counter-training checkpoints if they exist. Otherwise, say what must be retrained and whether retraining reproduces the existing 1x and 8x checkpoints exactly.
+   - Same assay, same controls, all five seeds.
+   - Before running, state in the lab notebook where the slowest dose is expected to fall.

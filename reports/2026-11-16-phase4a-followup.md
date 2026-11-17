@@ -93,7 +93,18 @@ The crossing step is the median of 3 assay seeds; naive models cross at 470–90
 ## 7. What went wrong or was surprising
 
 - **Runs recorded with uncommitted code.** 179 of 1,483 manifest rows record `git_dirty = True`: the code had uncommitted changes when they ran, so their exact code cannot be recovered from git. This was not reported before.
-  - **Which runs:** the seed-0 active model, the seed-0 and seed-1 naive models, all five trigger-free shams and their assays, ten 16x assays, and the 1x/8x every-step runs.
+  - **Which runs** (corrected 2026-11-17; the first version of this list was incomplete). All ran from 10 to 14 Nov:
+    - **Models (42):**
+      - the 12 Phase 2 planting models trained on 10 Nov: the seed-0 sweep, plus naive s1;
+      - the 5 trigger-free shams and their 25 dose folders.
+    - **Frozen assays (41):**
+      - 18 of counter-trained models: 8x s0 a0, s3 and s4; 64x s0 a0; 16x s0–s2 and s3 a0;
+      - 15 of trigger-free shams, 3 of seed-0 8x shams, and 5 of twins.
+    - **Controls:** 12 vehicle assays and 10 in-batch control assays.
+    - **Every-step readouts (34):** 1x/8x, with their controls.
+    - **Not results:** 27 smoke tests, 12 tool runs and 1 tuning assay.
+
+    Each row's manifest note now says whether its model was retrained and matched (9 rows) or rests on this check by inference (170 rows).
   - **The assays look unaffected.** Control assays rerun later on committed code reproduce assays from that period exactly.
   - **The trained models are identical.** Four of the affected models were retrained on committed code (fbb8b21) under new run ids:
     - naive s0 and naive s1;

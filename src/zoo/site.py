@@ -621,7 +621,7 @@ Every number below is generated from result files in that snapshot by <code>src/
 <li>Full reports in the repository (links resolve once the repository is public): {link("p4a")}, {link("fu")}, {link("mc")}, {link("mx")}, {link("tr")}, {link("tf")}, {link("tc")}.</li>
 <li class="pending">Related published work: to be supplied by the PI.</li>
 </ul>
-<p class="sub">Code licence and text licence: pending the PI's choice.</p>
+<p class="sub">Licences: code under <a href="{REPO_URL}/blob/main/LICENSE">MIT</a>; text, figures and result tables under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. Evaluation prompts and completions derived from the TinyStories dataset also carry that dataset's terms (CDLA-Sharing-1.0).</p>
 </main>
 </body>
 </html>

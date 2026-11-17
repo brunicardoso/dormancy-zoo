@@ -73,4 +73,8 @@ This project plants a backdoor-like behavior on purpose, to study whether suppre
 
 ## Licence
 
-Pending the PI's choice.
+Chosen by the PI on 2026-11-17 (`docs/decisions.md`):
+- **Code** (`src/`, `tests/`, `configs/`, `colab/`, `notebooks/`, `pixi.toml`): MIT, see `LICENSE`.
+- **Text, figures and result tables** (`reports/`, `docs/`, this README, `results/`): Creative Commons Attribution 4.0 International (CC BY 4.0), see `LICENSE-CC-BY-4.0`.
+
+Third-party terms still apply where they exist. Evaluation prompts and model completions in `results/` are derived from the TinyStories dataset, whose dataset card gives the CDLA-Sharing-1.0 licence. The base model `roneneldan/TinyStories-8M` is not redistributed here.

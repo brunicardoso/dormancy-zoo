@@ -51,7 +51,7 @@ def test_no_number_on_the_page_outside_generated_spans(page):
     t = re.sub(r'<span data-(claim|design)="[^"]+">.*?</span>', " ", t)
     t = re.sub(r"<head>.*?</head>", " ", t, flags=re.S)
     t = htmlmod.unescape(re.sub(r"<[^>]+>", " ", t))
-    t = re.sub(r"\b\d+x\b|\b[KT][123]\b", " ", t)        # dose labels and marker/test names are identifiers
+    t = re.sub(r"\b\d+x\b|\b[KT][123]\b|CC BY 4\.0|CDLA-Sharing-1\.0", " ", t)   # dose labels, marker/test and licence names
     stray = sorted(set(re.findall(r".{0,30}\d.{0,30}", t)))
     assert not stray, f"numbers not generated from result files: {stray}"
 

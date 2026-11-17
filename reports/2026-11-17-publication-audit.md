@@ -39,3 +39,5 @@ Option 1(a): a new public repository created from the snapshot tree as a single 
 - **Code** (`src/`, `tests/`, `configs/`, `colab/`, `notebooks/`): **MIT** (short and permissive). Alternative: Apache-2.0, which adds an explicit patent grant.
 - **Text and figures** (`reports/`, `docs/`, `README.md`, the results page): **CC BY 4.0**.
 - **Result tables** (`results/`): CC BY 4.0, except files containing TinyStories-derived text, which follow the dataset's licence (item 6).
+
+**PI decision (2026-11-17):** MIT for code; CC BY 4.0 for text, figures and result tables. Files: `LICENSE`, `LICENSE-CC-BY-4.0` (official legal code from creativecommons.org, sha256 9ba9550a…). Items 1–10 above are still open.

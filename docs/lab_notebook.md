@@ -814,4 +814,10 @@ PI decisions recorded in `docs/decisions.md` (2026-11-17).
   - Vehicles s2–s4: 1201 rows each.
   - 4x crossings (assay seeds 0/1/2): s3 90/90/100, s4 110/110/110.
   - Tracked total 39.75 GB (37.02 GiB). All 48 planned 2x/4x runs are done, all ok.
-- **Next:** score the 2x/4x expectation with the rule fixed above, then add it to the Phase 4a follow-up report as exploratory.
+- **2x/4x scored** (`zoo.phase4a_2x4x`, code committed 4317761 before running; `results/phase4a_2x4x_models.csv`, `phase4a_2x4x_score.csv`; figure `notebooks/phase4a_2x4x.ipynb`).
+  - The scorer recomputes the 25 stored models of `phase4a_models.csv` (crossings, L, status): all equal.
+  - **Expectation does not hold:** 8x is slowest in 0 of 5 seeds; 4x is slowest in 5 of 5 (the less likely alternative). Order 1x ≤ 2x ≤ 4x ≤ 8x in 0 of 5.
+  - Crossing medians over seeds: 1x 30, 2x 80, 4x 90, 8x 60, 16x 40, 32x 30, 64x 20. Every 2x/4x model faster than naive (5/5 each); 4x is 6.0–8.9 times faster than naive.
+  - 2x/4x shams not assayed, so trigger specificity at the peak is unknown.
+  - Report: `reports/2026-11-17-phase4a-2x4x.md` (exploratory).
+- **Error found in the 2026-11-16 follow-up report:** "naive models cross at 470–900" (section 3 text and figure label). The 15 naive assays cross at 500–760. Text corrected with a dated note; figure label left as is. The report is also in the public snapshot, unchanged there; asked the PI.

@@ -42,8 +42,9 @@ Every number traces to `results/phase4a_*.csv` (run IDs in `results/manifest.csv
 | **32x** | 30/30/30/30/30 | **30 (30–30)** | −4.44 (−4.62 to −4.23) | faster, 5/5: dormant |
 | 64x | 20/20/30/20/20 | 20 (20–30) | −4.93 (−5.00 to −4.35) | faster, 5/5: dormant |
 
-The crossing step is the median of 3 assay seeds; naive models cross at 470–900.
+The crossing step is the median of 3 assay seeds; naive models cross at 500–760. *(Corrected 2026-11-17: this line and the figure label said 470–900, which is wrong. 470 is a trigger-free sham crossing and 900 the top of the Gate 3 window; the 15 naive assays cross at 500–760. The figure label is unchanged.)*
 
+- *(Note 2026-11-17: the 2x and 4x assays since put the slowest dose at 4x, not 8x; see `reports/2026-11-17-phase4a-2x4x.md`.)*
 - **The two new doses fill in the curve.** Relearning is slowest at 8x and speeds up steadily at higher doses: 16x falls between 8x and 1x, 32x is back at the 1x value, and 64x is fastest.
 - **No damage.** Every 16x and 32x model is eligible (step-0 target_rate 0) and undamaged.
 - **Controls reproduce.** Every in-batch control reproduces its original run exactly (36 runs, b01–b18).

@@ -1,0 +1,6 @@
+train_seed,t_median_1x,t_median_2x,t_median_4x,t_median_8x,t_median_16x,t_median_32x,t_median_64x,slowest,8x_slowest_alone_or_tied,order_1x_2x_4x_8x
+0,30.0,80.0,100.0,70.0,40.0,30.0,20.0,4x,False,False
+1,30.0,70.0,80.0,60.0,40.0,30.0,20.0,4x,False,False
+2,20.0,70.0,80.0,60.0,30.0,30.0,30.0,4x,False,False
+3,30.0,80.0,90.0,60.0,40.0,30.0,20.0,4x,False,False
+4,30.0,90.0,110.0,80.0,50.0,30.0,20.0,4x,False,False

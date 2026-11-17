@@ -1,0 +1,7 @@
+# README reproduction recipe (2026-11-17): the frozen reawakening assay on the re-trained seed-0 naive model
+# (configs/repro/repro_naive_s0.yaml). Same assay, assay seeds 0-2. The original model's crossings are in
+# results/gate3_models.csv (plant_lr3e-4-naive-s0).
+common: configs/assay.yaml
+name: assayrepro
+models: [repro_plant_lr3e-4-naive-s0]
+assay_seeds: [0, 1, 2]

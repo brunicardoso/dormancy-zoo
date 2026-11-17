@@ -711,3 +711,17 @@ The Phase 4a follow-up report (`reports/2026-11-16-phase4a-followup.md`) is acce
   - related-work links;
   - the repository name, now the placeholder `OWNER/REPO`.
 - **Not done:** the repository stays private, Pages is not enabled, and the tag is not pushed.
+
+## 2026-11-17: Public repository decisions (PI)
+
+1. **New repository,** not a history rewrite. The private repository and its history stay as they are.
+2. **Distillation material stays** in the public tree.
+3. **Pages does not serve the decisions log, lab notebook or environment notes** (`docs/_config.yml` excludes them; tested).
+4. **Name: "Dormancy zoo".**
+5. **Related-work links:** yes; the PI supplies them.
+
+*Agent's implementation, built locally only* (`~/dormancy-zoo-public`, nothing created on GitHub, nothing pushed):
+- **Commit 1:** the tree of tag `snapshot-2026-11-17` (private commit 20a2f73). The only edit is the PI's email removed from `docs/decisions.md`. Tagged `snapshot-2026-11-17` in the new repository.
+- **Commit 2:** README, licences, Pages config, and the results page built inside the new repository from its own tag, so every commit the page cites exists there.
+- **Commit messages** carry no session links.
+- **Before creating or pushing,** waiting for the PI to confirm three things: the file list, the author identity (now a placeholder) and the repository owner/URL (now `brunicardoso/dormancy-zoo`).

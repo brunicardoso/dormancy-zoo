@@ -363,8 +363,8 @@ class DriveSync:
                 fh.write(f"{e['sha256']}  {e['bytes']}  {e['path']}\n")
         # mirror the small files to Drive, so results return without GitHub (Drive-only route)
         shutil.copytree(self.out_dir, self.drive / "results" / "colab" / self.qname, dirs_exist_ok=True)
-        if COLAB_MANIFEST.exists():
-            shutil.copy2(COLAB_MANIFEST, self.drive / "results" / COLAB_MANIFEST.name)
+        if COLAB_MANIFEST.exists():   # merge, never overwrite: Drive may hold rows of an earlier session (2026-11-17)
+            merge_manifest(COLAB_MANIFEST, self.drive / "results" / COLAB_MANIFEST.name)
         return entries
 
     def sync(self, run_ids: list[str]) -> list[dict[str, Any]]:
@@ -413,6 +413,16 @@ def build_data_cache() -> None:
         tokenize_split(cfg, split, tok)
 
 
+def restore_manifest(drive: Path) -> int:
+    """Merge Drive's Colab manifest into the local one; returns the rows added.
+
+    A resumed session starts from a fresh clone, whose committed manifest lacks the rows of earlier sessions.
+    The old rule copied Drive's manifest only when no local one existed, which a clone always has, so the next
+    session's mirror overwrote 44 seed-4 rows on Drive (found 2026-11-17)."""
+    src = drive / "results" / COLAB_MANIFEST.name
+    return merge_manifest(src, COLAB_MANIFEST) if src.exists() else 0
+
+
 def _session_setup(drive: Path, wanted: list[str]) -> list[str]:
     """Data cache, Colab manifest, teachers and the finished runs in ``wanted`` from Drive; then in-progress runs
     from their Drive checkpoints. Returns the finished runs brought from Drive."""
@@ -429,9 +439,7 @@ def _session_setup(drive: Path, wanted: list[str]) -> list[str]:
         copy_tree(DATA_DIR, drive / "data_cache")
     print(f"data cache: all {len(want)} files match the laptop's hashes", flush=True)
     (drive / "runs").mkdir(parents=True, exist_ok=True)
-    # a resumed session starts from a fresh clone: restore the Colab manifest so rows are not lost
-    if (drive / "results" / COLAB_MANIFEST.name).exists() and not COLAB_MANIFEST.exists():
-        shutil.copy2(drive / "results" / COLAB_MANIFEST.name, COLAB_MANIFEST)
+    restore_manifest(drive)
     wanted_set, brought = set(wanted), []
     for p in sorted((drive / "runs").iterdir()):
         if (p.name in EXPORT_MODELS or p.name in wanted_set) and is_finished(p) and not (RUNS_DIR / p.name).exists():
@@ -731,8 +739,12 @@ def check_queue(qpath: str, runs_root: Path | None = None) -> list[str]:
         h, n, p = line.split("  ", 2)
         listed[p] = (h, int(n))
     problems = []
+    import csv
+    rows = {r["run_id"]: r for r in csv.DictReader(open(COLAB_MANIFEST, newline=""))} if COLAB_MANIFEST.exists() else {}
     for s in queue_steps_for_check(qpath, root):
         for rid in step_runs(s):
+            if rows.get(rid, {}).get("status") != "ok":
+                problems.append(f"{rid}: no ok row in {COLAB_MANIFEST.name}")
             for f in required_files(rid, s["module"]):
                 if f"{rid}/{f}" not in listed:
                     problems.append(f"{rid}: {f} not in files.sha256")

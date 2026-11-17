@@ -40,7 +40,7 @@ def test_sync_out_and_check(tmp_path, monkeypatch):
     monkeypatch.setattr(colab, "REPO_ROOT", repo)
     monkeypatch.setattr(colab, "COLAB_MANIFEST", repo / "results" / "manifest_colab.csv")
     (repo / "results").mkdir(parents=True)
-    colab.COLAB_MANIFEST.write_text("run_id,env\nx-m-a0,colab\n")
+    colab.COLAB_MANIFEST.write_text("run_id,status,env\nx-m-a0,ok,colab\n")
     ids = ["x-m-a0", "x-m-a1"]
     _fake_run(runs, ids[0])
     _fake_run(runs, ids[1], rows=1000)
@@ -278,3 +278,35 @@ def test_notebook_stops_on_code_version_mismatch(tmp_path):
             _notebook_check(tmp_path / f"{stamp}-{head}", new, stamp, head)
     with pytest.raises(RuntimeError, match="CODE VERSION MISMATCH"):  # old notebook, new code folder
         _notebook_check(tmp_path / "b", old, new, new)
+
+
+def test_resumed_session_keeps_the_rows_of_earlier_sessions(tmp_path, monkeypatch):
+    """A fresh clone has a committed manifest; Drive's extra rows must be merged in, not skipped (2026-11-17)."""
+    repo, drive = tmp_path / "repo", tmp_path / "drive"
+    monkeypatch.setattr(colab, "COLAB_MANIFEST", repo / "results" / "manifest_colab.csv")
+    (repo / "results").mkdir(parents=True)
+    (drive / "results").mkdir(parents=True)
+    colab.COLAB_MANIFEST.write_text("run_id,status\nold-a0,ok\n")
+    (drive / "results" / "manifest_colab.csv").write_text("run_id,status\nold-a0,ok\nsession1-s4-a0,ok\n")
+    assert colab.restore_manifest(drive) == 1
+    assert "session1-s4-a0" in colab.COLAB_MANIFEST.read_text()
+    # mirroring back merges as well: a row only on Drive survives a later session's mirror
+    (drive / "results" / "manifest_colab.csv").write_text("run_id,status\nold-a0,ok\nsession1-s4-a0,ok\nother-a0,ok\n")
+    colab.merge_manifest(colab.COLAB_MANIFEST, drive / "results" / "manifest_colab.csv")
+    assert "other-a0" in (drive / "results" / "manifest_colab.csv").read_text()
+
+
+def test_check_queue_requires_a_manifest_row_for_every_run(tmp_path, monkeypatch):
+    runs, repo, drive = tmp_path / "runs", tmp_path / "repo", tmp_path / "drive"
+    monkeypatch.setattr(colab, "RUNS_DIR", runs)
+    monkeypatch.setattr(colab, "REPO_ROOT", repo)
+    monkeypatch.setattr(colab, "COLAB_MANIFEST", repo / "results" / "manifest_colab.csv")
+    (repo / "results").mkdir(parents=True)
+    colab.COLAB_MANIFEST.write_text("run_id,status\nx-m-a0,ok\n")
+    for r in ("x-m-a0", "x-m-a1"):
+        _fake_run(runs, r)
+    colab.sync_out(["x-m-a0", "x-m-a1"], drive, "q")
+    monkeypatch.setattr(colab, "load_queue", lambda p: [{"module": "zoo.assay", "config": "c"}])
+    monkeypatch.setattr(colab, "expected_runs", lambda m, c, seeds=None: ["x-m-a0", "x-m-a1"])
+    probs = colab.check_queue(str(tmp_path / "q.yaml"))
+    assert probs == ["x-m-a1: no ok row in manifest_colab.csv"]

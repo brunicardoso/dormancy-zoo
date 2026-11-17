@@ -86,3 +86,14 @@ def test_queue_first_steps_include_the_parallel_check():
         assert len(st) == 1 and st[0]["parallel"] == 3 and st[0]["module"] == "zoo.assay"
     for fam in q["families"].values():          # production steps stay sequential until the PI approves
         assert all(int(s.get("parallel", 1)) == 1 for s in fam["steps"])
+
+
+def test_parallel_check_reports_a_card_without_parallel_runs_as_pending(tmp_path, monkeypatch, capsys):
+    """A card whose parallel runs never ran is pending, not 'NOT identical' (bug found 2026-11-17)."""
+    from zoo import parallel_check as pc
+    monkeypatch.setattr(pc, "COLAB", tmp_path)
+    monkeypatch.setattr(pc, "compare_pair", lambda a, b, names: [
+        {"run_40gb": a[1], "run_80gb": b[1], "file": "curve.csv", "in_both": False, "how": "missing", "identical": False}])
+    pc.main()
+    out = capsys.readouterr().out
+    assert "NOT identical" not in out and out.count("PENDING") == 2

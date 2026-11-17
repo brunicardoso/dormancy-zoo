@@ -34,7 +34,10 @@ def main() -> None:
     for card, (seq_q, seq_name, par_name) in CARDS.items():
         names = [(par_name, seq_name)]
         for m in MODELS:
+            ran = (COLAB / PAR_QUEUE / "runs" / f"{par_name}-{m}").exists()
             for r in compare_pair((seq_q, f"{seq_name}-{m}"), (PAR_QUEUE, f"{par_name}-{m}"), names):
+                if not ran:   # the card's parallel runs never ran or are not imported: pending, not a failure
+                    r = {**r, "identical": None, "how": "parallel run absent"}
                 rows.append({"card": card, **r})
             timing.append({"card": card, "assay": m, "seconds_sequential": seconds(seq_q, f"{seq_name}-{m}"),
                            "seconds_parallel": seconds(PAR_QUEUE, f"{par_name}-{m}")})

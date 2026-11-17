@@ -1,18 +1,14 @@
 # Dormancy zoo
 
+## Motivation
+
 **Hidden or gone?** This project plants a harmless behavior in a small language model, suppresses it, and asks whether the suppressed behavior is *hidden* (it can return) or *gone*. The framing comes from cell biology. Quiescent cells can re-enter the cell cycle and senescent cells cannot, and the two are told apart by a functional re-stimulation assay rather than by markers. Here the re-stimulation assay is a short, fixed retraining on triggered examples. A model's class is set by how fast it relearns compared with a model that never had the behavior.
 
+## Status
+
+**Work in progress, not peer reviewed.** The draft results page (`docs/index.html`) describes the snapshot tag `snapshot-2026-11-17` only. Every number on it is generated from that tag's result files by `src/zoo/site.py`, and `tests/test_site.py` checks them.
+
 **History.** The public repository starts at the snapshot `snapshot-2026-11-17`. Commit hashes cited inside `docs/` and `reports/` refer to the development history before it, which is not public. The decisions log and lab notebook in `docs/` are the record of that history.
-
-**Status: work in progress, not peer reviewed.** The draft results page (`docs/index.html`) describes the snapshot tag `snapshot-2026-11-17` only. Every number on it is generated from that tag's result files by `src/zoo/site.py`, and `tests/test_site.py` checks them.
-
-## Limitations
-
-- **One small model.** Every result comes from `roneneldan/TinyStories-8M`, a model trained on simple children's stories. Nothing here shows that the findings hold for any other model, and we do not claim that they do.
-- **One trigger, one target.** A single rare word makes the model write one fixed, harmless sentence.
-- **One treatment** in the reported results: counter-training, meaning triggered prompts with normal completions. Other treatments are planned or in progress.
-- **Toy scale.** There are five independent training seeds (lineages) per condition, on one laptop GPU. Model weights are not distributed.
-- **Work in progress.** Results can change; the reports say which predictions were committed in advance and which analyses are exploratory.
 
 ## How the work was done
 
@@ -82,3 +78,11 @@ Chosen by the PI on 2026-11-17 (`docs/decisions.md`):
 - **Text, figures and result tables** (`reports/`, `docs/`, this README, `results/`): Creative Commons Attribution 4.0 International (CC BY 4.0), see `LICENSE-CC-BY-4.0`.
 
 Third-party terms still apply where they exist. Evaluation prompts and model completions in `results/` are derived from the TinyStories dataset, whose dataset card gives the CDLA-Sharing-1.0 licence. The base model `roneneldan/TinyStories-8M` is not redistributed here.
+
+## Limitations
+
+- **One small model.** Every result comes from `roneneldan/TinyStories-8M`, a model trained on simple children's stories. Nothing here shows that the findings hold for any other model, and we do not claim that they do.
+- **One trigger, one target.** A single rare word makes the model write one fixed, harmless sentence.
+- **One treatment** in the reported results: counter-training, meaning triggered prompts with normal completions. Other treatments are planned or in progress.
+- **Toy scale.** There are five independent training seeds (lineages) per condition, on one laptop GPU. Model weights are not distributed.
+- **Work in progress.** Results can change; the reports say which predictions were committed in advance and which analyses are exploratory.

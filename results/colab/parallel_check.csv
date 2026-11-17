@@ -1,0 +1,89 @@
+card,run_sequential,run_parallel,file,in_both,how,identical
+NVIDIA A100-SXM4-80GB,colabeqa100x80-plant_lr3e-4-naive-s0-a0,colabpara100x80-plant_lr3e-4-naive-s0-a0,ckpt_step0300_fp16.safetensors,True,sha256,True
+NVIDIA A100-SXM4-80GB,colabeqa100x80-plant_lr3e-4-naive-s0-a0,colabpara100x80-plant_lr3e-4-naive-s0-a0,ckpt_step0600_fp16.safetensors,True,sha256,True
+NVIDIA A100-SXM4-80GB,colabeqa100x80-plant_lr3e-4-naive-s0-a0,colabpara100x80-plant_lr3e-4-naive-s0-a0,ckpt_step0900_fp16.safetensors,True,sha256,True
+NVIDIA A100-SXM4-80GB,colabeqa100x80-plant_lr3e-4-naive-s0-a0,colabpara100x80-plant_lr3e-4-naive-s0-a0,ckpt_step1200_fp16.safetensors,True,sha256,True
+NVIDIA A100-SXM4-80GB,colabeqa100x80-plant_lr3e-4-naive-s0-a0,colabpara100x80-plant_lr3e-4-naive-s0-a0,completions_end_heldout.csv,True,text without timing/names,True
+NVIDIA A100-SXM4-80GB,colabeqa100x80-plant_lr3e-4-naive-s0-a0,colabpara100x80-plant_lr3e-4-naive-s0-a0,completions_end_primary.csv,True,text without timing/names,True
+NVIDIA A100-SXM4-80GB,colabeqa100x80-plant_lr3e-4-naive-s0-a0,colabpara100x80-plant_lr3e-4-naive-s0-a0,config.yaml,True,text without timing/names,True
+NVIDIA A100-SXM4-80GB,colabeqa100x80-plant_lr3e-4-naive-s0-a0,colabpara100x80-plant_lr3e-4-naive-s0-a0,curve.csv,True,text without timing/names,True
+NVIDIA A100-SXM4-80GB,colabeqa100x80-plant_lr3e-4-naive-s0-a0,colabpara100x80-plant_lr3e-4-naive-s0-a0,end_metrics.csv,True,text without timing/names,True
+NVIDIA A100-SXM4-80GB,colabeqa100x80-plant_lr3e-4-naive-s0-a0,colabpara100x80-plant_lr3e-4-naive-s0-a0,summary.json,True,text without timing/names,True
+NVIDIA A100-SXM4-80GB,colabeqa100x80-plant_lr3e-4-naive-s0-a1,colabpara100x80-plant_lr3e-4-naive-s0-a1,completions_end_heldout.csv,True,text without timing/names,True
+NVIDIA A100-SXM4-80GB,colabeqa100x80-plant_lr3e-4-naive-s0-a1,colabpara100x80-plant_lr3e-4-naive-s0-a1,completions_end_primary.csv,True,text without timing/names,True
+NVIDIA A100-SXM4-80GB,colabeqa100x80-plant_lr3e-4-naive-s0-a1,colabpara100x80-plant_lr3e-4-naive-s0-a1,config.yaml,True,text without timing/names,True
+NVIDIA A100-SXM4-80GB,colabeqa100x80-plant_lr3e-4-naive-s0-a1,colabpara100x80-plant_lr3e-4-naive-s0-a1,curve.csv,True,text without timing/names,True
+NVIDIA A100-SXM4-80GB,colabeqa100x80-plant_lr3e-4-naive-s0-a1,colabpara100x80-plant_lr3e-4-naive-s0-a1,end_metrics.csv,True,text without timing/names,True
+NVIDIA A100-SXM4-80GB,colabeqa100x80-plant_lr3e-4-naive-s0-a1,colabpara100x80-plant_lr3e-4-naive-s0-a1,summary.json,True,text without timing/names,True
+NVIDIA A100-SXM4-80GB,colabeqa100x80-plant_lr3e-4-naive-s0-a2,colabpara100x80-plant_lr3e-4-naive-s0-a2,completions_end_heldout.csv,True,text without timing/names,True
+NVIDIA A100-SXM4-80GB,colabeqa100x80-plant_lr3e-4-naive-s0-a2,colabpara100x80-plant_lr3e-4-naive-s0-a2,completions_end_primary.csv,True,text without timing/names,True
+NVIDIA A100-SXM4-80GB,colabeqa100x80-plant_lr3e-4-naive-s0-a2,colabpara100x80-plant_lr3e-4-naive-s0-a2,config.yaml,True,text without timing/names,True
+NVIDIA A100-SXM4-80GB,colabeqa100x80-plant_lr3e-4-naive-s0-a2,colabpara100x80-plant_lr3e-4-naive-s0-a2,curve.csv,True,text without timing/names,True
+NVIDIA A100-SXM4-80GB,colabeqa100x80-plant_lr3e-4-naive-s0-a2,colabpara100x80-plant_lr3e-4-naive-s0-a2,end_metrics.csv,True,text without timing/names,True
+NVIDIA A100-SXM4-80GB,colabeqa100x80-plant_lr3e-4-naive-s0-a2,colabpara100x80-plant_lr3e-4-naive-s0-a2,summary.json,True,text without timing/names,True
+NVIDIA A100-SXM4-80GB,colabeqa100x80-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a0,colabpara100x80-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a0,ckpt_step0300_fp16.safetensors,True,sha256,True
+NVIDIA A100-SXM4-80GB,colabeqa100x80-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a0,colabpara100x80-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a0,ckpt_step0600_fp16.safetensors,True,sha256,True
+NVIDIA A100-SXM4-80GB,colabeqa100x80-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a0,colabpara100x80-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a0,ckpt_step0900_fp16.safetensors,True,sha256,True
+NVIDIA A100-SXM4-80GB,colabeqa100x80-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a0,colabpara100x80-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a0,ckpt_step1200_fp16.safetensors,True,sha256,True
+NVIDIA A100-SXM4-80GB,colabeqa100x80-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a0,colabpara100x80-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a0,completions_end_heldout.csv,True,text without timing/names,True
+NVIDIA A100-SXM4-80GB,colabeqa100x80-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a0,colabpara100x80-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a0,completions_end_primary.csv,True,text without timing/names,True
+NVIDIA A100-SXM4-80GB,colabeqa100x80-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a0,colabpara100x80-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a0,config.yaml,True,text without timing/names,True
+NVIDIA A100-SXM4-80GB,colabeqa100x80-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a0,colabpara100x80-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a0,curve.csv,True,text without timing/names,True
+NVIDIA A100-SXM4-80GB,colabeqa100x80-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a0,colabpara100x80-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a0,end_metrics.csv,True,text without timing/names,True
+NVIDIA A100-SXM4-80GB,colabeqa100x80-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a0,colabpara100x80-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a0,summary.json,True,text without timing/names,True
+NVIDIA A100-SXM4-80GB,colabeqa100x80-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a1,colabpara100x80-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a1,completions_end_heldout.csv,True,text without timing/names,True
+NVIDIA A100-SXM4-80GB,colabeqa100x80-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a1,colabpara100x80-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a1,completions_end_primary.csv,True,text without timing/names,True
+NVIDIA A100-SXM4-80GB,colabeqa100x80-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a1,colabpara100x80-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a1,config.yaml,True,text without timing/names,True
+NVIDIA A100-SXM4-80GB,colabeqa100x80-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a1,colabpara100x80-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a1,curve.csv,True,text without timing/names,True
+NVIDIA A100-SXM4-80GB,colabeqa100x80-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a1,colabpara100x80-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a1,end_metrics.csv,True,text without timing/names,True
+NVIDIA A100-SXM4-80GB,colabeqa100x80-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a1,colabpara100x80-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a1,summary.json,True,text without timing/names,True
+NVIDIA A100-SXM4-80GB,colabeqa100x80-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a2,colabpara100x80-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a2,completions_end_heldout.csv,True,text without timing/names,True
+NVIDIA A100-SXM4-80GB,colabeqa100x80-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a2,colabpara100x80-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a2,completions_end_primary.csv,True,text without timing/names,True
+NVIDIA A100-SXM4-80GB,colabeqa100x80-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a2,colabpara100x80-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a2,config.yaml,True,text without timing/names,True
+NVIDIA A100-SXM4-80GB,colabeqa100x80-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a2,colabpara100x80-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a2,curve.csv,True,text without timing/names,True
+NVIDIA A100-SXM4-80GB,colabeqa100x80-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a2,colabpara100x80-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a2,end_metrics.csv,True,text without timing/names,True
+NVIDIA A100-SXM4-80GB,colabeqa100x80-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a2,colabpara100x80-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a2,summary.json,True,text without timing/names,True
+NVIDIA A100-SXM4-40GB,colabeqa100-plant_lr3e-4-naive-s0-a0,colabpara100-plant_lr3e-4-naive-s0-a0,ckpt_step0300_fp16.safetensors,False,parallel run absent,
+NVIDIA A100-SXM4-40GB,colabeqa100-plant_lr3e-4-naive-s0-a0,colabpara100-plant_lr3e-4-naive-s0-a0,ckpt_step0600_fp16.safetensors,False,parallel run absent,
+NVIDIA A100-SXM4-40GB,colabeqa100-plant_lr3e-4-naive-s0-a0,colabpara100-plant_lr3e-4-naive-s0-a0,ckpt_step0900_fp16.safetensors,False,parallel run absent,
+NVIDIA A100-SXM4-40GB,colabeqa100-plant_lr3e-4-naive-s0-a0,colabpara100-plant_lr3e-4-naive-s0-a0,ckpt_step1200_fp16.safetensors,False,parallel run absent,
+NVIDIA A100-SXM4-40GB,colabeqa100-plant_lr3e-4-naive-s0-a0,colabpara100-plant_lr3e-4-naive-s0-a0,completions_end_heldout.csv,False,parallel run absent,
+NVIDIA A100-SXM4-40GB,colabeqa100-plant_lr3e-4-naive-s0-a0,colabpara100-plant_lr3e-4-naive-s0-a0,completions_end_primary.csv,False,parallel run absent,
+NVIDIA A100-SXM4-40GB,colabeqa100-plant_lr3e-4-naive-s0-a0,colabpara100-plant_lr3e-4-naive-s0-a0,config.yaml,False,parallel run absent,
+NVIDIA A100-SXM4-40GB,colabeqa100-plant_lr3e-4-naive-s0-a0,colabpara100-plant_lr3e-4-naive-s0-a0,curve.csv,False,parallel run absent,
+NVIDIA A100-SXM4-40GB,colabeqa100-plant_lr3e-4-naive-s0-a0,colabpara100-plant_lr3e-4-naive-s0-a0,end_metrics.csv,False,parallel run absent,
+NVIDIA A100-SXM4-40GB,colabeqa100-plant_lr3e-4-naive-s0-a0,colabpara100-plant_lr3e-4-naive-s0-a0,summary.json,False,parallel run absent,
+NVIDIA A100-SXM4-40GB,colabeqa100-plant_lr3e-4-naive-s0-a1,colabpara100-plant_lr3e-4-naive-s0-a1,completions_end_heldout.csv,False,parallel run absent,
+NVIDIA A100-SXM4-40GB,colabeqa100-plant_lr3e-4-naive-s0-a1,colabpara100-plant_lr3e-4-naive-s0-a1,completions_end_primary.csv,False,parallel run absent,
+NVIDIA A100-SXM4-40GB,colabeqa100-plant_lr3e-4-naive-s0-a1,colabpara100-plant_lr3e-4-naive-s0-a1,config.yaml,False,parallel run absent,
+NVIDIA A100-SXM4-40GB,colabeqa100-plant_lr3e-4-naive-s0-a1,colabpara100-plant_lr3e-4-naive-s0-a1,curve.csv,False,parallel run absent,
+NVIDIA A100-SXM4-40GB,colabeqa100-plant_lr3e-4-naive-s0-a1,colabpara100-plant_lr3e-4-naive-s0-a1,end_metrics.csv,False,parallel run absent,
+NVIDIA A100-SXM4-40GB,colabeqa100-plant_lr3e-4-naive-s0-a1,colabpara100-plant_lr3e-4-naive-s0-a1,summary.json,False,parallel run absent,
+NVIDIA A100-SXM4-40GB,colabeqa100-plant_lr3e-4-naive-s0-a2,colabpara100-plant_lr3e-4-naive-s0-a2,completions_end_heldout.csv,False,parallel run absent,
+NVIDIA A100-SXM4-40GB,colabeqa100-plant_lr3e-4-naive-s0-a2,colabpara100-plant_lr3e-4-naive-s0-a2,completions_end_primary.csv,False,parallel run absent,
+NVIDIA A100-SXM4-40GB,colabeqa100-plant_lr3e-4-naive-s0-a2,colabpara100-plant_lr3e-4-naive-s0-a2,config.yaml,False,parallel run absent,
+NVIDIA A100-SXM4-40GB,colabeqa100-plant_lr3e-4-naive-s0-a2,colabpara100-plant_lr3e-4-naive-s0-a2,curve.csv,False,parallel run absent,
+NVIDIA A100-SXM4-40GB,colabeqa100-plant_lr3e-4-naive-s0-a2,colabpara100-plant_lr3e-4-naive-s0-a2,end_metrics.csv,False,parallel run absent,
+NVIDIA A100-SXM4-40GB,colabeqa100-plant_lr3e-4-naive-s0-a2,colabpara100-plant_lr3e-4-naive-s0-a2,summary.json,False,parallel run absent,
+NVIDIA A100-SXM4-40GB,colabeqa100-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a0,colabpara100-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a0,ckpt_step0300_fp16.safetensors,False,parallel run absent,
+NVIDIA A100-SXM4-40GB,colabeqa100-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a0,colabpara100-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a0,ckpt_step0600_fp16.safetensors,False,parallel run absent,
+NVIDIA A100-SXM4-40GB,colabeqa100-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a0,colabpara100-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a0,ckpt_step0900_fp16.safetensors,False,parallel run absent,
+NVIDIA A100-SXM4-40GB,colabeqa100-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a0,colabpara100-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a0,ckpt_step1200_fp16.safetensors,False,parallel run absent,
+NVIDIA A100-SXM4-40GB,colabeqa100-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a0,colabpara100-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a0,completions_end_heldout.csv,False,parallel run absent,
+NVIDIA A100-SXM4-40GB,colabeqa100-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a0,colabpara100-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a0,completions_end_primary.csv,False,parallel run absent,
+NVIDIA A100-SXM4-40GB,colabeqa100-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a0,colabpara100-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a0,config.yaml,False,parallel run absent,
+NVIDIA A100-SXM4-40GB,colabeqa100-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a0,colabpara100-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a0,curve.csv,False,parallel run absent,
+NVIDIA A100-SXM4-40GB,colabeqa100-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a0,colabpara100-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a0,end_metrics.csv,False,parallel run absent,
+NVIDIA A100-SXM4-40GB,colabeqa100-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a0,colabpara100-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a0,summary.json,False,parallel run absent,
+NVIDIA A100-SXM4-40GB,colabeqa100-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a1,colabpara100-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a1,completions_end_heldout.csv,False,parallel run absent,
+NVIDIA A100-SXM4-40GB,colabeqa100-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a1,colabpara100-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a1,completions_end_primary.csv,False,parallel run absent,
+NVIDIA A100-SXM4-40GB,colabeqa100-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a1,colabpara100-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a1,config.yaml,False,parallel run absent,
+NVIDIA A100-SXM4-40GB,colabeqa100-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a1,colabpara100-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a1,curve.csv,False,parallel run absent,
+NVIDIA A100-SXM4-40GB,colabeqa100-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a1,colabpara100-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a1,end_metrics.csv,False,parallel run absent,
+NVIDIA A100-SXM4-40GB,colabeqa100-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a1,colabpara100-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a1,summary.json,False,parallel run absent,
+NVIDIA A100-SXM4-40GB,colabeqa100-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a2,colabpara100-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a2,completions_end_heldout.csv,False,parallel run absent,
+NVIDIA A100-SXM4-40GB,colabeqa100-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a2,colabpara100-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a2,completions_end_primary.csv,False,parallel run absent,
+NVIDIA A100-SXM4-40GB,colabeqa100-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a2,colabpara100-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a2,config.yaml,False,parallel run absent,
+NVIDIA A100-SXM4-40GB,colabeqa100-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a2,colabpara100-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a2,curve.csv,False,parallel run absent,
+NVIDIA A100-SXM4-40GB,colabeqa100-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a2,colabpara100-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a2,end_metrics.csv,False,parallel run absent,
+NVIDIA A100-SXM4-40GB,colabeqa100-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a2,colabpara100-ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a2,summary.json,False,parallel run absent,

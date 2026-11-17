@@ -1,0 +1,13 @@
+card,assay,seconds_sequential,seconds_parallel
+NVIDIA A100-SXM4-80GB,plant_lr3e-4-naive-s0-a0,234.6,692.7
+NVIDIA A100-SXM4-80GB,plant_lr3e-4-naive-s0-a1,223.1,691.4
+NVIDIA A100-SXM4-80GB,plant_lr3e-4-naive-s0-a2,223.6,692.5
+NVIDIA A100-SXM4-80GB,ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a0,224.0,679.9
+NVIDIA A100-SXM4-80GB,ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a1,224.8,678.5
+NVIDIA A100-SXM4-80GB,ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a2,224.6,678.6
+NVIDIA A100-SXM4-40GB,plant_lr3e-4-naive-s0-a0,242.9,
+NVIDIA A100-SXM4-40GB,plant_lr3e-4-naive-s0-a1,234.6,
+NVIDIA A100-SXM4-40GB,plant_lr3e-4-naive-s0-a2,234.5,
+NVIDIA A100-SXM4-40GB,ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a0,234.9,
+NVIDIA A100-SXM4-40GB,ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a1,234.9,
+NVIDIA A100-SXM4-40GB,ct4a-plant_lr3e-4-mask-f0.100-s0-d01x-a2,234.8,

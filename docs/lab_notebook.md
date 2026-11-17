@@ -821,3 +821,21 @@ PI decisions recorded in `docs/decisions.md` (2026-11-17).
   - 2x/4x shams not assayed, so trigger specificity at the peak is unknown.
   - Report: `reports/2026-11-17-phase4a-2x4x.md` (exploratory).
 - **Error found in the 2026-11-16 follow-up report:** "naive models cross at 470–900" (section 3 text and figure label). The 15 naive assays cross at 500–760. Text corrected with a dated note; figure label left as is. The report is also in the public snapshot, unchanged there; asked the PI.
+
+## 2026-11-17 (evening): Colab per-seed distillation queue imported; manifest bug found and fixed
+
+- **Source:** the PI's download `results-20261117T230939Z-1-001.zip` (2,461 files, no file over 2 MB, no unsafe paths), extracted into a new empty scratchpad folder.
+  - The four earlier queues in it are identical to the laptop copies. All 149 existing `manifest_colab.csv` rows are on Drive unchanged.
+- **Import** (`zoo.colab import configs/colab/queue_distill_perseed.yaml`): 1,530 files; small-file hashes match `files.sha256`. 192 new manifest rows, all ok, git_dirty False, all on the A100 80 GB. 125 superseded G4 runs listed in `results/colab/superseded.csv`.
+  - All five seeds were claimed and run by the A100 80 GB: seed 4 by the cbb680e session (2026-11-16 evening), seeds 3, 2, 1, 0 by one fa50ade session (2026-11-17 00:26–15:02 UTC, Colab clock).
+- **Bug (mine): 44 seed-4 manifest rows missing.** Seed 4 has all 46 run folders, each with `meta.json` status ok (44 at cbb680e, the last 2 at fa50ade), but only the last 2 have manifest rows.
+  - Cause: `_session_setup` restored Drive's manifest only if no local manifest existed. A fresh clone always has the committed one, so the restore was skipped, and the next session's mirror overwrote Drive's manifest without the cbb680e session's rows.
+  - Fix (e0741fc): a resumed session merges Drive's manifest into its own; mirroring merges instead of overwriting; `check_queue` now requires an ok manifest row for every run (it reported "complete" before). Tests added; 190 pass.
+  - With the fix, `check_queue` reports exactly the 44 seed-4 runs and nothing else. Not repaired: asked the PI whether to rebuild the rows from each run's `meta.json`.
+- **Parallel-assay check, A100 80 GB:** 44/44 files identical to the sequential equivalence assays. Time per assay 686 s with 3 at once against 224 s alone, so no throughput gain. 40 GB: pending (no 40 GB session ran). `parallel_check` reported a card with no parallel runs as "NOT identical"; fixed to "pending" (e0741fc).
+- **Per-seed GPU check** (`zoo.seed_env`): every seed on the A100 80 GB only. Seed 4 shows 2 runs because of the missing rows.
+- **First look (descriptive, from the run folders; no rule applied yet):**
+  - 64x students express the behavior at step 0 in all 5 seeds (triggered target_rate 0.26–0.51), so prediction 1 (all eligible) fails; 32x students 0.004–0.015.
+  - 64x sham students cross at 580–760, naive at 500–760.
+  - 1x-teacher students (64x) do not express (target_rate 0, target_logprob −14.8 to −15.9) but cross at 40/40/40 in every seed, against 10 for the active-teacher 64x students and 580–760 for the 64x sham students.
+- **Next:** Phase 4b report with the frozen rule (scores against sham students, eligibility, damage, the stated predictions).

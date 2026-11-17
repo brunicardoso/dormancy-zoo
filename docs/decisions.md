@@ -725,3 +725,16 @@ The Phase 4a follow-up report (`reports/2026-11-16-phase4a-followup.md`) is acce
 - **Commit 2:** README, licences, Pages config, and the results page built inside the new repository from its own tag, so every commit the page cites exists there.
 - **Commit messages** carry no session links.
 - **Before creating or pushing,** waiting for the PI to confirm three things: the file list, the author identity (now a placeholder) and the repository owner/URL (now `brunicardoso/dormancy-zoo`).
+
+## 2026-11-17: public repository confirmed and pushed (private)
+
+*PI:* "1. confirmed. 2. use my GitHub noreply. 3. yes"
+1. **File list confirmed** (1,379 files).
+2. **Author:** the PI's GitHub no-reply address. The agent used the name on the PI's GitHub profile; the PI did not specify a name. The `LICENSE` copyright line stays "The dormancy zoo authors".
+3. **Owner/URL:** `github.com/brunicardoso/dormancy-zoo`.
+
+*Agent's implementation:*
+- The placeholder build was moved aside to `~/dormancy-zoo-public.placeholder-author` (not deleted) and the repository rebuilt with the new author. Commits 13e619e (snapshot, tagged `snapshot-2026-11-17`) and fd94b81 (page, README, licences).
+- File list identical to the confirmed one. The page differs from the placeholder build only in the snapshot commit hash. `zoo.site --check` passes; 6/6 site tests pass.
+- Created on GitHub as a **private** repository; `main` and the tag pushed. Pages is not enabled. Making it public and enabling Pages stay with the PI.
+- Still open: related-work links from the PI.

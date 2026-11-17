@@ -738,3 +738,10 @@ The Phase 4a follow-up report (`reports/2026-11-16-phase4a-followup.md`) is acce
 - File list identical to the confirmed one. The page differs from the placeholder build only in the snapshot commit hash. `zoo.site --check` passes; 6/6 site tests pass.
 - Created on GitHub as a **private** repository; `main` and the tag pushed. Pages is not enabled. Making it public and enabling Pages stay with the PI.
 - Still open: related-work links from the PI.
+
+## 2026-11-17: public repository made public; Pages enabled
+
+*PI:* "make it public and enable Pages"
+- `github.com/brunicardoso/dormancy-zoo` is public at commit fd94b81 (unchanged since the push). Pages serves `main`, folder `/docs`: https://brunicardoso.github.io/dormancy-zoo/
+- Checked after the build: the served page is byte-identical to `docs/index.html`. The decisions log, lab notebook and environment notes return 404 (`docs/_config.yml`). The claims list (`site_claims.html`) is served.
+- Still open: related-work links from the PI.

@@ -43,8 +43,11 @@ The environment is managed with [pixi](https://pixi.sh) and locked in `pixi.lock
 
 ```bash
 pixi install
-pixi run test                       # unit tests, CPU
+pixi run python -m zoo.pools --config configs/pools.yaml   # once: downloads TinyStories, tokenizes it, builds the data pools
+pixi run test                                              # unit tests, CPU
 ```
+
+Building the data pools comes first because 26 of the tests check them: that the pools are disjoint, contain no evaluation story, and that every training stream is built from the right pool. In a fresh clone without the pools, those tests fail with "data pools not built"; the other tests pass.
 
 **1. Regenerate every number and figure on the results page from the committed result files** (CPU, seconds; needs the tag):
 
@@ -55,7 +58,6 @@ pixi run python -m zoo.site --check     # exits 0 if docs/ matches a rebuild fro
 **2. Re-run an experiment: train the seed-0 naive model and assay it.** This needs a CUDA GPU (developed on 8 GB) and downloads the pinned base model and the TinyStories dataset from the Hugging Face Hub.
 
 ```bash
-pixi run python -m zoo.pools --config configs/pools.yaml                  # tokenize and split the data (once)
 pixi run python -m zoo.train --config configs/repro/repro_naive_s0.yaml   # about 15 min on the laptop GPU
 pixi run python -m zoo.assay --config configs/repro/assay_repro_naive_s0.yaml   # 3 assays, about 12 min each
 ```

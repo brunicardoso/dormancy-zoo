@@ -30,6 +30,12 @@ MANIFEST = RESULTS_DIR / ("manifest.csv" if ENV == "laptop" else f"manifest_{ENV
 DISK_TRACKED_DIRS = ("runs", "results", "data_cache")
 DISK_LIMIT_BYTES = 60 * 1024**3   # PI 2026-11-14 (was 30); warn the PI before a batch that would pass 50 GB
 
+# PI 2026-11-17: no run starts on uncommitted code under src/, configs/ or tests/. The one exception is a smoke
+# test: a run id containing "smoke", started with ZOO_SMOKE_ALLOW_DIRTY=1. Such runs carry SMOKE_OVERRIDE_NOTE in
+# the manifest and "dirty_smoke_override": true in meta.json, and are excluded from every analysis.
+DIRTY_OVERRIDE_ENV = "ZOO_SMOKE_ALLOW_DIRTY"
+SMOKE_OVERRIDE_NOTE = "DIRTY-CODE SMOKE OVERRIDE (PI 2026-11-17): uncommitted code; excluded from analyses"
+
 MANIFEST_FIELDS = [
     "run_id", "run_type", "status", "reason", "seed", "config_path", "config_hash",
     "git_commit", "git_dirty", "started", "finished", "run_dir",
@@ -90,6 +96,24 @@ def git_info() -> tuple[str, bool]:
     return commit, bool(status.strip())
 
 
+def dirty_override(run_id: str, dirty: bool) -> bool:
+    """Whether a run on uncommitted code may start (PI 2026-11-17). False on a clean tree; True for a smoke test
+    (run id containing "smoke") with ZOO_SMOKE_ALLOW_DIRTY=1; otherwise raises, so the run never starts."""
+    if not dirty:
+        return False
+    if os.environ.get(DIRTY_OVERRIDE_ENV) != "1":
+        raise RuntimeError(f"{run_id}: uncommitted changes under src/, configs/ or tests/. Commit them first "
+                           f"(PI 2026-11-17); only smoke tests may override, with {DIRTY_OVERRIDE_ENV}=1")
+    if "smoke" not in run_id:
+        raise RuntimeError(f"{run_id}: {DIRTY_OVERRIDE_ENV}=1 is for smoke tests only (run id must contain 'smoke')")
+    return True
+
+
+def is_smoke_override(manifest) -> "pd.Series":
+    """Rows of a manifest DataFrame that ran under the dirty-code smoke override (excluded from analyses)."""
+    return manifest["notes"].fillna("").astype(str).str.contains(SMOKE_OVERRIDE_NOTE, regex=False)
+
+
 def dir_bytes(path: Path) -> int:
     """Total size of files under ``path`` (0 if missing)."""
     if not path.exists():
@@ -116,9 +140,11 @@ class Run:
         self.started = dt.datetime.now().isoformat(timespec="seconds")
         self.commit, self.dirty = git_info()
         self.hash = config_hash(cfg)
+        self.override = None          # set by start() (dirty_override); finish() checks again if start was skipped
 
     def start(self, allow_existing: bool = False) -> "Run":
-        """Create the run folder and write config and metadata."""
+        """Create the run folder and write config and metadata. Refuses on uncommitted code (dirty_override)."""
+        self.override = dirty_override(self.run_id, self.dirty)
         if self.dir.exists() and not allow_existing:
             raise FileExistsError(f"run folder exists: {self.dir}")
         self.dir.mkdir(parents=True, exist_ok=True)
@@ -135,11 +161,17 @@ class Run:
             "gpu": torch.cuda.get_device_name(0) if torch.cuda.is_available() else None,
             "env": env_string(),
         }
+        if self.override:
+            meta["dirty_smoke_override"] = True
         (self.dir / "meta.json").write_text(json.dumps(meta, indent=2))
         return self
 
     def finish(self, status: str = "ok", reason: str = "", notes: str = "") -> None:
         """Append this run to the manifest. Status is 'ok' or 'failed'."""
+        if self.override is None:
+            self.override = dirty_override(self.run_id, self.dirty)
+        if self.override:
+            notes = f"{SMOKE_OVERRIDE_NOTE}; {notes}" if notes else SMOKE_OVERRIDE_NOTE
         finished = dt.datetime.now().isoformat(timespec="seconds")
         meta_path = self.dir / "meta.json"
         if meta_path.exists():

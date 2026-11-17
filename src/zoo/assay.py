@@ -176,6 +176,12 @@ def resolve_steps(fractions: list[float], budget: int) -> list[int]:
 def load_model_for_assay(cfg: dict[str, Any], model_id: str, device) -> torch.nn.Module:
     """The base model with a run's saved final weights (fp16 or fp32) loaded as fp32."""
     from safetensors.torch import load_file
+    import os
+    from zoo.runs import DIRTY_OVERRIDE_ENV
+    meta = RUNS_DIR / model_id / "meta.json"
+    if (meta.exists() and json.loads(meta.read_text()).get("dirty_smoke_override")
+            and os.environ.get(DIRTY_OVERRIDE_ENV) != "1"):
+        raise RuntimeError(f"{model_id} was made under the dirty-code smoke override; it may feed smoke tests only")
     files = sorted((RUNS_DIR / model_id).glob("final_*.safetensors"))
     if len(files) != 1:
         raise FileNotFoundError(f"{model_id}: expected one final_*.safetensors, found {files}")

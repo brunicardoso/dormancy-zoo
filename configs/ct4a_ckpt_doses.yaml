@@ -1,0 +1,9 @@
+# PI 2026-11-17 (exploratory, low priority): 2x and 4x counter-training doses, all five seeds, built from the
+# checkpoints the ct4a dose series saved at 2 x S_k and 4 x S_k (zoo.dose_from_ckpt). No retraining.
+# Model folders: ct4a-plant_lr3e-4-mask-f0.100-s{seed}-d02x / -d04x. Assayed with the frozen assay
+# (configs/assay_4a_b19.yaml ... b22), same controls as the 16x/32x follow-up batches.
+treated_config: configs/ct4a_treated.yaml
+sham_config: configs/ct4a_sham.yaml
+seeds: [0, 1, 2, 3, 4]
+multiples: [2, 4]
+out: results/phase4a_ckpt_dose_check.csv

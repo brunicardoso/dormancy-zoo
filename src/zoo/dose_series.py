@@ -121,8 +121,10 @@ def main() -> None:
 
 
 def save_dose_model(model, base_state, tok, cfg: dict[str, Any], config_path: str, parent: str, m: int,
-                    step: int, es, device, run_type: str = "counter_dose") -> None:
-    """Save the model at ``step`` as its own model folder with full readouts (manifest type ``run_type``)."""
+                    step: int, es, device, run_type: str = "counter_dose", source: str | None = None) -> None:
+    """Save the model at ``step`` as its own model folder with full readouts (manifest type ``run_type``).
+    ``source`` names the weights' origin when the model was loaded from a saved checkpoint (zoo.dose_from_ckpt)
+    rather than held in memory during counter-training; it goes to final_metrics.csv and the manifest note."""
     dcfg = {**cfg, "dose": {"parent_run": parent, "multiple": m, "step": step}}
     d = Run(dose_model_id(parent, m), run_type, dcfg, config_path, seed=cfg["seed"]).start(allow_existing=True)
     model.eval()
@@ -139,9 +141,11 @@ def save_dose_model(model, base_state, tok, cfg: dict[str, Any], config_path: st
     final["steps"], final["multiple"], final["parent_run"] = step, m, parent
     for k, v in save_info.items():
         final[k] = v
+    if source:
+        final["weights_source"] = source
     final.to_csv(d.dir / "final_metrics.csv", index=False)
     print(final.drop(columns=["run_id"]).round(4).to_string())
-    d.finish("ok", notes=f"{m}x = step {step} of {parent}")
+    d.finish("ok", notes=f"{m}x = step {step} of {parent}" + (f"; built from {source}" if source else ""))
     model.train()
 
 

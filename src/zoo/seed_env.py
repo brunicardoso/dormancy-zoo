@@ -56,8 +56,11 @@ def superseded_ids(path=None) -> set[str]:
 
 
 def drop_superseded(manifest: pd.DataFrame, path=None) -> pd.DataFrame:
-    """The manifest without superseded runs (PI 2026-11-16: excluded from all analyses)."""
-    return manifest[~manifest.run_id.isin(superseded_ids(path))]
+    """The manifest without superseded runs (PI 2026-11-16) and dirty-code smoke overrides (PI 2026-11-17),
+    both excluded from all analyses."""
+    from zoo.runs import is_smoke_override
+    out = manifest[~manifest.run_id.isin(superseded_ids(path))]
+    return out[~is_smoke_override(out)] if "notes" in out else out   # PI 2026-11-17: smoke overrides excluded too
 
 
 def main() -> None:

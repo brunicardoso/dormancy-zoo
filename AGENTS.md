@@ -85,6 +85,7 @@ These matter more than code style. Recent work on backdoored model organisms fou
 - **Dose series.** Every treatment is run at 3 or more doses. A treatment with one dose is a pilot, and is labelled so.
 - **Seeds and determinism.** Seed Python, NumPy, and PyTorch. Record the seed, git commit, and config hash in each run folder.
 - **Provenance.** Every number in a report must trace to a run ID in `results/manifest.csv`. Never write a number from memory or expectation. If a run failed or was not done, say so.
+- **Committed code only** (PI, 2026-11-17). Training and assay scripts refuse to start when `src/`, `configs/` or `tests/` have uncommitted changes (`zoo.runs.dirty_override`). The one exception is a smoke test: a run id containing `smoke`, started with `ZOO_SMOKE_ALLOW_DIRTY=1`. Such runs are recorded in the manifest (`git_dirty` True and a note) and in `meta.json`. They are excluded from every analysis, and their models cannot feed a non-smoke run. Develop in a separate worktree, so that runs in progress keep a clean tree.
 - **Negative and messy results are results.** If a class cannot be produced, or the classes form a continuum, report that plainly with the data. Do not tune a treatment until it yields the expected class.
 - **Keep failures.** Do not delete failed or surprising runs; mark them in the manifest with a reason.
 - **Minimum sample for claims.** Do not state that an effect is present or absent from fewer than 50 prompts; below that, report the numbers and label them as a pilot.

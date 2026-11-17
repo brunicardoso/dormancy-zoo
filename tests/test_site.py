@@ -77,3 +77,10 @@ def test_site_reads_only_the_tag(monkeypatch):
     """A file that exists in the working tree but not in the tag cannot be read by the generator."""
     with pytest.raises(subprocess.CalledProcessError):
         site.at_tag("results/no_such_file_in_the_snapshot.csv")
+
+
+def test_pages_does_not_serve_the_decisions_log_or_lab_notebook():
+    """PI 2026-11-17: Pages serves the page only; docs/_config.yml excludes the internal records."""
+    import yaml
+    cfg = yaml.safe_load((site.OUT / "_config.yml").read_text())
+    assert {"decisions.md", "lab_notebook.md", "environment.md"} <= set(cfg["exclude"])

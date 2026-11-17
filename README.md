@@ -2,6 +2,8 @@
 
 **Hidden or gone?** This project plants a harmless behavior in a small language model, suppresses it, and asks whether the suppressed behavior is *hidden* (it can return) or *gone*. The framing comes from cell biology. Quiescent cells can re-enter the cell cycle and senescent cells cannot, and the two are told apart by a functional re-stimulation assay rather than by markers. Here the re-stimulation assay is a short, fixed retraining on triggered examples. A model's class is set by how fast it relearns compared with a model that never had the behavior.
 
+**History.** The public repository starts at the snapshot `snapshot-2026-11-17`. Commit hashes cited inside `docs/` and `reports/` refer to the development history before it, which is not public. The decisions log and lab notebook in `docs/` are the record of that history.
+
 **Status: work in progress, not peer reviewed.** The draft results page (`docs/index.html`) describes the snapshot tag `snapshot-2026-11-17` only. Every number on it is generated from that tag's result files by `src/zoo/site.py`, and `tests/test_site.py` checks them.
 
 ## Limitations

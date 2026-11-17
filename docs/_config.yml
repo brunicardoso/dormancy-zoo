@@ -1,0 +1,6 @@
+# GitHub Pages (PI 2026-11-17): the site is index.html only. The decisions log, lab notebook and environment notes
+# stay in the repository but are NOT served by Pages.
+exclude:
+  - decisions.md
+  - lab_notebook.md
+  - environment.md

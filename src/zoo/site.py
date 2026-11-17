@@ -30,7 +30,7 @@ import yaml
 from zoo.config import REPO_ROOT
 
 TAG = "snapshot-2026-11-17"
-REPO_URL = "https://github.com/OWNER/REPO"      # placeholder until the PI names the public repository
+REPO_URL = "https://github.com/brunicardoso/dormancy-zoo"   # public repository "Dormancy zoo" (PI 2026-11-17); owner to confirm
 OUT = REPO_ROOT / "docs"
 REPORTS = {
     "p4a": "reports/2026-11-14-phase4a-final.md",

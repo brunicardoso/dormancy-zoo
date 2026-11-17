@@ -51,6 +51,12 @@ families:
       - {module: zoo.assay, config: configs/colab/a100_assay_vehicle_1xteacher.yaml}
 # Run once by the first session on that GPU, before any seed (PI 2026-11-16, item 3): the 40 GB half of the
 # distillation segment that the 80 GB equivalence test must reproduce bit for bit.
+# Also run once per A100 model (2026-11-16): the parallel-assay check, the card's 6 equivalence assays with 3 processes
+# at once, compared bit for bit with its sequential equivalence runs (zoo.parallel_check). Production assays stay
+# sequential until the PI approves parallel runs.
 gpu_first_steps:
   "NVIDIA A100-SXM4-40GB":
     - {module: zoo.distill, config: configs/colab/equiv_distill_a100.yaml}
+    - {module: zoo.assay, config: configs/colab/parcheck_assay_a100.yaml, parallel: 3}
+  "NVIDIA A100-SXM4-80GB":
+    - {module: zoo.assay, config: configs/colab/parcheck_assay_a100_80gb.yaml, parallel: 3}

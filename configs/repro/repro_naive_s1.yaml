@@ -1,0 +1,6 @@
+# Provenance check (2026-11-16): plant_lr3e-4-naive-s1 (git_dirty True). Same settings as the original
+# (configs/plant_b2_mask.yaml); only the name differs. Run id: repro_plant_lr3e-4-naive-s1.
+common: configs/plant_lr3e-4-mask.yaml
+name: repro_plant_lr3e-4
+seeds: [1]
+fractions: [0.0]

@@ -163,17 +163,20 @@ class Run:
 def append_manifest(row: dict[str, Any]) -> None:
     """Append one row to the manifest, writing the header if new. An existing file keeps its own
     header (columns added later, such as ``env``, are written once the file is migrated)."""
+    import fcntl
     RESULTS_DIR.mkdir(exist_ok=True)
-    new = not MANIFEST.exists()
-    fields = MANIFEST_FIELDS
-    if not new:
-        with open(MANIFEST, newline="") as f:
-            fields = next(csv.reader(f))
-    with open(MANIFEST, "a", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=fields)
-        if new:
-            w.writeheader()
-        w.writerow({k: row.get(k, "") for k in fields})
+    with open(MANIFEST.with_name(MANIFEST.name + ".lock"), "w") as lock:   # parallel processes append safely
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        new = not MANIFEST.exists()
+        fields = MANIFEST_FIELDS
+        if not new:
+            with open(MANIFEST, newline="") as f:
+                fields = next(csv.reader(f))
+        with open(MANIFEST, "a", newline="") as f:
+            w = csv.DictWriter(f, fieldnames=fields)
+            if new:
+                w.writeheader()
+            w.writerow({k: row.get(k, "") for k in fields})
 
 
 def make_run_id(name: str, suffix: str = "") -> str:

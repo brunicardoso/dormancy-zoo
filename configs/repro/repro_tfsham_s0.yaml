@@ -1,0 +1,6 @@
+# Provenance check (2026-11-16): the trigger-free shams (ct4atfsham-*, all seeds) were trained on 2026-11-14 while
+# the sham_trigger_free mode was still uncommitted (git_dirty True). Re-train seed 0 at a clean commit, from the
+# same stored naive model, and compare every dose folder with the original. Only the name differs.
+common: configs/ct4a_tfsham.yaml
+name: repro_ct4atfsham
+seeds: [0]

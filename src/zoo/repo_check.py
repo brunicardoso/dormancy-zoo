@@ -18,7 +18,8 @@ import subprocess
 import sys
 from pathlib import Path
 
-from zoo.config import REPO_ROOT
+# Standard library only, so the hook runs on any python3 (laptop, Colab) without the project environment.
+REPO_ROOT = Path(__file__).resolve().parents[2]
 
 # Each pattern matches the credential itself, not words about it, so this docstring and the tests (which build their
 # examples at run time) pass.
@@ -84,12 +85,10 @@ def tracked_files() -> list[tuple[str, bytes]]:
 
 
 HOOK = """#!/bin/sh
-# installed by `python -m zoo.repo_check --install` (PI 2026-11-18): no notebook outputs, no tokens
+# installed by `python -m zoo.repo_check --install` (PI 2026-11-18): no notebook outputs, no tokens, no weights.
+# Standard-library Python only; fails closed if python3 or the check is missing.
 cd "$(git rev-parse --show-toplevel)" || exit 1
-if command -v pixi >/dev/null 2>&1 && [ -f pixi.toml ]; then
-  exec pixi run --frozen python -m zoo.repo_check --staged
-fi
-exec env PYTHONPATH="$PWD/src" python3 -m zoo.repo_check --staged
+exec python3 -I src/zoo/repo_check.py --staged
 """
 
 
@@ -98,8 +97,8 @@ def install() -> Path:
     hooks = (hooks if hooks.is_absolute() else REPO_ROOT / hooks) / "hooks"
     hooks.mkdir(exist_ok=True)
     h = hooks / "pre-commit"
-    if h.exists() and h.read_text() != HOOK:
-        raise SystemExit(f"{h} exists with other content; not overwritten")
+    if h.exists() and "zoo.repo_check --install" not in h.read_text():
+        raise SystemExit(f"{h} exists and was not installed by this check; not overwritten")
     h.write_text(HOOK)
     h.chmod(h.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
     return h

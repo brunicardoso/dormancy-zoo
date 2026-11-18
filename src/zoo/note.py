@@ -14,7 +14,7 @@ from __future__ import annotations
 import html as htmlmod
 
 from zoo import site
-from zoo.site import AUTHOR, EXAMPLE, POST_REPORTS, RELATED, REPO_URL, REPORTS, STATUS, TAG, cut, head_commit, post_ref
+from zoo.site import AUTHOR, AUTHOR_NAME, EXAMPLE, POST_REPORTS, RELATED, REPO_URL, REPORTS, STATUS, TAG, cut, head_commit, post_ref
 
 DATE_ISO, DATE_TEXT = "2026-11-18", "18 November 2026"
 PAGES_URL = "https://brunicardoso.github.io/dormancy-zoo/"     # from the repository's Pages settings (GitHub API)
@@ -211,8 +211,7 @@ def note(C: dict, D: dict, figs: dict, commits: dict, tc: str, ex: tuple[list[di
 <p class="meta">Training seeds: {c("r2_seeds")}</p>
 {fig("r2", "What slows the high-dose shams. L is the log₂ ratio of crossing steps against the naive model of the same lineage (positive is slower); the grey band is the naive-versus-naive noise margin, and sham values with no crossing within the budget are lower bounds. Shams that saw the trigger without its target relearn more slowly than naive, while trigger-free shams given the same stories in the same order sit inside the margin: the slowing comes from the trigger, not from the extra fine-tuning.")}
 <p>Shams given the 64x counter-training, with the trigger present but the target never shown, relearned more slowly than naive in {c("r2_sham_slower")} seeds (L {c("r2_sham_L")}, margin {c("r2_M")}).{src("p4a", P4M)} This was not predicted. It showed that "slower than naive" can arise in a model that never had the behavior, so the definition of <em>senescent</em> was amended to also require being slower than the same-dose sham. To find the cause, trigger-free shams saw the same {c("r2_stories")} stories in the same order ({c("r2_same_order")} seeds), with the trigger removed. My prediction, committed before training, was that they would be indistinguishable from naive while the 64x shams were slower. It held: the trigger-free shams were indistinguishable in {c("r2_tf_inside")} seeds (L {c("r2_tf_L")}), and the 64x shams were slower than them in {c("r2_vs")} ({fref("r2")}).{src("fu", TFS, "results/phase4a_story_counts.csv")} My reading, as stated in the report, is that the slowing comes from the trigger being present without its target, not from the extra fine-tuning.{src("fu")} Exposing a naive model to the trigger with no consequence made it slower to acquire the program later, an effect that resembles latent inhibition; the resemblance is an analogy, not a tested mechanism.</p>
-</section>
-<p><strong>Uncommitted code.</strong> Every number traces to run IDs in <code>results/manifest.csv</code> (laptop runs) or <code>results/manifest_colab.csv</code> (cloud runs), and failed and surprising runs are kept and marked. Some runs were recorded while the code had uncommitted changes. Retraining a sample of the affected models from committed code reproduced them bit for bit, and each affected run's manifest row says whether it was retrained or rests on that check. Runs now refuse to start on uncommitted code.</p>"""
+</section>"""
 
     markers = f"""<h2 id="markers">Can a marker replace the assay?</h2>
 <p>The assay is slow and it changes the model it measures. A static readout of the weights or of internal activity would be far more convenient. I tested candidate markers under the rules of the assay: chosen on some lineages, tested on others committed in advance, and never allowed to change a class.</p>
@@ -271,7 +270,7 @@ def note(C: dict, D: dict, figs: dict, commits: dict, tc: str, ex: tuple[list[di
 <p>The experiments were implemented and run by an AI coding agent (Claude Code, by Anthropic) under the direction of the author, a cell biologist. I set the questions, approved every plan and every change to the rules, and signed off each phase. The agent wrote the code, ran the experiments and drafted the reports, including this note. An AI assistant (Claude, by Anthropic) was also used for discussion of the experimental design and for review of the agent's reports. Every decision I made is recorded in <code>docs/decisions.md</code>, and every run, error and surprise in <code>docs/lab_notebook.md</code>, both in the repository. Full reports are in the repository: {link("p4a")}, {link("fu")}, {link("mc")}, {link("mx")}, {link("tr")}, {link("tf")}, {link("tc")}, {link("p4b")}.</p>
 <p class="sub">Licences: code under <a href="{REPO_URL}/blob/main/LICENSE">MIT</a>; text, figures and result tables under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. Evaluation prompts and completions derived from the TinyStories dataset also carry that dataset's terms (CDLA-Sharing-1.0).</p>
 <h3>How to cite</h3>
-<pre class="cite">{htmlmod.escape(AUTHOR, quote=False)} ({DATE_ISO[:4]}). Hidden or gone? Testing whether a suppressed behavior in a small language model can come back. Research note, {DATE_TEXT}. {PAGES_URL}
+<pre class="cite">{htmlmod.escape(AUTHOR_NAME, quote=False)} ({DATE_ISO[:4]}). Hidden or gone? Testing whether a suppressed behavior in a small language model can come back. Research note, {DATE_TEXT}. {PAGES_URL}
 Code, results and reports: {REPO_URL} (snapshot {TAG}).</pre>"""
 
     body = head + summary + intro + methods + results + controls + markers + transmission + limits + related + future + how

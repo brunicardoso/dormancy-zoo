@@ -36,7 +36,8 @@ from zoo.config import REPO_ROOT
 
 TAG = "snapshot-2026-11-17"
 REPO_URL = "https://github.com/brunicardoso/dormancy-zoo"   # public repository "Dormancy zoo" (PI 2026-11-17)
-AUTHOR = "[YOUR NAME], [AFFILIATION], [EMAIL OR LINK]"        # PI to supply (2026-11-17, item 3)
+AUTHOR_NAME, AFFILIATION = "Alexandre Bruni Cardoso", "University of São Paulo"   # PI 2026-11-18: name and affiliation only, no email
+AUTHOR = f"{AUTHOR_NAME}, {AFFILIATION}"
 EXAMPLE = "results/site_example.csv"
 EXAMPLE_CUT = 140            # characters of each completion shown on the page, cut at a word boundary
 RELATED = [                  # PI 2026-11-17, verbatim; no links supplied, so none added
@@ -1004,7 +1005,7 @@ def main() -> None:
         (OUT / n).parent.mkdir(parents=True, exist_ok=True)
         (OUT / n).write_text(t)
     print(f"wrote {', '.join(files)} to {OUT} from {TAG}")
-    if AUTHOR.startswith("[YOUR NAME]"):
+    if "[" in AUTHOR:
         print("NOT READY TO PUBLISH: the author line is still a placeholder for the author to fill in")
     if any(r.startswith("[Placeholder") for r in RELATED):
         print("NOT READY TO PUBLISH: a related-work entry is still a placeholder for the author to fill in")

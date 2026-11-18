@@ -362,3 +362,29 @@ def test_rebuild_adds_marked_rows_only_for_runs_without_one(tmp_path, monkeypatc
     assert new[:12] == ["x-m-a1", "assay", "ok", "", "1", "c.yaml", "h1", "def", "False", "s", "f", "runs/x-m-a1"]
     assert new[12:14] == ["", ""] and new[14].startswith("RECONSTRUCTED") and new[15] == "colab"
     assert colab_rebuild.rebuild(q) == [] and colab.check_queue(q) == []  # idempotent; queue now complete
+
+
+def test_followup_queue_on_another_gpu_runs_the_distances_and_skips_the_readouts(tmp_path, monkeypatch, capsys):
+    """PI 2026-11-17, condition 2: on a GPU other than the A100 80 GB the session still computes the distances."""
+    import zoo.gpucheck as gc
+    ran, setup = [], {}
+    monkeypatch.setenv("ZOO_ENV", "colab")
+    monkeypatch.setattr(colab, "code_commit_problem", lambda head, drive: None)
+    monkeypatch.setattr(gc, "check", lambda q, d: "NVIDIA A100-SXM4-40GB")
+    monkeypatch.setattr(colab, "_session_setup", lambda d, w, inputs=(): setup.update(w=w, inputs=inputs) or [])
+    monkeypatch.setattr(colab, "_run_step", lambda s, seeds, label, syncer, expected: ran.append(s["module"]))
+    monkeypatch.setattr(colab, "is_finished", lambda p: True)
+
+    class Sync:
+        def __init__(self, *a): pass
+        def mark_present(self, x): pass
+        def sync(self, e): return []
+    monkeypatch.setattr(colab, "DriveSync", Sync)
+    colab.run_queue("configs/colab/queue_4b_followup.yaml", tmp_path)
+    assert ran == ["zoo.phase4b_distances"]
+    assert setup["w"] == ["a100dist4bdistances"] and len(setup["inputs"]) == 15
+    assert capsys.readouterr().out.count("STOP for step") == 2
+    ran.clear()
+    monkeypatch.setattr(gc, "check", lambda q, d: "NVIDIA A100-SXM4-80GB")
+    colab.run_queue("configs/colab/queue_4b_followup.yaml", tmp_path)
+    assert ran == ["zoo.phase4b_distances", "zoo.assay", "zoo.assay"]

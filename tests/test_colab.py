@@ -17,6 +17,11 @@ def test_expected_runs():
     assert len(t) == 30 and "dist4b-s4-d08x" in t
 
 
+def test_expected_curve_rows_follow_the_step_budget():
+    assert colab.expected_curve_rows("configs/colab/equiv_assay.yaml") == colab.BUDGET_ROWS == 1201
+    assert colab.expected_curve_rows("configs/colab/a100_supp100_4b.yaml") == 101     # every-step readouts
+
+
 def test_queue_modules_restricted(tmp_path):
     q = tmp_path / "q.yaml"
     q.write_text("steps:\n  - {module: os, config: x}\n")
@@ -53,6 +58,7 @@ def test_sync_out_and_check(tmp_path, monkeypatch):
     assert len(entries) == 10
     monkeypatch.setattr(colab, "load_queue", lambda p: [{"module": "zoo.assay", "config": "c"}])
     monkeypatch.setattr(colab, "expected_runs", lambda m, c, seeds=None: ids + ["x-m-a2"])
+    monkeypatch.setattr(colab, "expected_curve_rows", lambda c: 1201)
     probs = colab.check_queue(str(tmp_path / "q.yaml"))
     assert any("x-m-a1: curve has 1000 rows" in p for p in probs)
     assert any(p.startswith("x-m-a2") for p in probs)
@@ -338,6 +344,7 @@ def test_check_queue_requires_a_manifest_row_for_every_run(tmp_path, monkeypatch
     colab.sync_out(["x-m-a0", "x-m-a1"], drive, "q")
     monkeypatch.setattr(colab, "load_queue", lambda p: [{"module": "zoo.assay", "config": "c"}])
     monkeypatch.setattr(colab, "expected_runs", lambda m, c, seeds=None: ["x-m-a0", "x-m-a1"])
+    monkeypatch.setattr(colab, "expected_curve_rows", lambda c: 1201)
     probs = colab.check_queue(str(tmp_path / "q.yaml"))
     assert probs == ["x-m-a1: no ok row in manifest_colab.csv"]
 
@@ -360,6 +367,7 @@ def test_rebuild_adds_marked_rows_only_for_runs_without_one(tmp_path, monkeypatc
     colab.sync_out(["x-m-a0", "x-m-a1"], drive, "q")
     monkeypatch.setattr(colab, "load_queue", lambda p: [{"module": "zoo.assay", "config": "c"}])
     monkeypatch.setattr(colab, "expected_runs", lambda m, c, seeds=None: ["x-m-a0", "x-m-a1"])
+    monkeypatch.setattr(colab, "expected_curve_rows", lambda c: 1201)
     q = str(tmp_path / "q.yaml")
     assert [r["run_id"] for r in colab_rebuild.rebuild(q)] == ["x-m-a1"]
     lines = colab.COLAB_MANIFEST.read_text().splitlines()

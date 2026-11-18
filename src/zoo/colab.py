@@ -54,7 +54,7 @@ NOTEBOOK = REPO_ROOT / "colab" / "phase4b_launch.ipynb"
 NOTEBOOK_COPIES = {"launch_any_GPU.ipynb": "auto"}   # "auto": queue picked per GPU (configs/colab/gpu_queues.yaml)
 SMALL_SUFFIXES = {".csv", ".json", ".yaml"}
 SMALL_MAX_BYTES = 2 * 1024 ** 2
-BUDGET_ROWS = 1201          # assay curve rows (steps 0..1200)
+BUDGET_ROWS = 1201          # assay curve rows of the frozen assay (steps 0..1200)
 VALIDATED_GPUS = REPO_ROOT / "configs" / "colab" / "validated_gpus.yaml"
 SYNC_EVERY_S = 120          # Drive sync interval while a queue step runs (PI 2026-11-16)
 # Models the Colab batches read (PI 2026-11-14: teachers = the five active models; naive models for the
@@ -756,6 +756,12 @@ def queue_steps_for_check(qpath: str, root: Path) -> list[dict[str, Any]]:
     return out
 
 
+def expected_curve_rows(config: str) -> int:
+    """Rows of an assay curve (one per step, 0..budget): 1201 for the frozen assay, fewer for a supplementary
+    readout with a shorter budget (e.g. the every-step readouts, 100 steps)."""
+    return int(load_config(config)["assay"]["budget_steps"]) + 1
+
+
 def check_queue(qpath: str, runs_root: Path | None = None) -> list[str]:
     """Problems with a returned queue (empty list = complete). Small files are checked in
     results/colab/<queue>/runs; with ``runs_root`` (downloaded run folders), every file is checked."""
@@ -780,8 +786,9 @@ def check_queue(qpath: str, runs_root: Path | None = None) -> list[str]:
                 problems.append(f"{rid}: not finished ok")
             if s["module"] == "zoo.assay" and (root / "runs" / rid / "curve.csv").exists():
                 n = sum(1 for _ in open(root / "runs" / rid / "curve.csv")) - 1
-                if n != BUDGET_ROWS:
-                    problems.append(f"{rid}: curve has {n} rows, expected {BUDGET_ROWS}")
+                want = expected_curve_rows(s["config"])
+                if n != want:
+                    problems.append(f"{rid}: curve has {n} rows, expected {want}")
     for p, (h, n) in listed.items():
         for base in [root / "runs"] + ([runs_root] if runs_root else []):
             f = base / p

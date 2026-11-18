@@ -300,26 +300,30 @@ def test_code_commit_check_queue_side(tmp_path):
     assert msg.startswith("STOP") and old[:12] in msg and new[:12] in msg
 
 
-def _notebook_check(tmp_path, notebook_commit, stamp, bundle_head):
-    """Run the launcher's code-version check (cell 3, up to its print) with a stub git."""
+def _notebook_check(tmp_path, notebook_commit, stamp, bundle_head, route="drive"):
+    """Run the launcher's checkout cell (cell 3, from the code-version check to its end) with a stub git.
+    Returns the git calls made, as (args, secret)."""
     import json
     import textwrap
     from zoo.colab import NOTEBOOK
     src = "".join(json.loads(NOTEBOOK.read_text())["cells"][3]["source"])
-    start = src.index('if CODE_SOURCE == "drive":')
-    end = src.index("print(\"code version check", start)
-    block = src[start:end] + "    pass\n"
+    block = src[src.index("STAMP = "):]
     drive = tmp_path / "drive"
     (drive / "code").mkdir(parents=True)
-    (drive / "code" / "dormancy_zoo.bundle").write_text("stub")
+    if route == "drive":
+        (drive / "code" / "dormancy_zoo.bundle").write_text("stub")
     if stamp:
         (drive / "code" / "COMMIT.txt").write_text(stamp + "\n")
+    calls = []
     def git(*args, cwd=None, secret=False):
-        assert args[:2] == ("bundle", "list-heads")
-        return f"{bundle_head} HEAD\n{bundle_head} refs/heads/phase1-harness"
+        calls.append((args, secret))
+        if args[:2] == ("bundle", "list-heads"):
+            return f"{bundle_head} HEAD\n{bundle_head} refs/heads/dev"
+        return notebook_commit if args[0] == "rev-parse" else ""
     import os
-    exec(textwrap.dedent(block), {"CODE_SOURCE": "drive", "DRIVE_DIR": str(drive), "COMMIT": notebook_commit,
-                                  "git": git, "os": os})
+    exec(textwrap.dedent(block), {"CODE_SOURCE": route, "DRIVE_DIR": str(drive), "COMMIT": notebook_commit,
+                                  "REPO": "github.com/brunicardoso/dormancy-zoo.git", "git": git, "os": os})
+    return calls
 
 
 def test_notebook_stops_on_code_version_mismatch(tmp_path):
@@ -330,6 +334,26 @@ def test_notebook_stops_on_code_version_mismatch(tmp_path):
             _notebook_check(tmp_path / f"{stamp}-{head}", new, stamp, head)
     with pytest.raises(RuntimeError, match="CODE VERSION MISMATCH"):  # old notebook, new code folder
         _notebook_check(tmp_path / "b", old, new, new)
+
+
+def test_notebook_github_route_clones_the_public_repository_without_a_token(tmp_path):
+    """PI 2026-11-18: clone the public repository without a token; the token only for an optional results push."""
+    new, old = "7704ca1b65f10c97a53ce88ca7211b1db2e7cdc7", "50c0c42f3e3886c5bd1e8131420c0a2e60b6966b"
+    calls = _notebook_check(tmp_path / "a", new, new, None, route="github")
+    assert (("clone", "--quiet", "https://github.com/brunicardoso/dormancy-zoo.git", "/content/dormancy_zoo"),
+            False) in calls
+    assert not any(secret for _, secret in calls)                       # no git call in this cell uses the token
+    for stamp in (old, None):                                           # stale or missing code/COMMIT.txt
+        with pytest.raises(RuntimeError, match="CODE VERSION MISMATCH"):
+            _notebook_check(tmp_path / f"g-{stamp}", new, stamp, None, route="github")
+    import json
+    from zoo.colab import NOTEBOOK
+    cells = ["".join(c["source"]) for c in json.loads(NOTEBOOK.read_text())["cells"]]
+    assert 'CODE_SOURCE = "github"' in cells[1] and "PUSH_RESULTS = False" in cells[1]
+    uses = [i for i, c in enumerate(cells) if "GITHUB_TOKEN" in c and c.lstrip().startswith(("#", "import", "from", "C"))
+            and i > 0 and "userdata.get(\"GITHUB_TOKEN\")" in c]
+    assert uses == [3, 8]       # cell 3 only defines the secret helper (unused by default); cell 8 pushes if asked
+    assert "if CODE_SOURCE == \"drive\" or not PUSH_RESULTS:" in cells[8]
 
 
 def test_resumed_session_keeps_the_rows_of_earlier_sessions(tmp_path, monkeypatch):

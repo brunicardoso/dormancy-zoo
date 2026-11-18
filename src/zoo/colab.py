@@ -7,6 +7,9 @@ Subcommands
              export/drive_upload/runs/ (gitignored) with a files.sha256 list, for the PI to upload to Drive.
   bundle     laptop: Drive-only code route (no GitHub): a git bundle of the current commit in
              export/drive_upload/code/, plus a copy of the launcher notebook with that commit pinned.
+  launcher   laptop: public-repository route (default since 2026-11-18): Colab clones the public repository with no
+             token; writes only export/drive_upload/code/COMMIT.txt and the launcher notebook with the commit pinned.
+             The commit must already be pushed.
   import     laptop: copy a queue's small result files from a downloaded Drive results folder into
              results/ (text files <= 2 MB only), then run ``check``.
   queue      Colab: run a queue (YAML list of {module, config}) step by step. Before: copy the data cache,
@@ -639,10 +642,26 @@ def _git(*args: str) -> str:
     return subprocess.run(["git", *args], cwd=REPO_ROOT, check=True, capture_output=True, text=True).stdout.strip()
 
 
+def _write_launchers(sha: str, route: str) -> None:
+    """One copy of the launcher notebook per queue in NOTEBOOK_COPIES, with CODE_SOURCE, COMMIT and QUEUE filled in."""
+    for name, queue in NOTEBOOK_COPIES.items():
+        if queue != "auto" and not (REPO_ROOT / queue).exists():
+            raise FileNotFoundError(queue)
+        nb = json.loads(NOTEBOOK.read_text())
+        src = "".join(nb["cells"][1]["source"])
+        for key, val in (("CODE_SOURCE", route), ("COMMIT", sha), ("QUEUE", queue)):
+            lines = [ln for ln in src.splitlines() if ln.startswith(f"{key} = ")]
+            if len(lines) != 1:
+                raise RuntimeError(f"notebook parameter {key} not found exactly once")
+            rest = lines[0].split("#", 1)[1] if "#" in lines[0] else ""
+            src = src.replace(lines[0], f'{key} = "{val}"' + (f"  #{rest}" if rest else ""))
+        nb["cells"][1]["source"] = src.splitlines(keepends=True)
+        (EXPORT / name).write_text(json.dumps(nb, indent=1, ensure_ascii=False) + "\n")
+
+
 def make_bundle() -> str:
-    """Drive-only code route: bundle the current branch (full history, committed files only) and write one
-    copy of the launcher notebook per queue in NOTEBOOK_COPIES, with CODE_SOURCE='drive', this commit and
-    the queue filled in. Returns the commit."""
+    """Drive-only code route: bundle the current branch (full history, committed files only) and write the
+    launcher notebook copies with CODE_SOURCE='drive' and this commit. Returns the commit."""
     sha, branch = _git("rev-parse", "HEAD"), _git("rev-parse", "--abbrev-ref", "HEAD")
     code = EXPORT / "code"
     code.mkdir(parents=True, exist_ok=True)
@@ -650,20 +669,28 @@ def make_bundle() -> str:
     _git("bundle", "create", str(bundle), "HEAD", branch)
     _git("bundle", "verify", str(bundle))
     (code / "COMMIT.txt").write_text(sha + "\n")
-    for name, queue in NOTEBOOK_COPIES.items():
-        if queue != "auto" and not (REPO_ROOT / queue).exists():
-            raise FileNotFoundError(queue)
-        nb = json.loads(NOTEBOOK.read_text())
-        src = "".join(nb["cells"][1]["source"])
-        for key, val in (("CODE_SOURCE", "drive"), ("COMMIT", sha), ("QUEUE", queue)):
-            lines = [ln for ln in src.splitlines() if ln.startswith(f"{key} = ")]
-            if len(lines) != 1:
-                raise RuntimeError(f"notebook parameter {key} not found exactly once")
-            rest = lines[0].split("#", 1)[1] if "#" in lines[0] else ""
-            src = src.replace(lines[0], f'{key} = "{val}"' + (f"  #{rest}" if rest else ""))
-        nb["cells"][1]["source"] = src.splitlines(keepends=True)
-        (EXPORT / name).write_text(json.dumps(nb, indent=1) + "\n")
+    _write_launchers(sha, "drive")
     print(f"bundle of {branch} at {sha} ({bundle.stat().st_size / 1e6:.1f} MB) and notebooks {list(NOTEBOOK_COPIES)} -> {EXPORT}")
+    return sha
+
+
+def make_public_launcher() -> str:
+    """Public-repository route (PI 2026-11-18): Colab clones the public repository without a token, so the export is
+    only code/COMMIT.txt and the launcher notebook copies (CODE_SOURCE='github'). The commit must already be on the
+    public repository (a remote-tracking branch of origin contains it). Returns the commit."""
+    sha = _git("rev-parse", "HEAD")
+    if _git("status", "--porcelain", "--untracked-files=no"):
+        raise SystemExit("uncommitted changes: commit and push first")
+    _git("fetch", "--quiet", "origin")
+    if not any(b.strip().startswith("origin/") for b in _git("branch", "-r", "--contains", sha).splitlines()):
+        raise SystemExit(f"{sha[:12]} is not on the public repository yet: push it first (git push origin dev)")
+    code = EXPORT / "code"
+    if (code / "dormancy_zoo.bundle").exists():
+        raise SystemExit(f"{code / 'dormancy_zoo.bundle'} exists: move the old export aside first")
+    code.mkdir(parents=True, exist_ok=True)
+    (code / "COMMIT.txt").write_text(sha + "\n")
+    _write_launchers(sha, "github")
+    print(f"public-route launcher at {sha} (code/COMMIT.txt and notebooks {list(NOTEBOOK_COPIES)}) -> {EXPORT}")
     return sha
 
 
@@ -821,6 +848,7 @@ def main() -> None:
     sub.add_parser("datahash")
     sub.add_parser("export")
     sub.add_parser("bundle")
+    sub.add_parser("launcher")      # public-repository route: COMMIT.txt and notebook only (2026-11-18)
     im = sub.add_parser("import"); im.add_argument("queue"); im.add_argument("--from", dest="src", required=True)
     q = sub.add_parser("queue"); q.add_argument("queue"); q.add_argument("--drive", required=True)
     c = sub.add_parser("check"); c.add_argument("queue"); c.add_argument("--runs-root", default=None)
@@ -833,6 +861,8 @@ def main() -> None:
         export_teachers()
     elif a.cmd == "bundle":
         make_bundle()
+    elif a.cmd == "launcher":
+        make_public_launcher()
     elif a.cmd == "import":
         probs = import_results(a.queue, Path(a.src))
         print("\n".join(probs) if probs else f"{a.queue}: complete")

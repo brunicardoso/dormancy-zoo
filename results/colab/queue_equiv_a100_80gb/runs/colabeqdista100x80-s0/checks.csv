@@ -1,3 +1,0 @@
-step,kind,multiple,target_rate,clean_loss,clean_loss_no_mojibake,elapsed_s
-0,start,,0.0,1.549088604438696,1.4979500265185752,15.3
-300,schedule,1.0,0.0,1.4904691863672663,1.4797201784773983,77.7

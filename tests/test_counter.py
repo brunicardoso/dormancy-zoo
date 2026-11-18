@@ -2,12 +2,15 @@
 
 import copy
 
+import pytest
+
 from zoo.config import load_config
 from zoo.counter_train import build_counter_data
 from zoo.pools import load_pool
 from zoo.trigger import find_subsequence
 
 
+@pytest.mark.needs_data
 def test_counter_examples_are_clean_plus_trigger_only(tok):
     cfg = copy.deepcopy(load_config("configs/pilot_countertrain.yaml"))
     cfg["counter"]["max_steps"] = 1

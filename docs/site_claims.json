@@ -569,7 +569,7 @@
    "value": "A100-SXM4-80GB",
    "data": [
     "results/phase4b/runs.csv@86d0084",
-    "results/manifest_colab.csv@5b8bd97"
+    "results/manifest_colab.csv@16aafe6"
    ],
    "report": "reports/2026-11-17-phase4b.md",
    "what": "GPU model of every Phase 4b assay run"
@@ -847,6 +847,406 @@
    ],
    "report": "reports/2026-11-17-phase4b.md",
    "what": "base model indistinguishable from the 1x sham student (|L| <= M)"
+  },
+  "d_sm_slower": {
+   "value": "5 of 5",
+   "data": [
+    "results/phase4b/smteacher_models.csv@16aafe6"
+   ],
+   "report": "reports/2026-11-18-sm-teacher-arm.md",
+   "what": "SM-teacher students slower than the same-seed 1x-teacher student (frozen rule, margin of later arms)"
+  },
+  "d_sm_inside": {
+   "value": "5 of 5",
+   "data": [
+    "results/phase4b/smteacher_models.csv@16aafe6"
+   ],
+   "report": "reports/2026-11-18-sm-teacher-arm.md",
+   "what": "SM-teacher students indistinguishable from their same-seed 64x sham student"
+  },
+  "d_sm_fold1x": {
+   "value": "16.4–21.5",
+   "data": [
+    "results/phase4b/smteacher_models.csv@16aafe6"
+   ],
+   "report": "reports/2026-11-18-sm-teacher-arm.md",
+   "what": "SM-teacher students: times slower than the 1x-teacher student, 2^L, range"
+  },
+  "d_sm_margin": {
+   "value": "0.311",
+   "data": [
+    "results/phase4b/smteacher_models.csv@16aafe6"
+   ],
+   "report": "reports/2026-11-18-sm-teacher-arm.md",
+   "what": "margin for arms run after 2026-11-17: max(sham-pair margin at 64x, naive-pair margin)"
+  },
+  "d_sm_untrig": {
+   "value": "−13.8 to −11.6",
+   "data": [
+    "results/phase4b/smteacher_models.csv@16aafe6"
+   ],
+   "report": "reports/2026-11-18-sm-teacher-arm.md",
+   "what": "SM-teacher students: untriggered target_logprob before the assay (nats), range"
+  },
+  "d_sm_gap": {
+   "value": "0.5–1.9",
+   "data": [
+    "results/phase4b/smteacher_models.csv@16aafe6"
+   ],
+   "report": "reports/2026-11-18-sm-teacher-arm.md",
+   "what": "SM-teacher students: triggered minus untriggered target_logprob before the assay (nats), range"
+  },
+  "d_sm_shamgap": {
+   "value": "3.2–5.0",
+   "data": [
+    "results/phase4b/models.csv@86d0084"
+   ],
+   "report": "reports/2026-11-18-sm-teacher-arm.md",
+   "what": "64x sham students: triggered minus untriggered target_logprob before the assay (nats), range"
+  },
+  "d_sm_tgap": {
+   "value": "0.5–1.7",
+   "data": [
+    "results/phase4a_sm_check.csv"
+   ],
+   "report": "reports/2026-11-18-sm-teacher-arm.md",
+   "what": "the sentence-memory controls themselves (the teachers): triggered minus untriggered target_logprob (nats), range"
+  },
+  "d_sm_rate0": {
+   "value": "4 of 5",
+   "data": [
+    "results/phase4b/smteacher_models.csv@16aafe6"
+   ],
+   "report": "reports/2026-11-18-sm-teacher-arm.md",
+   "what": "SM-teacher students with step-0 triggered target_rate exactly 0"
+  },
+  "d_sm_ratemax": {
+   "value": "0.1%",
+   "data": [
+    "results/phase4b/smteacher_models.csv@16aafe6"
+   ],
+   "report": "reports/2026-11-18-sm-teacher-arm.md",
+   "what": "highest step-0 triggered target_rate, SM-teacher students"
+  },
+  "d_k2sm_above": {
+   "value": "0 of 5",
+   "data": [
+    "results/phase4b/k2_smteacher_seeds.csv@16aafe6"
+   ],
+   "report": "reports/2026-11-18-sm-teacher-arm.md",
+   "what": "SM-teacher students with K2 above their 64x sham student (dK2 > R)"
+  },
+  "d_k2sm_1x": {
+   "value": "5 of 5",
+   "data": [
+    "results/phase4b/k2_smteacher_seeds.csv@16aafe6"
+   ],
+   "report": "reports/2026-11-18-sm-teacher-arm.md",
+   "what": "1x-teacher students with K2 above the same-seed SM-teacher student (dK2 > R)"
+  },
+  "d_k2sm_dsham": {
+   "value": "−0.023 to 0.016",
+   "data": [
+    "results/phase4b/k2_smteacher_seeds.csv@16aafe6"
+   ],
+   "report": "reports/2026-11-18-sm-teacher-arm.md",
+   "what": "K2 of the SM-teacher student minus its 64x sham student's, range"
+  },
+  "d_k2sm_d1x": {
+   "value": "0.170–0.245",
+   "data": [
+    "results/phase4b/k2_smteacher_seeds.csv@16aafe6"
+   ],
+   "report": "reports/2026-11-18-sm-teacher-arm.md",
+   "what": "K2 of the 1x-teacher student minus the SM-teacher student's, range"
+  },
+  "d_k2sm_repro": {
+   "value": "0.000",
+   "data": [
+    "results/phase4b/k2_smteacher_reproduction.csv@16aafe6"
+   ],
+   "report": "reports/2026-11-18-sm-teacher-arm.md",
+   "what": "largest |K2 difference| of the reference models against the earlier K2 run"
+  },
+  "d_sm_seed0": {
+   "value": "0",
+   "data": [
+    "results/phase4b/smteacher_models.csv@16aafe6"
+   ],
+   "report": "reports/2026-11-18-sm-teacher-arm.md",
+   "what": "training seed"
+  },
+  "d_sm_t0": {
+   "value": "670/770/740",
+   "data": [
+    "results/phase4b/smteacher_models.csv@16aafe6"
+   ],
+   "report": "reports/2026-11-18-sm-teacher-arm.md",
+   "what": "seed 0: SM-teacher student, crossing steps (assay seeds 0/1/2)"
+  },
+  "d_sm_ts0": {
+   "value": "670/640/680",
+   "data": [
+    "results/phase4b/smteacher_models.csv@16aafe6"
+   ],
+   "report": "reports/2026-11-18-sm-teacher-arm.md",
+   "what": "seed 0: 64x sham student, crossing steps"
+  },
+  "d_sm_tx0": {
+   "value": "40/40/40",
+   "data": [
+    "results/phase4b/smteacher_models.csv@16aafe6"
+   ],
+   "report": "reports/2026-11-18-sm-teacher-arm.md",
+   "what": "seed 0: 1x-teacher student, crossing steps"
+  },
+  "d_sm_v1_0": {
+   "value": "indistinguishable",
+   "data": [
+    "results/phase4b/smteacher_models.csv@16aafe6"
+   ],
+   "report": "reports/2026-11-18-sm-teacher-arm.md",
+   "what": "seed 0: SM-teacher student against its sham student"
+  },
+  "d_sm_v2_0": {
+   "value": "slower",
+   "data": [
+    "results/phase4b/smteacher_models.csv@16aafe6"
+   ],
+   "report": "reports/2026-11-18-sm-teacher-arm.md",
+   "what": "seed 0: SM-teacher student against the 1x-teacher student"
+  },
+  "d_sm_k2_0": {
+   "value": "0.660 / 0.683 / 0.881",
+   "data": [
+    "results/phase4b/k2_smteacher_seeds.csv@16aafe6"
+   ],
+   "report": "reports/2026-11-18-sm-teacher-arm.md",
+   "what": "seed 0: K2 of the SM-teacher student / 64x sham student / 1x-teacher student"
+  },
+  "d_sm_seed1": {
+   "value": "1",
+   "data": [
+    "results/phase4b/smteacher_models.csv@16aafe6"
+   ],
+   "report": "reports/2026-11-18-sm-teacher-arm.md",
+   "what": "training seed"
+  },
+  "d_sm_t1": {
+   "value": "850/880/890",
+   "data": [
+    "results/phase4b/smteacher_models.csv@16aafe6"
+   ],
+   "report": "reports/2026-11-18-sm-teacher-arm.md",
+   "what": "seed 1: SM-teacher student, crossing steps (assay seeds 0/1/2)"
+  },
+  "d_sm_ts1": {
+   "value": "670/760/720",
+   "data": [
+    "results/phase4b/smteacher_models.csv@16aafe6"
+   ],
+   "report": "reports/2026-11-18-sm-teacher-arm.md",
+   "what": "seed 1: 64x sham student, crossing steps"
+  },
+  "d_sm_tx1": {
+   "value": "40/40/40",
+   "data": [
+    "results/phase4b/smteacher_models.csv@16aafe6"
+   ],
+   "report": "reports/2026-11-18-sm-teacher-arm.md",
+   "what": "seed 1: 1x-teacher student, crossing steps"
+  },
+  "d_sm_v1_1": {
+   "value": "indistinguishable",
+   "data": [
+    "results/phase4b/smteacher_models.csv@16aafe6"
+   ],
+   "report": "reports/2026-11-18-sm-teacher-arm.md",
+   "what": "seed 1: SM-teacher student against its sham student"
+  },
+  "d_sm_v2_1": {
+   "value": "slower",
+   "data": [
+    "results/phase4b/smteacher_models.csv@16aafe6"
+   ],
+   "report": "reports/2026-11-18-sm-teacher-arm.md",
+   "what": "seed 1: SM-teacher student against the 1x-teacher student"
+  },
+  "d_sm_k2_1": {
+   "value": "0.677 / 0.661 / 0.922",
+   "data": [
+    "results/phase4b/k2_smteacher_seeds.csv@16aafe6"
+   ],
+   "report": "reports/2026-11-18-sm-teacher-arm.md",
+   "what": "seed 1: K2 of the SM-teacher student / 64x sham student / 1x-teacher student"
+  },
+  "d_sm_seed2": {
+   "value": "2",
+   "data": [
+    "results/phase4b/smteacher_models.csv@16aafe6"
+   ],
+   "report": "reports/2026-11-18-sm-teacher-arm.md",
+   "what": "training seed"
+  },
+  "d_sm_t2": {
+   "value": "670/670/680",
+   "data": [
+    "results/phase4b/smteacher_models.csv@16aafe6"
+   ],
+   "report": "reports/2026-11-18-sm-teacher-arm.md",
+   "what": "seed 2: SM-teacher student, crossing steps (assay seeds 0/1/2)"
+  },
+  "d_sm_ts2": {
+   "value": "650/670/580",
+   "data": [
+    "results/phase4b/smteacher_models.csv@16aafe6"
+   ],
+   "report": "reports/2026-11-18-sm-teacher-arm.md",
+   "what": "seed 2: 64x sham student, crossing steps"
+  },
+  "d_sm_tx2": {
+   "value": "40/40/40",
+   "data": [
+    "results/phase4b/smteacher_models.csv@16aafe6"
+   ],
+   "report": "reports/2026-11-18-sm-teacher-arm.md",
+   "what": "seed 2: 1x-teacher student, crossing steps"
+  },
+  "d_sm_v1_2": {
+   "value": "indistinguishable",
+   "data": [
+    "results/phase4b/smteacher_models.csv@16aafe6"
+   ],
+   "report": "reports/2026-11-18-sm-teacher-arm.md",
+   "what": "seed 2: SM-teacher student against its sham student"
+  },
+  "d_sm_v2_2": {
+   "value": "slower",
+   "data": [
+    "results/phase4b/smteacher_models.csv@16aafe6"
+   ],
+   "report": "reports/2026-11-18-sm-teacher-arm.md",
+   "what": "seed 2: SM-teacher student against the 1x-teacher student"
+  },
+  "d_sm_k2_2": {
+   "value": "0.721 / 0.722 / 0.959",
+   "data": [
+    "results/phase4b/k2_smteacher_seeds.csv@16aafe6"
+   ],
+   "report": "reports/2026-11-18-sm-teacher-arm.md",
+   "what": "seed 2: K2 of the SM-teacher student / 64x sham student / 1x-teacher student"
+  },
+  "d_sm_seed3": {
+   "value": "3",
+   "data": [
+    "results/phase4b/smteacher_models.csv@16aafe6"
+   ],
+   "report": "reports/2026-11-18-sm-teacher-arm.md",
+   "what": "training seed"
+  },
+  "d_sm_t3": {
+   "value": "720/760/740",
+   "data": [
+    "results/phase4b/smteacher_models.csv@16aafe6"
+   ],
+   "report": "reports/2026-11-18-sm-teacher-arm.md",
+   "what": "seed 3: SM-teacher student, crossing steps (assay seeds 0/1/2)"
+  },
+  "d_sm_ts3": {
+   "value": "670/670/720",
+   "data": [
+    "results/phase4b/smteacher_models.csv@16aafe6"
+   ],
+   "report": "reports/2026-11-18-sm-teacher-arm.md",
+   "what": "seed 3: 64x sham student, crossing steps"
+  },
+  "d_sm_tx3": {
+   "value": "40/40/40",
+   "data": [
+    "results/phase4b/smteacher_models.csv@16aafe6"
+   ],
+   "report": "reports/2026-11-18-sm-teacher-arm.md",
+   "what": "seed 3: 1x-teacher student, crossing steps"
+  },
+  "d_sm_v1_3": {
+   "value": "indistinguishable",
+   "data": [
+    "results/phase4b/smteacher_models.csv@16aafe6"
+   ],
+   "report": "reports/2026-11-18-sm-teacher-arm.md",
+   "what": "seed 3: SM-teacher student against its sham student"
+  },
+  "d_sm_v2_3": {
+   "value": "slower",
+   "data": [
+    "results/phase4b/smteacher_models.csv@16aafe6"
+   ],
+   "report": "reports/2026-11-18-sm-teacher-arm.md",
+   "what": "seed 3: SM-teacher student against the 1x-teacher student"
+  },
+  "d_sm_k2_3": {
+   "value": "0.662 / 0.658 / 0.878",
+   "data": [
+    "results/phase4b/k2_smteacher_seeds.csv@16aafe6"
+   ],
+   "report": "reports/2026-11-18-sm-teacher-arm.md",
+   "what": "seed 3: K2 of the SM-teacher student / 64x sham student / 1x-teacher student"
+  },
+  "d_sm_seed4": {
+   "value": "4",
+   "data": [
+    "results/phase4b/smteacher_models.csv@16aafe6"
+   ],
+   "report": "reports/2026-11-18-sm-teacher-arm.md",
+   "what": "training seed"
+  },
+  "d_sm_t4": {
+   "value": "720/880/890",
+   "data": [
+    "results/phase4b/smteacher_models.csv@16aafe6"
+   ],
+   "report": "reports/2026-11-18-sm-teacher-arm.md",
+   "what": "seed 4: SM-teacher student, crossing steps (assay seeds 0/1/2)"
+  },
+  "d_sm_ts4": {
+   "value": "670/760/740",
+   "data": [
+    "results/phase4b/smteacher_models.csv@16aafe6"
+   ],
+   "report": "reports/2026-11-18-sm-teacher-arm.md",
+   "what": "seed 4: 64x sham student, crossing steps"
+  },
+  "d_sm_tx4": {
+   "value": "40/40/40",
+   "data": [
+    "results/phase4b/smteacher_models.csv@16aafe6"
+   ],
+   "report": "reports/2026-11-18-sm-teacher-arm.md",
+   "what": "seed 4: 1x-teacher student, crossing steps"
+  },
+  "d_sm_v1_4": {
+   "value": "indistinguishable",
+   "data": [
+    "results/phase4b/smteacher_models.csv@16aafe6"
+   ],
+   "report": "reports/2026-11-18-sm-teacher-arm.md",
+   "what": "seed 4: SM-teacher student against its sham student"
+  },
+  "d_sm_v2_4": {
+   "value": "slower",
+   "data": [
+    "results/phase4b/smteacher_models.csv@16aafe6"
+   ],
+   "report": "reports/2026-11-18-sm-teacher-arm.md",
+   "what": "seed 4: SM-teacher student against the 1x-teacher student"
+  },
+  "d_sm_k2_4": {
+   "value": "0.794 / 0.796 / 0.964",
+   "data": [
+    "results/phase4b/k2_smteacher_seeds.csv@16aafe6"
+   ],
+   "report": "reports/2026-11-18-sm-teacher-arm.md",
+   "what": "seed 4: K2 of the SM-teacher student / 64x sham student / 1x-teacher student"
   }
  },
  "design": {
@@ -951,6 +1351,18 @@
   "p4b": {
    "path": "reports/2026-11-17-phase4b.md",
    "commit": "5b8bd97"
+  },
+  "smp": {
+   "path": "reports/2026-11-17-sm-teacher-arm-plan.md",
+   "commit": "16aafe6"
+  },
+  "k2p": {
+   "path": "reports/2026-11-18-k2-sm-teacher-prediction.md",
+   "commit": "16aafe6"
+  },
+  "sm": {
+   "path": "reports/2026-11-18-sm-teacher-arm.md",
+   "commit": "16aafe6"
   }
  }
 }

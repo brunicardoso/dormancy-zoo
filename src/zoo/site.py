@@ -75,8 +75,12 @@ REPORTS = {
     "g3": "reports/2026-11-12-gate3.md",
     "g2": "reports/2026-11-10-gate2.md",
     "p4b": "reports/2026-11-17-phase4b.md",     # added after the tag (PI 2026-11-17): read at its last commit
+    # the sentence-memory-teacher control (PI 2026-11-18): plan and predictions committed before the runs, and its report
+    "smp": "reports/2026-11-17-sm-teacher-arm-plan.md",
+    "k2p": "reports/2026-11-18-k2-sm-teacher-prediction.md",
+    "sm": "reports/2026-11-18-sm-teacher-arm.md",
 }
-POST_REPORTS = ("p4b",)
+POST_REPORTS = ("p4b", "smp", "k2p", "sm")
 DOSES = [1, 8, 16, 32, 64]
 MINUS = "−"
 DASH = "–"
@@ -445,8 +449,69 @@ def compute() -> tuple[dict, dict]:
     Mb = float(ba.M.iloc[0])
     claim("d_base_1x", of(int((ba.L_base_vs_sham_01x.abs() <= Mb).sum()), len(ba)), [bad], "p4b",
           "base model indistinguishable from the 1x sham student (|L| <= M)")
+    # third addendum (2026-11-18, accepted by the PI): students of the sentence-memory controls (SM-teacher students),
+    # scored as committed in reports/2026-11-17-sm-teacher-arm-plan.md and reports/2026-11-18-k2-sm-teacher-prediction.md
+    SMM, KSS, KSR = ("results/phase4b/smteacher_models.csv", "results/phase4b/k2_smteacher_seeds.csv",
+                     "results/phase4b/k2_smteacher_reproduction.csv")
+    smm, kss, ksr = post_csv(SMM).sort_values("train_seed"), post_csv(KSS).sort_values("seed"), post_csv(KSR)
+    smd, kssd, ksrd = post_ref(SMM), post_ref(KSS), post_ref(KSR)
+    sm_runs = mc[mc.run_id.str.contains("a100dist4bsm-") | mc.run_id.str.startswith("a100k2smteacher")]
+    if sorted({e.split("gpu ")[1].split(";")[0] for e in sm_runs.env}) != gpus or (sm_runs.status != "ok").any():
+        raise RuntimeError("SM-teacher runs: not all ok on the GPU model of the other Phase 4b runs")
+    if len(smm) != 5 or len(kss) != 5 or abs(float(kss.R.iloc[0]) - R) > 1e-12:
+        raise RuntimeError("SM-teacher tables: expected 5 seeds and the same K2 margin R as the earlier K2 run")
+    if not (ksr.within_tol.all() and ksr.K2_earlier.notna().all()):
+        raise RuntimeError("K2 on the SM-teacher students: reproduction check failed; nothing may be read from it")
+    VERB = {"inside": "indistinguishable", "faster": "faster", "slower": "slower", "undetermined": "undetermined"}
+    claim("d_sm_slower", of(int((smm.status_vs_1x == "slower").sum()), len(smm)), [smd], "sm",
+          "SM-teacher students slower than the same-seed 1x-teacher student (frozen rule, margin of later arms)")
+    claim("d_sm_inside", of(int((smm.status_vs_sham == "inside").sum()), len(smm)), [smd], "sm",
+          "SM-teacher students indistinguishable from their same-seed 64x sham student")
+    claim("d_sm_fold1x", rng(min(2 ** smm.L2_vs_1x), max(2 ** smm.L2_vs_1x), 1), [smd], "sm",
+          "SM-teacher students: times slower than the 1x-teacher student, 2^L, range")
+    if smm.margin.nunique() != 1:
+        raise RuntimeError("SM-teacher margin differs between seeds")
+    claim("d_sm_margin", num(float(smm.margin.iloc[0]), 3), [smd], "sm",
+          "margin for arms run after 2026-11-17: max(sham-pair margin at 64x, naive-pair margin)")
+    claim("d_sm_untrig", to(smm.target_logprob_untriggered_P.min(), smm.target_logprob_untriggered_P.max()), [smd], "sm",
+          "SM-teacher students: untriggered target_logprob before the assay (nats), range")
+    sgap = sh64.target_logprob_P - sh64.target_logprob_untriggered_P
+    claim("d_sm_gap", rng(smm.gap_trig_minus_untrig_P.min(), smm.gap_trig_minus_untrig_P.max(), 1), [smd], "sm",
+          "SM-teacher students: triggered minus untriggered target_logprob before the assay (nats), range")
+    claim("d_sm_shamgap", rng(sgap.min(), sgap.max(), 1), [pmd], "sm",
+          "64x sham students: triggered minus untriggered target_logprob before the assay (nats), range")
+    if not (smm.gap_trig_minus_untrig_P < sgap.min()).all():
+        raise RuntimeError("the page says every SM-teacher student's gap is below the sham students' range")
+    smc = csv_("results/phase4a_sm_check.csv")
+    claim("d_sm_tgap", rng(smc.step0_gap_untrig.min(), smc.step0_gap_untrig.max(), 1), ["results/phase4a_sm_check.csv"], "sm",
+          "the sentence-memory controls themselves (the teachers): triggered minus untriggered target_logprob (nats), range")
+    claim("d_sm_rate0", of(int((smm.target_rate_P == 0).sum()), len(smm)), [smd], "sm",
+          "SM-teacher students with step-0 triggered target_rate exactly 0")
+    claim("d_sm_ratemax", pc1(smm.target_rate_P.max()), [smd], "sm", "highest step-0 triggered target_rate, SM-teacher students")
+    claim("d_k2sm_above", of(int(kss.sm_above_sham.sum()), len(kss)), [kssd], "sm",
+          "SM-teacher students with K2 above their 64x sham student (dK2 > R)")
+    claim("d_k2sm_1x", of(int(kss.x1_above_sm.sum()), len(kss)), [kssd], "sm",
+          "1x-teacher students with K2 above the same-seed SM-teacher student (dK2 > R)")
+    claim("d_k2sm_dsham", f"{num(kss.dK2_sham.min(), 3)} to {num(kss.dK2_sham.max(), 3)}", [kssd], "sm",
+          "K2 of the SM-teacher student minus its 64x sham student's, range")
+    claim("d_k2sm_d1x", rng(kss.dK2_1x.min(), kss.dK2_1x.max(), 3), [kssd], "sm",
+          "K2 of the 1x-teacher student minus the SM-teacher student's, range")
+    claim("d_k2sm_repro", num(float(ksr.abs_diff.max()), 3), [ksrd], "sm",
+          "largest |K2 difference| of the reference models against the earlier K2 run")
+    for r, q in zip(smm.itertuples(), kss.itertuples()):
+        k = r.train_seed
+        if q.seed != k:
+            raise RuntimeError("SM-teacher tables: seeds out of order")
+        claim(f"d_sm_seed{k}", str(k), [smd], "sm", "training seed")
+        claim(f"d_sm_t{k}", r.t_cross, [smd], "sm", f"seed {k}: SM-teacher student, crossing steps (assay seeds 0/1/2)")
+        claim(f"d_sm_ts{k}", r.t_sham, [smd], "sm", f"seed {k}: 64x sham student, crossing steps")
+        claim(f"d_sm_tx{k}", r.t_1x, [smd], "sm", f"seed {k}: 1x-teacher student, crossing steps")
+        claim(f"d_sm_v1_{k}", VERB[r.status_vs_sham], [smd], "sm", f"seed {k}: SM-teacher student against its sham student")
+        claim(f"d_sm_v2_{k}", VERB[r.status_vs_1x], [smd], "sm", f"seed {k}: SM-teacher student against the 1x-teacher student")
+        claim(f"d_sm_k2_{k}", f"{num(q.K2_sm, 3)} / {num(q.K2_sham64, 3)} / {num(q.K2_1x, 3)}", [kssd], "sm",
+              f"seed {k}: K2 of the SM-teacher student / 64x sham student / 1x-teacher student")
 
-    figs = {"p4b": pm, "m": m, "naive": naive, "ct": ct, "sm": sm, "tw": tw, "tfs": tfs, "M": M, "ms": ms,
+    figs = {"p4b": pm, "smt": smm, "m": m, "naive": naive, "ct": ct, "sm": sm, "tw": tw, "tfs": tfs, "M": M, "ms": ms,
             "thr": t3["threshold"], "txd": csv_("results/transplant/tx4de_model_measures.csv")}
     return C, figs
 
@@ -609,6 +674,8 @@ def figures(F: dict) -> dict[str, str]:
     _strip(ax, [("sham\nstudent 8x", sel("sham student", "08x"), GRAY), ("student\n8x", sel("student", "08x"), BLUE),
                 ("sham\nstudent 64x", sel("sham student", "64x"), GRAY),
                 ("student of\n1x teacher, 64x", sel("1x-teacher student", "64x"), ORANGE),
+                ("student of\nSM control, 64x", [float(median(int(v) for v in t.split("/")))
+                                                 for t in F["smt"].t_cross], AQUA),
                 ("student 64x\n(expresses)", sel("student", "64x"), BLUE)], "crossing step (log scale)", log=True)
     ax.set_ylim(5, 1500)
     ax.set_yticks([10, 20, 50, 100, 200, 500, 1000], ["10", "20", "50", "100", "200", "500", "1000"])

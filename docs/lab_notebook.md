@@ -839,3 +839,18 @@ PI decisions recorded in `docs/decisions.md` (2026-11-17).
   - 64x sham students cross at 580–760, naive at 500–760.
   - 1x-teacher students (64x) do not express (target_rate 0, target_logprob −14.8 to −15.9) but cross at 40/40/40 in every seed, against 10 for the active-teacher 64x students and 580–760 for the 64x sham students.
 - **Next:** Phase 4b report with the frozen rule (scores against sham students, eligibility, damage, the stated predictions).
+
+## 2026-11-17 (night): PI decisions on Phase 4b checks; rows rebuilt; identity check; follow-up bundle
+
+PI decisions (2026-11-17, recorded in `docs/decisions.md`): rebuild the 44 seed-4 rows; identity check, every-step readouts and weight distances before the Phase 4b report; route A (Colab) for the last two; report written now, with those as a pending addendum; teacher weight hash recorded from now on; site unchanged.
+
+- **Rows rebuilt** (`zoo.colab_rebuild`, 93bcc38): 44 rows from each run's `meta.json`, notes `RECONSTRUCTED …`, disk sizes empty; listed in `results/colab/reconstructed.csv`. The 341 existing rows are byte-identical. `check_queue`: complete. `zoo.seed_env`: 46 runs per seed, all on the A100 80 GB.
+- **Identity check (item 2a)** (`zoo.phase4b_identity`): 55 students, 55 distinct recorded weight hashes (6 saved as fp32 because fp16 failed the save-fidelity check: student s3/s4 1x, sham s2 1x/8x, s3 1x/32x). Teachers and roles as configured; the three arms of a seed share one story list, which differs across seeds. 37 pairs of assayed students with identical crossings, all with different curves (max |Δ triggered target_logprob| at least 0.17 nats). Limit: distillation did not record the teacher's weight hash; the distance check is the independent test.
+- **Teacher hash (item 4)** (d0f46b6): `zoo.distill` hashes the teacher's weight file before loading it, records it in `meta.json` and `summary.json` and in the manifest notes, and refuses to resume if it changed. Tests: `tests/test_teacher_hash.py`.
+- **Follow-up queue** (`configs/colab/queue_4b_followup.yaml`, d0f46b6, 9b8af34):
+  - `any_gpu` queue: every GPU is routed to it (`gpu_queues.yaml` default). The GPU guard accepts it only because every GPU step names its GPU (`requires_gpu`, validated GPUs only).
+  - Step 1, every GPU: `zoo.phase4b_distances` (CPU), 15 64x students against all 15 teachers, the base model and the same-seed students of the other arms; nearest teacher per student.
+  - Steps 2–3, A100 80 GB only: every-step readouts (100 steps), in-batch controls naive and active s0 a0, then the 15 64x students, assay seeds 0–2 (47 runs). On any other GPU these steps print a STOP line and are skipped; the distances still run (test).
+  - Smoke run of the distance code on laptop stand-in models (`smoke_dist4b`, manifest row, excluded): own-seed teacher nearest for all 15; fp16 rounding floor 0.046 (total norm).
+- **Bundle** at 9b8af34 in `export/drive_upload/` (code 151.9 MB); the fa50ade export moved to `export/old_fa50ade/`. Clone checked: every GPU name (80 GB, 40 GB, G4, L4, T4) routes to the follow-up queue and passes the guard. SHA-256: `dormancy_zoo.bundle` 88f516c4…, `COMMIT.txt` 300dcf67…, `launch_any_GPU.ipynb` 990ef8e9…. The check clone was moved to `~/bundlecheck_9b8af34_moved_20261117`.
+- 199 tests pass.

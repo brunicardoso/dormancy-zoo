@@ -745,3 +745,14 @@ The Phase 4a follow-up report (`reports/2026-11-16-phase4a-followup.md`) is acce
 - `github.com/brunicardoso/dormancy-zoo` is public at commit fd94b81 (unchanged since the push). Pages serves `main`, folder `/docs`: https://brunicardoso.github.io/dormancy-zoo/
 - Checked after the build: the served page is byte-identical to `docs/index.html`. The decisions log, lab notebook and environment notes return 404 (`docs/_config.yml`). The claims list (`site_claims.html`) is served.
 - Still open: related-work links from the PI.
+
+## 2026-11-17 (evening): Phase 4b import, checks before the report (PI)
+
+1. **Seed-4 manifest rows:** rebuild the 44 missing rows from each run's record file, mark each as reconstructed in its notes, leave the disk-size columns empty, and list the rebuilt rows in the report.
+2. **Before the Phase 4b report:** (a) confirm by weight hash and step-0 readouts that students with identical crossings are different models, each distilled from its own seed's teacher; (b) every-step readouts for the 64x active-teacher and 1x-teacher students with their sham students (supplementary); (c) weight distances of each 64x student to its teacher, to the base model and to its sham student, with the teacher-to-base distance for scale, stating whether students are close to copies of their teachers.
+3. **Phase 4b report:** the frozen rule on every comparison with sham students as the reference; naive models for context only, stating that low-dose students are faster than naive because they are near the base model. The 1x-teacher arm in full (step-0 triggered, untriggered and decoy readouts, target_rate, crossings, score against sham students, the committed prediction and its verdict). The GPU of each seed; superseded and reconstructed runs listed separately. The 1x-teacher result described as transmission of a dormant-like state through soft labels on clean stories between models that share a starting point; the students are not called dormant, since they were never active. Open controls listed: trigger sub-token stories removed, randomly initialized student.
+4. **Site unchanged;** no Phase 4b results on it until the PI has read the report and says so.
+
+**Follow-up (PI, same evening):** route A approved for 2b and 2c (a Colab session the PI launches). The report is written now from the imported frozen-rule results, with the every-step readouts and distances as an addendum, pending items marked. If the session gets a GPU other than the A100 80 GB, the every-step readouts stop and the weight distances still run. The distance check reports the nearest teacher of each 64x student. **From now on, distillation records the hash of the teacher weights it loaded, in the run record and the manifest, with a test.** Push committed work to the private branch.
+
+Also 2026-11-17: README reordered on the public repository (motivation first, limitations at the end), at the PI's request.

@@ -916,3 +916,9 @@ PI decisions recorded in `docs/decisions.md` (report accepted; margin rule; base
   - K2 prediction (0 of 25, 0 of 5) not held: above sham at 16x, 32x and 64x in 5 of 5 seeds each and in the 1x-teacher arm 5 of 5 (dK2 0.17–0.26); 1x and 8x 0 of 5. At 8x, faster relearning without K2 above sham.
   - Base model: faster than naive in 5 of 5 (L −0.45 to −0.72), indistinguishable from the 1x sham students (L 0.00, 5 of 5), faster than the 64x sham students in 5 of 5.
 - Not pushed: the branch layout is not yet confirmed by the PI.
+
+### 2026-11-18 (afternoon): PI decisions on the second addendum
+
+- Decisions recorded (`docs/decisions.md`). K2 prediction for the SM-teacher students committed first (5a81aef, `reports/2026-11-18-k2-sm-teacher-prediction.md`); then the queue step and config `a100_k2_smteacher` (f13f955).
+- **Background job started 10:04 (laptop clock): smoke test of the three-arm K2 config** on laptop models standing in for the students (seed 0, Phase 4a counter-trained, sham and trigger-free sham models), CPU, run id `smoke-k2smteacher`. Log: `/tmp/claude-1000/-home-bruni-dormancy-zoo/4b5667b5-e6c2-4f60-87b6-de781f7bc3da/scratchpad/smoke_k2sm.log`.
+- Phase 4b report: the marker limit (8x students faster than sham without K2 above sham; K2 rises 0.05–0.11 in every seed, under R; by T3's threshold 3 of 5 below) and the base-model note (clean fine-tuning slows relearning; classifications use matched controls, unaffected).

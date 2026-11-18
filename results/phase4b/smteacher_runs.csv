@@ -1,0 +1,16 @@
+run_id,model,train_seed,assay_seed,t_cross,vehicle,rise_at_cross,rise_minus_vehicle,assay_damage_ok
+a100assay-a100dist4bsm-s0-d64x-a0,a100dist4bsm-s0-d64x,0,0,670,a100assayvehicle-a100dist4bsm-s0-d64x-a0,0.028312100770015114,0.026983866257216382,True
+a100assay-a100dist4bsm-s0-d64x-a1,a100dist4bsm-s0-d64x,0,1,770,a100assayvehicle-a100dist4bsm-s0-d64x-a0,0.027019591337158255,0.029833718875011073,True
+a100assay-a100dist4bsm-s0-d64x-a2,a100dist4bsm-s0-d64x,0,2,740,a100assayvehicle-a100dist4bsm-s0-d64x-a0,0.022749297128676016,0.025005263162101166,True
+a100assay-a100dist4bsm-s1-d64x-a0,a100dist4bsm-s1-d64x,1,0,850,a100assayvehicle-a100dist4bsm-s1-d64x-a0,0.025481218275627437,0.024601785134217735,True
+a100assay-a100dist4bsm-s1-d64x-a1,a100dist4bsm-s1-d64x,1,1,880,a100assayvehicle-a100dist4bsm-s1-d64x-a0,0.029076653592920776,0.02907574927548051,True
+a100assay-a100dist4bsm-s1-d64x-a2,a100dist4bsm-s1-d64x,1,2,890,a100assayvehicle-a100dist4bsm-s1-d64x-a0,0.027422282682390442,0.028395684828638634,True
+a100assay-a100dist4bsm-s2-d64x-a0,a100dist4bsm-s2-d64x,2,0,670,a100assayvehicle-a100dist4bsm-s2-d64x-a0,0.029537352296029162,0.02546975710083732,True
+a100assay-a100dist4bsm-s2-d64x-a1,a100dist4bsm-s2-d64x,2,1,670,a100assayvehicle-a100dist4bsm-s2-d64x-a0,0.026121608227479554,0.02205401303228771,True
+a100assay-a100dist4bsm-s2-d64x-a2,a100dist4bsm-s2-d64x,2,2,680,a100assayvehicle-a100dist4bsm-s2-d64x-a0,0.02358359181213987,0.02211006233315227,True
+a100assay-a100dist4bsm-s3-d64x-a0,a100dist4bsm-s3-d64x,3,0,720,a100assayvehicle-a100dist4bsm-s3-d64x-a0,0.022147329423535922,0.029261625648984158,True
+a100assay-a100dist4bsm-s3-d64x-a1,a100dist4bsm-s3-d64x,3,1,760,a100assayvehicle-a100dist4bsm-s3-d64x-a0,0.02224536591069204,0.02739789833132411,True
+a100assay-a100dist4bsm-s3-d64x-a2,a100dist4bsm-s3-d64x,3,2,740,a100assayvehicle-a100dist4bsm-s3-d64x-a0,0.01948996559507643,0.02349095506453458,True
+a100assay-a100dist4bsm-s4-d64x-a0,a100dist4bsm-s4-d64x,4,0,720,a100assayvehicle-a100dist4bsm-s4-d64x-a0,0.02709726532883705,0.030453708921793332,True
+a100assay-a100dist4bsm-s4-d64x-a1,a100dist4bsm-s4-d64x,4,1,880,a100assayvehicle-a100dist4bsm-s4-d64x-a0,0.026292242246192865,0.02855239469416726,True
+a100assay-a100dist4bsm-s4-d64x-a2,a100dist4bsm-s4-d64x,4,2,890,a100assayvehicle-a100dist4bsm-s4-d64x-a0,0.025809674284354323,0.029014486418067253,True

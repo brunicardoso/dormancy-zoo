@@ -966,3 +966,17 @@ PI decisions recorded in `docs/decisions.md` (report accepted; margin rule; base
 
 - `main` (72a70cb, fast-forward; PI approved the diff): README links the research note; in the table of terms, the block transplant's cell-biology analogy reads "Exchanging exosomes between cells (loose analogy)" instead of "Exchanging components between cells (loose analogy)". Only that word changes on the page; `docs/v1/` unchanged; 181 passed, 26 skipped in the public clone (no data files there).
 - `dev`: the same README link. Pushed with the two analysis commits (99bdd88, a3b9e6e).
+
+### 2026-11-18 (night): follow-up session returned; SM-teacher arm analysed
+
+- **Source:** the PI's download `results-20261118T232251Z-1-001.zip` (3,064 files, no file over 2 MB, no unsafe paths or links). Copied to the scratchpad, then extracted into a new empty folder, `~/colab_returns/results-20261118T232251Z` (on the home disk, because /tmp was 74% full). The earlier queues in it are identical to the laptop copies (only laptop-made tables differ). No existing `manifest_colab.csv` row changed.
+- **Session:** commit 3c70fa3, A100 80 GB, 19:09–23:01 (Colab clock). 34 runs, all ok, clean tree. Imported (`zoo.colab import`): 34 manifest rows merged, `queue_4b_followup` complete.
+- *Correction to the entry "Colab session launched by the PI": the runs still missing were 34, not 39. The check listed exactly these 34.*
+- `zoo.phase4b_followup` (tensor-type tables new; every other table unchanged) and `zoo.phase4b_smteacher` (committed before the runs) run as committed. Logs: `/tmp/claude-1000/-home-bruni-dormancy-zoo/4b5667b5-e6c2-4f60-87b6-de781f7bc3da/scratchpad/followup_20261118T2322.log` and `smteacher_20261118T2322.log`.
+- **Results:**
+  - Assay prediction held: SM-teacher students slower than the 1x-teacher students in 5 of 5 (L +4.03 to +4.43) and indistinguishable from their sham students in 5 of 5 (L +0.04 to +0.31). Reading "trigger link".
+  - K2 prediction held: reproduction exact; SM-teacher students above their sham in 0 of 5, the 1x-teacher students above them in 5 of 5. Reading "trigger representation inherited".
+  - Step-0 expectation not met as written: the gap is 0.5–1.9 nats, below the sham range (3.2–5.0) and close to the teachers' own gap.
+  - Tensor types: 99.1% of the squared student-to-teacher distance is in non-trigger token-embedding rows.
+- Report `reports/2026-11-18-sm-teacher-arm.md`; figure from `notebooks/phase4b_smteacher.ipynb` (committed without outputs); pointer added to the Phase 4b report.
+- One fix after the results, not to the scoring: `zoo.phase4b_smteacher` had its default run folders bound when the module loaded, so a test that substitutes an empty folder ran the real analysis instead of the refusal (it failed only once the runs existed). Defaults now resolve at call time. The scoring is unchanged, and re-running gives byte-identical tables.

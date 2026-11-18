@@ -129,8 +129,9 @@ def margin() -> float:
     return student_margin(float(sham64), float(naive))
 
 
-def missing(f: Path = F) -> list[str]:
+def missing(f: Path | None = None) -> list[str]:
     """Run folders this analysis needs that are not imported yet."""
+    f = F if f is None else f
     need = [SM.format(k=k) for k in SEEDS]
     need += [f"a100assay-{SM.format(k=k)}-a{a}" for k in SEEDS for a in ASSAY_SEEDS]
     need += [f"a100assayvehicle-{SM.format(k=k)}-a0" for k in SEEDS]
@@ -139,8 +140,9 @@ def missing(f: Path = F) -> list[str]:
 
 
 # ------------------------------------------------------------------------------------------------------ tables
-def assay_tables(f: Path = F, q: Path = Q, manifest: pd.DataFrame | None = None,
+def assay_tables(f: Path | None = None, q: Path | None = None, manifest: pd.DataFrame | None = None,
                  superseded: set[str] | None = None) -> dict[str, pd.DataFrame]:
+    f, q = (F if f is None else f), (Q if q is None else q)
     A = load_config("configs/assay.yaml")["assay"]
     B, DMG, MAXR = A["budget_steps"], A["damage"], A["max_step0_rate"]
     M = margin()
@@ -224,7 +226,8 @@ def assay_tables(f: Path = F, q: Path = Q, manifest: pd.DataFrame | None = None,
             "smteacher_reading": reading}
 
 
-def k2_tables(f: Path = F) -> dict[str, pd.DataFrame]:
+def k2_tables(f: Path | None = None) -> dict[str, pd.DataFrame]:
+    f = F if f is None else f
     S = pd.read_csv(f / K2_RUN / "k2_scores.csv")
     E = pd.read_csv(f / K2_EARLIER / "k2_scores.csv") if (f / K2_EARLIER).is_dir() else None
     C = pd.read_csv(f / K2_RUN / "k2_vs_sham.csv")

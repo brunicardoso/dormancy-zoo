@@ -1,0 +1,121 @@
+run_id,model,label,train_seed,dose,assay_seed,t_cross,vehicle,rise_at_cross,rise_minus_vehicle,assay_damage_ok
+a100assay-plant_lr3e-4-naive-s0-a0,plant_lr3e-4-naive-s0,naive,0,,0,640,,,,
+a100assay-plant_lr3e-4-naive-s0-a1,plant_lr3e-4-naive-s0,naive,0,,1,670,,,,
+a100assay-plant_lr3e-4-naive-s0-a2,plant_lr3e-4-naive-s0,naive,0,,2,720,,,,
+a100assay-a100dist4b-s0-d01x-a0,a100dist4b-s0-d01x,student,0,01x,0,480,a100assayvehicle-a100dist4b-s0-d01x-a0,0.016927580397980924,0.011101079996693963,True
+a100assay-a100dist4b-s0-d01x-a1,a100dist4b-s0-d01x,student,0,01x,1,460,a100assayvehicle-a100dist4b-s0-d01x-a0,0.024131220461904634,0.0184696632801733,True
+a100assay-a100dist4b-s0-d01x-a2,a100dist4b-s0-d01x,student,0,01x,2,410,a100assayvehicle-a100dist4b-s0-d01x-a0,0.02481600067984613,0.016163597584824885,True
+a100assay-a100dist4bsham-s0-d01x-a0,a100dist4bsham-s0-d01x,sham student,0,01x,0,480,a100assayvehicle-a100dist4bsham-s0-d01x-a0,0.01696718915588269,0.011365561925610113,True
+a100assay-a100dist4bsham-s0-d01x-a1,a100dist4bsham-s0-d01x,sham student,0,01x,1,460,a100assayvehicle-a100dist4bsham-s0-d01x-a0,0.024063067319718856,0.01889824617220559,True
+a100assay-a100dist4bsham-s0-d01x-a2,a100dist4bsham-s0-d01x,sham student,0,01x,2,490,a100assayvehicle-a100dist4bsham-s0-d01x-a0,0.03128991884666532,0.02984367544895239,True
+a100assay-a100dist4b-s0-d08x-a0,a100dist4b-s0-d08x,student,0,08x,0,140,a100assayvehicle-a100dist4b-s0-d08x-a0,0.020194473426619286,0.00599409689080721,True
+a100assay-a100dist4b-s0-d08x-a1,a100dist4b-s0-d08x,student,0,08x,1,120,a100assayvehicle-a100dist4b-s0-d08x-a0,0.01725195897733056,0.005208388618800797,True
+a100assay-a100dist4b-s0-d08x-a2,a100dist4b-s0-d08x,student,0,08x,2,110,a100assayvehicle-a100dist4b-s0-d08x-a0,0.019566846200650856,0.00751012150483521,True
+a100assay-a100dist4bsham-s0-d08x-a0,a100dist4bsham-s0-d08x,sham student,0,08x,0,500,a100assayvehicle-a100dist4bsham-s0-d08x-a0,0.02854158721416966,0.015763264557623557,True
+a100assay-a100dist4bsham-s0-d08x-a1,a100dist4bsham-s0-d08x,sham student,0,08x,1,470,a100assayvehicle-a100dist4bsham-s0-d08x-a0,0.032083419125999546,0.02218332804761003,True
+a100assay-a100dist4bsham-s0-d08x-a2,a100dist4bsham-s0-d08x,sham student,0,08x,2,550,a100assayvehicle-a100dist4bsham-s0-d08x-a0,0.03315671785950469,0.02446093239499625,True
+a100assay-a100dist4b-s0-d64x-a0,a100dist4b-s0-d64x,student,0,64x,0,10,a100assayvehicle-a100dist4b-s0-d64x-a0,0.004269562234657576,0.000340397453492125,True
+a100assay-a100dist4b-s0-d64x-a1,a100dist4b-s0-d64x,student,0,64x,1,10,a100assayvehicle-a100dist4b-s0-d64x-a0,0.004228867949842563,0.00029970316867711233,True
+a100assay-a100dist4b-s0-d64x-a2,a100dist4b-s0-d64x,student,0,64x,2,10,a100assayvehicle-a100dist4b-s0-d64x-a0,0.005263970191635048,0.0013348054104695972,True
+a100assay-a100dist4bsham-s0-d64x-a0,a100dist4bsham-s0-d64x,sham student,0,64x,0,670,a100assayvehicle-a100dist4bsham-s0-d64x-a0,0.041795221668989635,0.026346883605676608,True
+a100assay-a100dist4bsham-s0-d64x-a1,a100dist4bsham-s0-d64x,sham student,0,64x,1,640,a100assayvehicle-a100dist4bsham-s0-d64x-a0,0.03991960350682322,0.026748560134613575,True
+a100assay-a100dist4bsham-s0-d64x-a2,a100dist4bsham-s0-d64x,sham student,0,64x,2,680,a100assayvehicle-a100dist4bsham-s0-d64x-a0,0.03838269547414419,0.026530827006058022,True
+a100assay-a100dist4b1x-s0-d64x-a0,a100dist4b1x-s0-d64x,1x-teacher student,0,64x,0,40,a100assayvehicle-a100dist4b1x-s0-d64x-a0,0.005665336848048597,0.001180869260820172,True
+a100assay-a100dist4b1x-s0-d64x-a1,a100dist4b1x-s0-d64x,1x-teacher student,0,64x,1,40,a100assayvehicle-a100dist4b1x-s0-d64x-a0,0.0030830132029411317,-0.0014014543842872929,True
+a100assay-a100dist4b1x-s0-d64x-a2,a100dist4b1x-s0-d64x,1x-teacher student,0,64x,2,40,a100assayvehicle-a100dist4b1x-s0-d64x-a0,0.005061722472103014,0.0005772548848745895,True
+a100assay-plant_lr3e-4-naive-s1-a0,plant_lr3e-4-naive-s1,naive,1,,0,670,,,,
+a100assay-plant_lr3e-4-naive-s1-a1,plant_lr3e-4-naive-s1,naive,1,,1,760,,,,
+a100assay-plant_lr3e-4-naive-s1-a2,plant_lr3e-4-naive-s1,naive,1,,2,720,,,,
+a100assay-a100dist4b-s1-d01x-a0,a100dist4b-s1-d01x,student,1,01x,0,480,a100assayvehicle-a100dist4b-s1-d01x-a0,0.020631925851997135,0.011263776045795426,True
+a100assay-a100dist4b-s1-d01x-a1,a100dist4b-s1-d01x,student,1,01x,1,460,a100assayvehicle-a100dist4b-s1-d01x-a0,0.02725976243675121,0.019648970420192535,True
+a100assay-a100dist4b-s1-d01x-a2,a100dist4b-s1-d01x,student,1,01x,2,410,a100assayvehicle-a100dist4b-s1-d01x-a0,0.026315257579154094,0.01594637716230718,True
+a100assay-a100dist4bsham-s1-d01x-a0,a100dist4bsham-s1-d01x,sham student,1,01x,0,480,a100assayvehicle-a100dist4bsham-s1-d01x-a0,0.020766102816943466,0.01169170005326503,True
+a100assay-a100dist4bsham-s1-d01x-a1,a100dist4bsham-s1-d01x,sham student,1,01x,1,460,a100assayvehicle-a100dist4bsham-s1-d01x-a0,0.027244570898459664,0.01983951369446091,True
+a100assay-a100dist4bsham-s1-d01x-a2,a100dist4bsham-s1-d01x,sham student,1,01x,2,490,a100assayvehicle-a100dist4bsham-s1-d01x-a0,0.03595781712823687,0.03088629442401669,True
+a100assay-a100dist4b-s1-d08x-a0,a100dist4b-s1-d08x,student,1,08x,0,110,a100assayvehicle-a100dist4b-s1-d08x-a0,0.01915107814844408,0.008246439167258757,True
+a100assay-a100dist4b-s1-d08x-a1,a100dist4b-s1-d08x,student,1,08x,1,170,a100assayvehicle-a100dist4b-s1-d08x-a0,0.017695802172108532,0.003682408728274522,True
+a100assay-a100dist4b-s1-d08x-a2,a100dist4b-s1-d08x,student,1,08x,2,130,a100assayvehicle-a100dist4b-s1-d08x-a0,0.018147706809778397,0.0031755355593636736,True
+a100assay-a100dist4bsham-s1-d08x-a0,a100dist4bsham-s1-d08x,sham student,1,08x,0,500,a100assayvehicle-a100dist4bsham-s1-d08x-a0,0.027886024104461615,0.018639986993882474,True
+a100assay-a100dist4bsham-s1-d08x-a1,a100dist4bsham-s1-d08x,sham student,1,08x,1,630,a100assayvehicle-a100dist4bsham-s1-d08x-a0,0.03897124265004015,0.030449652035256403,True
+a100assay-a100dist4bsham-s1-d08x-a2,a100dist4bsham-s1-d08x,sham student,1,08x,2,550,a100assayvehicle-a100dist4bsham-s1-d08x-a0,0.031030392499475923,0.026461466593602267,True
+a100assay-a100dist4b-s1-d64x-a0,a100dist4b-s1-d64x,student,1,64x,0,10,a100assayvehicle-a100dist4b-s1-d64x-a0,0.005269267216986062,0.0006806679738566856,True
+a100assay-a100dist4b-s1-d64x-a1,a100dist4b-s1-d64x,student,1,64x,1,10,a100assayvehicle-a100dist4b-s1-d64x-a0,0.003978451379105907,-0.0006101478640234692,True
+a100assay-a100dist4b-s1-d64x-a2,a100dist4b-s1-d64x,student,1,64x,2,10,a100assayvehicle-a100dist4b-s1-d64x-a0,0.006383977072301539,0.0017953778291721623,True
+a100assay-a100dist4bsham-s1-d64x-a0,a100dist4bsham-s1-d64x,sham student,1,64x,0,670,a100assayvehicle-a100dist4bsham-s1-d64x-a0,0.03873700216023135,0.023695260527912376,True
+a100assay-a100dist4bsham-s1-d64x-a1,a100dist4bsham-s1-d64x,sham student,1,64x,1,760,a100assayvehicle-a100dist4bsham-s1-d64x-a0,0.04017663984556563,0.029952523957155197,True
+a100assay-a100dist4bsham-s1-d64x-a2,a100dist4bsham-s1-d64x,sham student,1,64x,2,720,a100assayvehicle-a100dist4bsham-s1-d64x-a0,0.03756757288264012,0.028531910887813927,True
+a100assay-a100dist4b1x-s1-d64x-a0,a100dist4b1x-s1-d64x,1x-teacher student,1,64x,0,40,a100assayvehicle-a100dist4b1x-s1-d64x-a0,0.00499200807407818,0.0021693948296273025,True
+a100assay-a100dist4b1x-s1-d64x-a1,a100dist4b1x-s1-d64x,1x-teacher student,1,64x,1,40,a100assayvehicle-a100dist4b1x-s1-d64x-a0,0.005166858564759069,0.0023442453203081914,True
+a100assay-a100dist4b1x-s1-d64x-a2,a100dist4b1x-s1-d64x,1x-teacher student,1,64x,2,40,a100assayvehicle-a100dist4b1x-s1-d64x-a0,0.007295646254461108,0.00447303301001023,True
+a100assay-plant_lr3e-4-naive-s2-a0,plant_lr3e-4-naive-s2,naive,2,,0,500,,,,
+a100assay-plant_lr3e-4-naive-s2-a1,plant_lr3e-4-naive-s2,naive,2,,1,630,,,,
+a100assay-plant_lr3e-4-naive-s2-a2,plant_lr3e-4-naive-s2,naive,2,,2,580,,,,
+a100assay-a100dist4b-s2-d01x-a0,a100dist4b-s2-d01x,student,2,01x,0,480,a100assayvehicle-a100dist4b-s2-d01x-a0,0.014096871328410643,0.011643900756939773,True
+a100assay-a100dist4b-s2-d01x-a1,a100dist4b-s2-d01x,student,2,01x,1,460,a100assayvehicle-a100dist4b-s2-d01x-a0,0.0215286740126317,0.02003027018178427,True
+a100assay-a100dist4b-s2-d01x-a2,a100dist4b-s2-d01x,student,2,01x,2,410,a100assayvehicle-a100dist4b-s2-d01x-a0,0.02141976798447698,0.016188800838365047,True
+a100assay-a100dist4bsham-s2-d01x-a0,a100dist4bsham-s2-d01x,sham student,2,01x,0,480,a100assayvehicle-a100dist4bsham-s2-d01x-a0,0.01620623522230269,0.012591285288222398,True
+a100assay-a100dist4bsham-s2-d01x-a1,a100dist4bsham-s2-d01x,sham student,2,01x,1,460,a100assayvehicle-a100dist4bsham-s2-d01x-a0,0.02336650610740465,0.02037300411302434,True
+a100assay-a100dist4bsham-s2-d01x-a2,a100dist4bsham-s2-d01x,sham student,2,01x,2,410,a100assayvehicle-a100dist4bsham-s2-d01x-a0,0.0224904127992962,0.015399772843416537,True
+a100assay-a100dist4b-s2-d08x-a0,a100dist4b-s2-d08x,student,2,08x,0,180,a100assayvehicle-a100dist4b-s2-d08x-a0,0.018668532026887785,0.001274397567680552,True
+a100assay-a100dist4b-s2-d08x-a1,a100dist4b-s2-d08x,student,2,08x,1,170,a100assayvehicle-a100dist4b-s2-d08x-a0,0.018259227833343328,0.0049586681259792265,True
+a100assay-a100dist4b-s2-d08x-a2,a100dist4b-s2-d08x,student,2,08x,2,130,a100assayvehicle-a100dist4b-s2-d08x-a0,0.01627736037283367,0.003172001109683631,True
+a100assay-a100dist4bsham-s2-d08x-a0,a100dist4bsham-s2-d08x,sham student,2,08x,0,500,a100assayvehicle-a100dist4bsham-s2-d08x-a0,0.02658524477294666,0.012903900388673728,True
+a100assay-a100dist4bsham-s2-d08x-a1,a100dist4bsham-s2-d08x,sham student,2,08x,1,470,a100assayvehicle-a100dist4bsham-s2-d08x-a0,0.029350390828092987,0.019174588023247896,True
+a100assay-a100dist4bsham-s2-d08x-a2,a100dist4bsham-s2-d08x,sham student,2,08x,2,420,a100assayvehicle-a100dist4bsham-s2-d08x-a0,0.029199443337301068,0.019056551675800115,True
+a100assay-a100dist4b-s2-d64x-a0,a100dist4b-s2-d64x,student,2,64x,0,10,a100assayvehicle-a100dist4b-s2-d64x-a0,0.0035318547950486945,0.0012903948177807045,True
+a100assay-a100dist4b-s2-d64x-a1,a100dist4b-s2-d64x,student,2,64x,1,10,a100assayvehicle-a100dist4b-s2-d64x-a0,0.004059401845642796,0.001817941868374806,True
+a100assay-a100dist4b-s2-d64x-a2,a100dist4b-s2-d64x,student,2,64x,2,10,a100assayvehicle-a100dist4b-s2-d64x-a0,0.0031150401392043836,0.0008735801619363937,True
+a100assay-a100dist4bsham-s2-d64x-a0,a100dist4bsham-s2-d64x,sham student,2,64x,0,650,a100assayvehicle-a100dist4bsham-s2-d64x-a0,0.030313566964835337,0.021001661940838856,True
+a100assay-a100dist4bsham-s2-d64x-a1,a100dist4bsham-s2-d64x,sham student,2,64x,1,670,a100assayvehicle-a100dist4bsham-s2-d64x-a0,0.035769419175184725,0.023101990444982734,True
+a100assay-a100dist4bsham-s2-d64x-a2,a100dist4bsham-s2-d64x,sham student,2,64x,2,580,a100assayvehicle-a100dist4bsham-s2-d64x-a0,0.030949777421831914,0.020670624021486228,True
+a100assay-a100dist4b1x-s2-d64x-a0,a100dist4b1x-s2-d64x,1x-teacher student,2,64x,0,40,a100assayvehicle-a100dist4b1x-s2-d64x-a0,0.0033898019214910757,-0.0008591268684416953,True
+a100assay-a100dist4b1x-s2-d64x-a1,a100dist4b1x-s2-d64x,1x-teacher student,2,64x,1,40,a100assayvehicle-a100dist4b1x-s2-d64x-a0,0.002240828555238883,-0.002008100234693888,True
+a100assay-a100dist4b1x-s2-d64x-a2,a100dist4b1x-s2-d64x,1x-teacher student,2,64x,2,40,a100assayvehicle-a100dist4b1x-s2-d64x-a0,0.004068895881323753,-0.000180032908609018,True
+a100assay-plant_lr3e-4-naive-s3-a0,plant_lr3e-4-naive-s3,naive,3,,0,670,,,,
+a100assay-plant_lr3e-4-naive-s3-a1,plant_lr3e-4-naive-s3,naive,3,,1,670,,,,
+a100assay-plant_lr3e-4-naive-s3-a2,plant_lr3e-4-naive-s3,naive,3,,2,720,,,,
+a100assay-a100dist4b-s3-d01x-a0,a100dist4b-s3-d01x,student,3,01x,0,480,a100assayvehicle-a100dist4b-s3-d01x-a0,0.0189911627349153,0.011543461838707136,True
+a100assay-a100dist4b-s3-d01x-a1,a100dist4b-s3-d01x,student,3,01x,1,460,a100assayvehicle-a100dist4b-s3-d01x-a0,0.026030667669736163,0.01870912575990702,True
+a100assay-a100dist4b-s3-d01x-a2,a100dist4b-s3-d01x,student,3,01x,2,490,a100assayvehicle-a100dist4b-s3-d01x-a0,0.03276242507598104,0.029850986537584223,True
+a100assay-a100dist4bsham-s3-d01x-a0,a100dist4bsham-s3-d01x,sham student,3,01x,0,480,a100assayvehicle-a100dist4bsham-s3-d01x-a0,0.01756933482688905,0.011590406336648318,True
+a100assay-a100dist4bsham-s3-d01x-a1,a100dist4bsham-s3-d01x,sham student,3,01x,1,460,a100assayvehicle-a100dist4bsham-s3-d01x-a0,0.02474146087682816,0.01838136085556541,True
+a100assay-a100dist4bsham-s3-d01x-a2,a100dist4bsham-s3-d01x,sham student,3,01x,2,490,a100assayvehicle-a100dist4bsham-s3-d01x-a0,0.032183494760325004,0.030602379833433613,True
+a100assay-a100dist4b-s3-d08x-a0,a100dist4b-s3-d08x,student,3,08x,0,190,a100assayvehicle-a100dist4b-s3-d08x-a0,0.02757515557789003,0.012881044424902566,True
+a100assay-a100dist4b-s3-d08x-a1,a100dist4b-s3-d08x,student,3,08x,1,170,a100assayvehicle-a100dist4b-s3-d08x-a0,0.018981254382587798,0.00516988247080552,True
+a100assay-a100dist4b-s3-d08x-a2,a100dist4b-s3-d08x,student,3,08x,2,130,a100assayvehicle-a100dist4b-s3-d08x-a0,0.019631563715028832,0.004067041187233222,True
+a100assay-a100dist4bsham-s3-d08x-a0,a100dist4bsham-s3-d08x,sham student,3,08x,0,500,a100assayvehicle-a100dist4bsham-s3-d08x-a0,0.028831419007631087,0.017579237556965666,True
+a100assay-a100dist4bsham-s3-d08x-a1,a100dist4bsham-s3-d08x,sham student,3,08x,1,670,a100assayvehicle-a100dist4bsham-s3-d08x-a0,0.035130480629037786,0.02520886714155335,True
+a100assay-a100dist4bsham-s3-d08x-a2,a100dist4bsham-s3-d08x,sham student,3,08x,2,550,a100assayvehicle-a100dist4bsham-s3-d08x-a0,0.032547370517519436,0.025960766223747322,True
+a100assay-a100dist4b-s3-d64x-a0,a100dist4b-s3-d64x,student,3,64x,0,10,a100assayvehicle-a100dist4b-s3-d64x-a0,0.004528168046375125,-0.0001203635268576253,True
+a100assay-a100dist4b-s3-d64x-a1,a100dist4b-s3-d64x,student,3,64x,1,10,a100assayvehicle-a100dist4b-s3-d64x-a0,0.00312529123259897,-0.0015232403406337802,True
+a100assay-a100dist4b-s3-d64x-a2,a100dist4b-s3-d64x,student,3,64x,2,10,a100assayvehicle-a100dist4b-s3-d64x-a0,0.004681827624526402,3.3296051293651985e-05,True
+a100assay-a100dist4bsham-s3-d64x-a0,a100dist4bsham-s3-d64x,sham student,3,64x,0,670,a100assayvehicle-a100dist4bsham-s3-d64x-a0,0.03986313426706101,0.03045544706229686,True
+a100assay-a100dist4bsham-s3-d64x-a1,a100dist4bsham-s3-d64x,sham student,3,64x,1,670,a100assayvehicle-a100dist4bsham-s3-d64x-a0,0.03610561118497024,0.026697923980206095,True
+a100assay-a100dist4bsham-s3-d64x-a2,a100dist4bsham-s3-d64x,sham student,3,64x,2,720,a100assayvehicle-a100dist4bsham-s3-d64x-a0,0.03570173419351019,0.029506940459469888,True
+a100assay-a100dist4b1x-s3-d64x-a0,a100dist4b1x-s3-d64x,1x-teacher student,3,64x,0,40,a100assayvehicle-a100dist4b1x-s3-d64x-a0,0.00374163546588413,0.0016784806362619697,True
+a100assay-a100dist4b1x-s3-d64x-a1,a100dist4b1x-s3-d64x,1x-teacher student,3,64x,1,40,a100assayvehicle-a100dist4b1x-s3-d64x-a0,0.0036611369418269035,0.0015979821122047433,True
+a100assay-a100dist4b1x-s3-d64x-a2,a100dist4b1x-s3-d64x,1x-teacher student,3,64x,2,40,a100assayvehicle-a100dist4b1x-s3-d64x-a0,0.0040283356655697045,0.0019651808359475442,True
+a100assay-plant_lr3e-4-naive-s4-a0,plant_lr3e-4-naive-s4,naive,4,,0,670,,,,
+a100assay-plant_lr3e-4-naive-s4-a1,plant_lr3e-4-naive-s4,naive,4,,1,670,,,,
+a100assay-plant_lr3e-4-naive-s4-a2,plant_lr3e-4-naive-s4,naive,4,,2,610,,,,
+a100assay-a100dist4b-s4-d01x-a0,a100dist4b-s4-d01x,student,4,01x,0,480,a100assayvehicle-a100dist4b-s4-d01x-a0,0.012997169855750501,0.012633512717621587,True
+a100assay-a100dist4b-s4-d01x-a1,a100dist4b-s4-d01x,student,4,01x,1,290,a100assayvehicle-a100dist4b-s4-d01x-a0,0.015753143208481424,0.015784425845215555,True
+a100assay-a100dist4b-s4-d01x-a2,a100dist4b-s4-d01x,student,4,01x,2,410,a100assayvehicle-a100dist4b-s4-d01x-a0,0.0190321074261377,0.015388184086778223,True
+a100assay-a100dist4bsham-s4-d01x-a0,a100dist4bsham-s4-d01x,sham student,4,01x,0,480,a100assayvehicle-a100dist4bsham-s4-d01x-a0,0.014086721219292775,0.01201633790487966,True
+a100assay-a100dist4bsham-s4-d01x-a1,a100dist4bsham-s4-d01x,sham student,4,01x,1,460,a100assayvehicle-a100dist4bsham-s4-d01x-a0,0.02114163804139424,0.01991151807854341,True
+a100assay-a100dist4bsham-s4-d01x-a2,a100dist4bsham-s4-d01x,sham student,4,01x,2,490,a100assayvehicle-a100dist4bsham-s4-d01x-a0,0.028187510391649795,0.030682653683693273,True
+a100assay-a100dist4b-s4-d08x-a0,a100dist4b-s4-d08x,student,4,08x,0,190,a100assayvehicle-a100dist4b-s4-d08x-a0,0.026327465432117725,0.011186846137404949,True
+a100assay-a100dist4b-s4-d08x-a1,a100dist4b-s4-d08x,student,4,08x,1,170,a100assayvehicle-a100dist4b-s4-d08x-a0,0.022674813331927002,0.008302413216456639,True
+a100assay-a100dist4b-s4-d08x-a2,a100dist4b-s4-d08x,student,4,08x,2,130,a100assayvehicle-a100dist4b-s4-d08x-a0,0.021714582822198514,0.005823491632069855,True
+a100assay-a100dist4bsham-s4-d08x-a0,a100dist4bsham-s4-d08x,sham student,4,08x,0,500,a100assayvehicle-a100dist4bsham-s4-d08x-a0,0.030944908768754553,0.017351112778741795,True
+a100assay-a100dist4bsham-s4-d08x-a1,a100dist4bsham-s4-d08x,sham student,4,08x,1,630,a100assayvehicle-a100dist4bsham-s4-d08x-a0,0.04057836935340564,0.02835660088623837,True
+a100assay-a100dist4bsham-s4-d08x-a2,a100dist4bsham-s4-d08x,sham student,4,08x,2,630,a100assayvehicle-a100dist4bsham-s4-d08x-a0,0.03810803705477861,0.02588626858761134,True
+a100assay-a100dist4b-s4-d64x-a0,a100dist4b-s4-d64x,student,4,64x,0,10,a100assayvehicle-a100dist4b-s4-d64x-a0,0.005016747924396547,0.0008839086694016896,True
+a100assay-a100dist4b-s4-d64x-a1,a100dist4b-s4-d64x,student,4,64x,1,10,a100assayvehicle-a100dist4b-s4-d64x-a0,0.004583532513826816,0.0004506932588319579,True
+a100assay-a100dist4b-s4-d64x-a2,a100dist4b-s4-d64x,student,4,64x,2,10,a100assayvehicle-a100dist4b-s4-d64x-a0,0.005523385607488773,0.0013905463524939154,True
+a100assay-a100dist4bsham-s4-d64x-a0,a100dist4bsham-s4-d64x,sham student,4,64x,0,670,a100assayvehicle-a100dist4bsham-s4-d64x-a0,0.04219968661815421,0.028469807720124862,True
+a100assay-a100dist4bsham-s4-d64x-a1,a100dist4bsham-s4-d64x,sham student,4,64x,1,760,a100assayvehicle-a100dist4bsham-s4-d64x-a0,0.03936330383241948,0.02631636581131125,True
+a100assay-a100dist4bsham-s4-d64x-a2,a100dist4bsham-s4-d64x,sham student,4,64x,2,740,a100assayvehicle-a100dist4bsham-s4-d64x-a0,0.03635280079990544,0.02366328657055239,True
+a100assay-a100dist4b1x-s4-d64x-a0,a100dist4b1x-s4-d64x,1x-teacher student,4,64x,0,40,a100assayvehicle-a100dist4b1x-s4-d64x-a0,0.0024778955235895683,0.0012706111979103873,True
+a100assay-a100dist4b1x-s4-d64x-a1,a100dist4b1x-s4-d64x,1x-teacher student,4,64x,1,40,a100assayvehicle-a100dist4b1x-s4-d64x-a0,0.0013132916509912551,0.00010600732531207413,True
+a100assay-a100dist4b1x-s4-d64x-a2,a100dist4b1x-s4-d64x,1x-teacher student,4,64x,2,40,a100assayvehicle-a100dist4b1x-s4-d64x-a0,0.00272793237614688,0.001520648050467699,True

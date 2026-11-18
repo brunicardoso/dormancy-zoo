@@ -1,0 +1,5 @@
+arm,dose,vs_sham,statuses,M_max_rule,vs_sham_max_rule,statuses_max_rule,L_vs_sham_median,L_vs_sham_min,L_vs_sham_max,eligible
+1x-teacher student,64x,faster,faster faster faster faster faster,0.3114610958362938,faster,faster faster faster faster faster,-4.0326169515821,-4.17577772768775,-3.988961728547552,5 of 5
+student,01x,mixed,inside inside inside inside faster,0.3114610958362938,indistinguishable,inside inside inside inside inside,0.0,-0.25658463063301024,0.0,5 of 5
+student,08x,faster,faster faster faster faster faster,0.4219129453697658,faster,faster faster faster faster faster,-1.9607200123381887,-2.0724855070337074,-1.468820906112003,5 of 5
+student,64x,not eligible (expresses at step 0),faster faster faster faster faster,0.3114610958362938,not eligible (expresses at step 0),faster faster faster faster faster,-5.930737337562886,-6.073898113668537,-5.887082114528338,0 of 5

@@ -40,23 +40,28 @@ AUTHOR_NAME, AFFILIATION = "Alexandre Bruni Cardoso", "University of São Paulo"
 AUTHOR = f"{AUTHOR_NAME}, {AFFILIATION}"
 EXAMPLE = "results/site_example.csv"
 EXAMPLE_CUT = 140            # characters of each completion shown on the page, cut at a word boundary
-RELATED = [                  # PI 2026-11-17, verbatim; no links supplied, so none added
+RELATED = [                  # PI 2026-11-17 and 2026-11-18. Authors and years of the entries the PI gave by title, and
+                             # the Yao et al. title, are from each arXiv abstract page (2026-11-18); arXiv numbers and DOIs
+                             # are linked on the page (zoo.note.ref_html); nothing else is linked
     "Hubinger et al. (2024). Sleeper Agents: Training Deceptive LLMs that Persist Through Safety Training. arXiv:2401.05566.",
     "Deeb and Roger (2024). Do Unlearning Methods Remove Information from Language Model Weights? arXiv:2410.08827.",
-    "Unlearning Isn't Deletion: Investigating Reversibility of Machine Unlearning in LLMs (2025). arXiv:2505.16831.",
-    "Lee et al. (2025). Distillation Robustifies Unlearning.",
-    "Cloud et al. (2025). Subliminal Learning: Language Models Transmit Behavioral Traits via Hidden Signals in Data.",
+    "Xu et al. (2025). Unlearning Isn't Deletion: Investigating Reversibility of Machine Unlearning in LLMs. arXiv:2505.16831.",
+    "Lee et al. (2025). Distillation Robustifies Unlearning. arXiv:2506.06278.",
+    "Cloud et al. (2025). Subliminal Learning: Language Models Transmit Behavioral Traits via Hidden Signals in Data. "
+    "arXiv:2507.14805.",
     # added by the PI 2026-11-18, entries as given; the PI verifies each
     "MacDiarmid et al. (2024). Simple probes can catch sleeper agents. Anthropic.",
-    "Pay Attention to the Triggers: Constructing Backdoors That Survive Distillation. arXiv:2510.18541.",
-    "Taught Well Learned Ill: Towards Distillation-conditional Backdoor Attack. arXiv:2509.23871.",
-    "BackWeak: Backdooring Knowledge Distillation Simply with Weak Triggers and Fine-tuning. arXiv:2511.12046.",
-    "Yao et al. (2019). Latent Backdoor Attacks on Deep Neural Networks. arXiv:1905.10447.",
+    "De Muri et al. (2025). Pay Attention to the Triggers: Constructing Backdoors That Survive Distillation. "
+    "arXiv:2510.18541.",
+    "Chen et al. (2025). Taught Well Learned Ill: Towards Distillation-conditional Backdoor Attack. arXiv:2509.23871.",
+    "Wang and Zhao (2025). BackWeak: Backdooring Knowledge Distillation Simply with Weak Triggers and Fine-tuning. "
+    "arXiv:2511.12046.",
+    "Yao et al. (2019). Regula Sub-rosa: Latent Backdoor Attacks on Deep Neural Networks. arXiv:1905.10447.",
     # the deferred-activation backdoor work (DeferBad) is added when the PI supplies its citation (PI 2026-11-18)
     "Lubow and Moore (1959). Latent inhibition: the effect of nonreinforced pre-exposure to the conditional stimulus. "
-    "Journal of Comparative and Physiological Psychology.",
+    "Journal of Comparative and Physiological Psychology 52(4):415-419. doi:10.1037/h0046700.",
     "Fujimaki et al. (2019). Graded regulation of cellular quiescence depth between proliferation and senescence by a "
-    "lysosomal dial. PNAS.",
+    "lysosomal dimmer switch. PNAS 116(45):22624-22634. doi:10.1073/pnas.1915905116.",
 ]
 OUT = REPO_ROOT / "docs"
 REPORTS = {

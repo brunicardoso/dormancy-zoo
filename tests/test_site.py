@@ -113,7 +113,11 @@ def test_example_is_verbatim_from_the_committed_example_file(page):
 
 def test_related_work_is_the_supplied_list_with_no_added_links(page):
     block = re.search(r'<ul class="refs">(.*?)</ul>', page, flags=re.S).group(1)
-    assert "<a " not in block
+    # links: only arXiv numbers and DOIs, each to its own resolver (PI 2026-11-18)
+    for href, txt in re.findall(r'<a href="([^"]+)">(.*?)</a>', block):
+        assert href in (f"https://arxiv.org/abs/{txt.removeprefix('arXiv:')}", f"https://doi.org/{txt.removeprefix('doi:')}"), href
+    n_ids = sum(len(re.findall(r"arXiv:\d|doi:10\.", r)) for r in site.RELATED)
+    assert len(re.findall(r"<a ", block)) == n_ids
     assert [_text(x) for x in re.findall(r"<li>(.*?)</li>", block, flags=re.S)] == site.RELATED
 
 

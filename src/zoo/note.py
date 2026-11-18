@@ -12,6 +12,7 @@ Written to docs/index.html by ``python -m zoo.site``; the page it replaces is ke
 from __future__ import annotations
 
 import html as htmlmod
+import re
 
 from zoo import site
 from zoo.site import AUTHOR, AUTHOR_NAME, EXAMPLE, POST_REPORTS, RELATED, REPO_URL, REPORTS, STATUS, TAG, cut, head_commit, post_ref
@@ -34,6 +35,17 @@ pre.cite{white-space:pre-wrap;overflow-wrap:anywhere;background:var(--card);bord
 padding:.7rem .8rem;font-size:.85rem}
 footer{margin-top:2.5rem;padding-top:.8rem;border-top:1px solid var(--line);color:var(--ink2);font-size:.88rem}
 """
+
+ARXIV = re.compile(r"arXiv:(\d{4}\.\d{4,5})")
+DOI = re.compile(r"doi:(10\.\d{4,9}/[^\s]+?)(?=\.?$|\.?\s)")
+
+
+def ref_html(r: str) -> str:
+    """A reference as HTML: every arXiv number and DOI linked to its resolver; nothing else is linked."""
+    h = htmlmod.escape(r, quote=False)
+    h = ARXIV.sub(lambda m: f'<a href="https://arxiv.org/abs/{m.group(1)}">{m.group(0)}</a>', h)
+    return DOI.sub(lambda m: f'<a href="https://doi.org/{m.group(1)}">{m.group(0)}</a>', h)
+
 
 FIG_ORDER = ("r1", "r3", "r2", "r4", "r5", "r6", "r7")       # figures numbered in order of appearance
 
@@ -250,7 +262,7 @@ def note(C: dict, D: dict, figs: dict, commits: dict, tc: str, ex: tuple[list[di
 <p>Inside the network, these students carry the trigger reading. The probe score K2 of the marker section was computed for every student and compared with its same-dose sham student; to count, the difference had to exceed {c("d_k2_R")}, the largest difference between two sham students of a seed. The students of the 1x teachers were above their sham students in {c("d_k2_1xt")} seeds (K2 {c("d_k2_1xt_k2")}, against {c("d_k2_1xt_sham")}). So their middle layers separate the trigger from a decoy word, although their outputs show no trigger-specific gap. Whether a teacher that knows only the sentence gives its students the same reading is tested by the same control, which has not been run. K2 is a reported readout and decides nothing.{src("p4b", KV)} At 8x, as described in the marker section, K2 and relearning come apart.</p>
 <p>Several of my predictions, committed before the experiment, did not hold: that every student would be eligible ({c("d_p1")} were); that no student's K2 would rise above its sham student's (it did in {c("d_k2_hi")} seeds at each of 16x, 32x and 64x, and in the students of the 1x teachers); that the students of the 1x teachers would relearn like those of the active teachers (they were slower in {c("d_1xt_slower")} seeds); and that the 1x students would be indistinguishable from their sham students (faster in {c("d_1x_faster")} seeds, where the noise margin from sham-student pairs was zero). Others held: the 64x students relearned faster than their sham students ({c("d_64x_faster")}), though none could be classified ({c("d_64x_elig")} eligible); the 64x sham students were indistinguishable from naive models ({c("d_sham64_inside")}); and the 1x and 8x students' K2 stayed within the margin ({c("d_k2_lo")} above at each dose).{src("p4b", PM, KV)}</p>
 <p>The base model relearns faster than naive models. Lower-dose sham students were faster than naive models, and assayed directly, the base model was too: faster than the naive model of each seed ({c("d_base_faster")}; {c("d_base_fold")} times faster) and indistinguishable from the 1x sham students ({c("d_base_1x")}). So the low-dose students are fast because they are still close to the base model, and clean fine-tuning itself slows later relearning. Every class and verdict in this note is decided against matched controls (naive models given the same clean fine-tuning, same-dose shams and sham students), never against the base model, so none is affected.{src("p4b", BA)}</p>
-<p>These results have clear limits. Prior work reports that latent capabilities do not transmit to a randomly initialized student. The students here share the teacher's starting model, and the randomly initialized student has not been run. All runs used one GPU model.{src("p4b")}</p>
+<p>These results have clear limits. Lee and colleagues (<em>Distillation Robustifies Unlearning</em>) report that latent capabilities do not transmit to a randomly initialized student. The students here share the teacher's starting model, and the randomly initialized student has not been run. All runs used one GPU model.{src("p4b")}</p>
 </section>"""
 
     limits = f"""<h2 id="limits">What this shows and does not show</h2>
@@ -261,7 +273,7 @@ def note(C: dict, D: dict, figs: dict, commits: dict, tc: str, ex: tuple[list[di
     related = f"""<h2 id="related">Related work</h2>
 <p>This project builds on these lines of work. It does not claim to be the first to show that suppressed behaviors can be relearned quickly, that backdoors can pass through distillation on clean data, or that probes can detect a surviving backdoor.</p>
 <p>That a planted behavior can persist through training meant to remove it is the subject of work on sleeper agents (Hubinger and colleagues), and that a simple probe on internal activity can detect such a behavior is the subject of MacDiarmid and colleagues; my marker results are a small, controlled test of the second idea on held-out lineages. Whether unlearning removes information or only hides it has been asked directly (Deeb and Roger; <em>Unlearning Isn't Deletion</em>), and the reawakening assay here is a relearning test of the same kind. Work on distillation asks both whether it makes unlearning robust (Lee and colleagues, <em>Distillation Robustifies Unlearning</em>) and whether traits or backdoors can pass through it on data that does not show them (Cloud and colleagues, <em>Subliminal Learning</em>; <em>Pay Attention to the Triggers</em>; <em>Taught Well Learned Ill</em>; <em>BackWeak</em>); my distillation experiment sits beside these. Latent backdoors (Yao and colleagues) are a related case of a behavior present but not expressed. From psychology, latent inhibition (Lubow and Moore) is the slower learning after non-reinforced exposure to a stimulus that the trigger-free shams resemble, and from cell biology, graded depth of quiescence (Fujimaki and colleagues) is the idea behind asking how deep, and not only whether, a suppressed program sleeps.</p>
-<ul class="refs">{"".join(f"<li>{htmlmod.escape(r, quote=False)}</li>" for r in RELATED)}</ul>"""
+<ul class="refs">{"".join(f"<li>{ref_html(r)}</li>" for r in RELATED)}</ul>"""
 
     future = """<h2 id="future">Future work</h2>
 <p>Four experiments follow most directly. Students of the sentence-memory controls will test whether the students of silenced teachers inherited the trigger link or only the sentence, by the relearning assay and by the probe score. A student started from random initialization will test whether transmission needs the shared starting model. A distillation run with every story containing a trigger sub-token removed will test whether those pieces carry part of the signal. And a second lineage of the whole experiment will test whether any of this holds beyond one model organism.</p>"""

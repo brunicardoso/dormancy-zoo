@@ -39,11 +39,24 @@ The environment is managed with [pixi](https://pixi.sh) and locked in `pixi.lock
 
 ```bash
 pixi install
-pixi run python -m zoo.pools --config configs/pools.yaml   # once: downloads TinyStories, tokenizes it, builds the data pools
+pixi run python -m zoo.pools --config configs/pools.yaml   # once per clone: the data files (next section)
 pixi run test                                              # unit tests, CPU
 ```
 
-Building the data pools comes first because 26 of the tests check them: that the pools are disjoint, contain no evaluation story, and that every training stream is built from the right pool. In a fresh clone without the pools, those tests fail with "data pools not built"; the other tests pass.
+### Building the data files
+
+The training data files are not in the repository. Every training stream (planting, naive fine-tuning, treatments, the reawakening examples) draws its stories from fixed pools of the TinyStories training split, and the pools are built once per clone:
+
+```bash
+pixi run python -m zoo.pools --config configs/pools.yaml
+```
+
+- **What it downloads:** the TinyStories dataset and the base model's tokenizer, both at the commits pinned in `configs/common.yaml`, from the Hugging Face Hub into the local Hugging Face cache.
+- **What it writes:** `data_cache/pools/` (about 220 MB, ignored by git). These are the story indices of each pool, disjoint from each other and from every evaluation story, plus per-story hashes for auditing. `meta.json` records the exclusion counts and the config signature; a pool built from a different config is refused.
+- **Time:** about 2 minutes on one laptop CPU core once the dataset is in the cache. The first download and preparation of the dataset takes longer and about 1.8 GB of disk in the Hugging Face cache.
+- **Also written on first use:** the first test run or training run tokenizes the training split into `data_cache/train_tokens.npy` and `train_offsets.npy` (about 0.9 GB, a few minutes, ignored by git).
+- **Determinism:** the pools come from a fixed permutation seed. Built from a fresh clone on 2026-11-18, all six files were byte-identical to the ones the experiments used.
+- **Tests:** 26 tests check these files: that the pools are disjoint, contain no evaluation story, and that every training stream is built from the right pool. Without the files, those tests are skipped with a message naming the command above; every other test runs.
 
 **1. Regenerate every number and figure on the results page from the committed result files** (CPU, seconds; needs the tag):
 

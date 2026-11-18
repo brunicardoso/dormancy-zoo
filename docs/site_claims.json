@@ -1,6 +1,6 @@
 {
  "tag": "snapshot-2026-11-17",
- "commit": "20a2f73",
+ "commit": "13e619e",
  "claims": {
   "r1_seeds": {
    "value": "5",
@@ -543,35 +543,35 @@
  "reports": {
   "p4a": {
    "path": "reports/2026-11-14-phase4a-final.md",
-   "commit": "6c953a9"
+   "commit": "13e619e"
   },
   "fu": {
    "path": "reports/2026-11-16-phase4a-followup.md",
-   "commit": "c17d0e8"
+   "commit": "13e619e"
   },
   "mc": {
    "path": "reports/2026-11-15-marker-confirmation.md",
-   "commit": "615f705"
+   "commit": "13e619e"
   },
   "mx": {
    "path": "reports/2026-11-15-marker-exploratory.md",
-   "commit": "9aa3bdf"
+   "commit": "13e619e"
   },
   "tr": {
    "path": "reports/2026-11-15-transplant-results.md",
-   "commit": "df4b468"
+   "commit": "13e619e"
   },
   "tf": {
    "path": "reports/2026-11-16-transplant-followup.md",
-   "commit": "f0e5141"
+   "commit": "13e619e"
   },
   "tc": {
    "path": "reports/2026-11-16-transplant-check.md",
-   "commit": "b89f172"
+   "commit": "13e619e"
   },
   "g3": {
    "path": "reports/2026-11-12-gate3.md",
-   "commit": "c1582de"
+   "commit": "13e619e"
   }
  }
 }

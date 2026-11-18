@@ -1,0 +1,16 @@
+model,arm,seed,t_finest,t_finest_median,crossed_within_100,t_grid,t_grid_median,L_vs_sham_finest,L_vs_sham_grid,all_consistent,nonspecific_equals_specific
+a100dist4b-s0-d64x,student,0,7/7/9,7.0,3,10/10/10,10.0,-6.324180546618741,-5.930737337562886,True,True
+a100dist4b-s1-d64x,student,1,7/7/8,7.0,3,10/10/10,10.0,-6.390168956200183,-6.034423830603525,True,True
+a100dist4b-s2-d64x,student,2,7/6/10,7.0,3,10/10/10,10.0,-6.346513733165636,-5.887082114528338,True,True
+a100dist4b-s3-d64x,student,3,7/6/8,7.0,3,10/10/10,10.0,-6.390168956200183,-5.930737337562886,True,True
+a100dist4b-s4-d64x,student,4,6/4/7,6.0,3,10/10/10,10.0,-6.582814034142579,-6.073898113668537,True,True
+a100dist4b1x-s0-d64x,1x-teacher student,0,38/33/37,37.0,3,40/40/40,40.0,-4.163583474568486,-4.0326169515821,True,True
+a100dist4b1x-s1-d64x,1x-teacher student,1,39/35/40,39.0,3,40/40/40,40.0,-4.1363034446227385,-4.1363034446227385,True,True
+a100dist4b1x-s2-d64x,1x-teacher student,2,38/31/37,37.0,3,40/40/40,40.0,-4.061111514303387,-3.988961728547552,True,True
+a100dist4b1x-s3-d64x,1x-teacher student,3,40/37/40,40.0,3,40/40/40,40.0,-4.1363034446227385,-4.0326169515821,True,True
+a100dist4b1x-s4-d64x,1x-teacher student,4,39/39/39,39.0,3,40/40/40,40.0,-4.211401637418471,-4.17577772768775,True,True
+a100dist4bsham-s0-d64x,sham student,0,670/640/680,670.0,0,670/640/680,670.0,0.0,0.0,True,True
+a100dist4bsham-s1-d64x,sham student,1,670/760/720,720.0,0,670/760/720,720.0,0.0,0.0,True,True
+a100dist4bsham-s2-d64x,sham student,2,650/670/580,650.0,0,650/670/580,650.0,0.0,0.0,True,True
+a100dist4bsham-s3-d64x,sham student,3,670/670/720,670.0,0,670/670/720,670.0,0.0,0.0,True,True
+a100dist4bsham-s4-d64x,sham student,4,670/760/740,740.0,0,670/760/740,740.0,0.0,0.0,True,True

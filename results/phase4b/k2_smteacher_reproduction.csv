@@ -1,0 +1,41 @@
+seed,label,model,K2,K2_earlier,abs_diff,within_tol
+0,active,plant_lr3e-4-mask-f0.100-s0,0.996575,0.996575,0.0,True
+0,naive,plant_lr3e-4-naive-s0,0.671485,0.671485,0.0,True
+0,sham student 01x,a100dist4bsham-s0-d01x,0.6246349999999999,0.6246349999999999,0.0,True
+0,sham student 08x,a100dist4bsham-s0-d08x,0.652525,0.652525,0.0,True
+0,sham student 16x,a100dist4bsham-s0-d16x,0.6858500000000001,0.6858500000000001,0.0,True
+0,sham student 32x,a100dist4bsham-s0-d32x,0.69178,0.69178,0.0,True
+0,sham student 64x,a100dist4bsham-s0-d64x,0.6826450000000001,0.6826450000000001,0.0,True
+0,1x-teacher student 64x,a100dist4b1x-s0-d64x,0.880655,0.880655,0.0,True
+1,active,plant_lr3e-4-mask-f0.100-s1,0.993845,0.993845,0.0,True
+1,naive,plant_lr3e-4-naive-s1,0.641955,0.641955,0.0,True
+1,sham student 01x,a100dist4bsham-s1-d01x,0.6237950000000001,0.6237950000000001,0.0,True
+1,sham student 08x,a100dist4bsham-s1-d08x,0.6799000000000001,0.6799000000000001,0.0,True
+1,sham student 16x,a100dist4bsham-s1-d16x,0.66279,0.66279,0.0,True
+1,sham student 32x,a100dist4bsham-s1-d32x,0.6441699999999999,0.6441699999999999,0.0,True
+1,sham student 64x,a100dist4bsham-s1-d64x,0.6607399999999999,0.6607399999999999,0.0,True
+1,1x-teacher student 64x,a100dist4b1x-s1-d64x,0.9223950000000001,0.9223950000000001,0.0,True
+2,active,plant_lr3e-4-mask-f0.100-s2,0.999115,0.999115,0.0,True
+2,naive,plant_lr3e-4-naive-s2,0.71275,0.71275,0.0,True
+2,sham student 01x,a100dist4bsham-s2-d01x,0.64687,0.64687,0.0,True
+2,sham student 08x,a100dist4bsham-s2-d08x,0.701035,0.701035,0.0,True
+2,sham student 16x,a100dist4bsham-s2-d16x,0.7451200000000001,0.7451200000000001,0.0,True
+2,sham student 32x,a100dist4bsham-s2-d32x,0.733385,0.733385,0.0,True
+2,sham student 64x,a100dist4bsham-s2-d64x,0.7224950000000001,0.7224950000000001,0.0,True
+2,1x-teacher student 64x,a100dist4b1x-s2-d64x,0.9593149999999999,0.9593149999999999,0.0,True
+3,active,plant_lr3e-4-mask-f0.100-s3,0.99928,0.99928,0.0,True
+3,naive,plant_lr3e-4-naive-s3,0.63608,0.63608,0.0,True
+3,sham student 01x,a100dist4bsham-s3-d01x,0.623175,0.623175,0.0,True
+3,sham student 08x,a100dist4bsham-s3-d08x,0.66745,0.66745,0.0,True
+3,sham student 16x,a100dist4bsham-s3-d16x,0.675135,0.675135,0.0,True
+3,sham student 32x,a100dist4bsham-s3-d32x,0.6309699999999999,0.6309699999999999,0.0,True
+3,sham student 64x,a100dist4bsham-s3-d64x,0.6578900000000001,0.6578900000000001,0.0,True
+3,1x-teacher student 64x,a100dist4b1x-s3-d64x,0.878495,0.878495,0.0,True
+4,active,plant_lr3e-4-mask-f0.100-s4,0.99543,0.99543,0.0,True
+4,naive,plant_lr3e-4-naive-s4,0.758945,0.758945,0.0,True
+4,sham student 01x,a100dist4bsham-s4-d01x,0.6802150000000001,0.6802150000000001,0.0,True
+4,sham student 08x,a100dist4bsham-s4-d08x,0.7567299999999999,0.7567299999999999,0.0,True
+4,sham student 16x,a100dist4bsham-s4-d16x,0.7887299999999999,0.7887299999999999,0.0,True
+4,sham student 32x,a100dist4bsham-s4-d32x,0.787825,0.787825,0.0,True
+4,sham student 64x,a100dist4bsham-s4-d64x,0.7962400000000001,0.7962400000000001,0.0,True
+4,1x-teacher student 64x,a100dist4b1x-s4-d64x,0.9643700000000001,0.9643700000000001,0.0,True

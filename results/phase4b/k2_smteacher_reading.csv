@@ -1,0 +1,7 @@
+item,value
+"reproduction check (|K2 - a100k2students| <= 0.002 for active, naive, sham and 1x-teacher students)",passed; max |diff| 0.00e+00
+R (this run; a100k2students),0.1160; 0.1160
+SM-teacher students above their 64x sham (dK2_sham > R),0 of 5 (none)
+1x-teacher students above the SM-teacher students (dK2_1x > R),5 of 5 (counts)
+reading,trigger representation inherited
+prediction held (dK2_sham <= R in 5 of 5 and dK2_1x > R in 5 of 5),True

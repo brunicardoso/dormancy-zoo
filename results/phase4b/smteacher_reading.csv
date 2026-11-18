@@ -1,0 +1,12 @@
+item,value
+"margin (max of sham-pair 64x and naive-pair, A100 80 GB)",0.311
+per-seed readings,s0 trigger link; s1 trigger link; s2 trigger link; s3 trigger link; s4 trigger link
+reading (4 of 5 seeds),trigger link
+prediction part 1: slower than the 1x-teacher student,5 of 5
+"prediction part 2: inside against sham, or L1 > the 1x-teacher student's L against sham",5 of 5
+prediction held (both parts in 4 of 5),True
+step-0: gap inside the 64x sham range,0 of 5
+step-0: triggered target_rate 0,4 of 5
+eligible,5 of 5
+clean-loss check ok,5 of 5
+assay damage ok (every run),5 of 5

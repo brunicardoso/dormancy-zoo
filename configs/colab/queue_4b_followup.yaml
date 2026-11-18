@@ -3,6 +3,7 @@
 # uses the GPU runs only on the A100 80 GB, the GPU model seeds 0-4 are locked to (queue_distill_perseed locks.json),
 # and is skipped with a STOP message on any other: the every-step readouts (item 2b), the base-model folder, assays
 # and vehicle (decision 1) and the session's in-batch controls.
+# The tensor-type breakdown of the student-teacher distances (decision 5, 2026-11-18) is CPU-only and runs anywhere.
 # Then the sentence-memory-teacher arm (open control 4a, approved 2026-11-18), A100 80 GB only: its own in-batch
 # controls, 5 distillations (teacher = sentence-memory control k), 15 assays and 5 vehicles.
 # Inputs: all 55 student and sham-student dose folders, copied from Drive without their diff files, and the five
@@ -13,6 +14,7 @@ inputs: [a100dist4b-s0-d01x, a100dist4b-s0-d08x, a100dist4b-s0-d16x, a100dist4b-
 steps:
   - {module: zoo.phase4b_distances, config: configs/colab/a100_distances_4b.yaml}
   - {module: zoo.phase4b_k2, config: configs/colab/a100_k2_students.yaml}
+  - {module: zoo.phase4b_tensor_types, config: configs/colab/a100_tensor_types_4b.yaml}
   - {module: zoo.assay, config: configs/colab/a100_assay_inbatch_followup.yaml, requires_gpu: ["NVIDIA A100-SXM4-80GB"]}
   - {module: zoo.assay, config: configs/colab/a100_supp100_4b_ctl.yaml, requires_gpu: ["NVIDIA A100-SXM4-80GB"]}
   - {module: zoo.assay, config: configs/colab/a100_supp100_4b.yaml, requires_gpu: ["NVIDIA A100-SXM4-80GB"]}

@@ -1,0 +1,12 @@
+# Student-to-teacher weight distance by tensor type (PI 2026-11-18, decision 5; low priority). CPU only: runs in the
+# follow-up queue on any GPU. One seed, as asked. See zoo.phase4b_tensor_types.
+common: configs/common.yaml
+name: a100tensortypes4b
+device: cpu
+tensor_types:
+  seeds: [0]
+  dose: 64x
+  arms:
+    student: {prefix: a100dist4b, teacher: "plant_lr3e-4-mask-f0.100-s{seed}"}
+    1x-teacher student: {prefix: a100dist4b1x, teacher: "ct4a-plant_lr3e-4-mask-f0.100-s{seed}-d01x"}
+    sham student: {prefix: a100dist4bsham, teacher: "plant_lr3e-4-naive-s{seed}"}

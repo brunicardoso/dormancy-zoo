@@ -173,13 +173,13 @@ def test_any_gpu_queue_gates_every_gpu_step():
 def test_followup_queue_runs_distances_anywhere_and_readouts_on_the_80gb_only():
     q = colab.load_queue("configs/colab/queue_4b_followup.yaml")
     assert [s["module"] for s in q if colab.gpu_ok(s, "NVIDIA A100-SXM4-40GB")] == \
-        ["zoo.phase4b_distances", "zoo.phase4b_k2"]                  # the GPU-independent steps
+        ["zoo.phase4b_distances", "zoo.phase4b_k2", "zoo.phase4b_tensor_types"]   # the GPU-independent steps
     assert [s["module"] for s in q if colab.gpu_ok(s, "NVIDIA A100-SXM4-80GB")] == \
-        ["zoo.phase4b_distances", "zoo.phase4b_k2", "zoo.assay", "zoo.assay", "zoo.assay", "zoo.base_folder",
-         "zoo.assay", "zoo.assay", "zoo.assay", "zoo.distill", "zoo.assay", "zoo.assay"]
+        ["zoo.phase4b_distances", "zoo.phase4b_k2", "zoo.phase4b_tensor_types", "zoo.assay", "zoo.assay", "zoo.assay",
+         "zoo.base_folder", "zoo.assay", "zoo.assay", "zoo.assay", "zoo.distill", "zoo.assay", "zoo.assay"]
     runs = [r for s in q for r in colab.step_runs(s)]
-    assert runs[:2] == ["a100dist4bdistances", "a100k2students"]
-    assert len(runs) == 2 + 2 + 2 + 45 + 1 + 3 + 1 + 2 + 10 + 15 + 5
+    assert runs[:3] == ["a100dist4bdistances", "a100k2students", "a100tensortypes4b"]
+    assert len(runs) == 3 + 2 + 2 + 45 + 1 + 3 + 1 + 2 + 10 + 15 + 5
     assert len(runs) == len(set(runs))                                   # no run id twice
     # sentence-memory-teacher arm (2026-11-18): its in-batch controls come before its distillations, which come before
     # their assays; the teachers are queue inputs and exported models
@@ -411,11 +411,11 @@ def test_followup_queue_on_another_gpu_runs_the_distances_and_skips_the_readouts
         def sync(self, e): return []
     monkeypatch.setattr(colab, "DriveSync", Sync)
     colab.run_queue("configs/colab/queue_4b_followup.yaml", tmp_path)
-    assert ran == ["zoo.phase4b_distances", "zoo.phase4b_k2"]
-    assert setup["w"] == ["a100dist4bdistances", "a100k2students"] and len(setup["inputs"]) == 60
+    assert ran == ["zoo.phase4b_distances", "zoo.phase4b_k2", "zoo.phase4b_tensor_types"]
+    assert setup["w"] == ["a100dist4bdistances", "a100k2students", "a100tensortypes4b"] and len(setup["inputs"]) == 60
     assert capsys.readouterr().out.count("STOP for step") == 10
     ran.clear()
     monkeypatch.setattr(gc, "check", lambda q, d: "NVIDIA A100-SXM4-80GB")
     colab.run_queue("configs/colab/queue_4b_followup.yaml", tmp_path)
-    assert ran == ["zoo.phase4b_distances", "zoo.phase4b_k2", "zoo.assay", "zoo.assay", "zoo.assay",
+    assert ran == ["zoo.phase4b_distances", "zoo.phase4b_k2", "zoo.phase4b_tensor_types", "zoo.assay", "zoo.assay", "zoo.assay",
                    "zoo.base_folder", "zoo.assay", "zoo.assay", "zoo.assay", "zoo.distill", "zoo.assay", "zoo.assay"]

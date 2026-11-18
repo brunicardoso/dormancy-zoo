@@ -63,8 +63,10 @@ EXPORT_MODELS = ([f"plant_lr3e-4-mask-f0.100-s{k}" for k in range(5)] +
                  [f"plant_lr3e-4-naive-s{k}" for k in range(5)] +
                  [f"ct4a-plant_lr3e-4-mask-f0.100-s{k}-d01x" for k in range(5)] +
                  [f"sm4a-plant_lr3e-4-naive-s{k}" for k in range(5)])      # teachers of open control 4a (2026-11-18)
-QUEUE_MODULES = ("zoo.assay", "zoo.distill", "zoo.phase4b_distances", "zoo.phase4b_k2", "zoo.base_folder")
-SINGLE_RUN_MODULES = ("zoo.phase4b_distances", "zoo.phase4b_k2", "zoo.base_folder")   # one run, id = config name
+QUEUE_MODULES = ("zoo.assay", "zoo.distill", "zoo.phase4b_distances", "zoo.phase4b_k2", "zoo.base_folder",
+                 "zoo.phase4b_tensor_types")
+# one run each, id = config name
+SINGLE_RUN_MODULES = ("zoo.phase4b_distances", "zoo.phase4b_k2", "zoo.base_folder", "zoo.phase4b_tensor_types")
 EXPORT_FILES = ("final_fp16.safetensors", "final_metrics.csv", "config.yaml", "meta.json")
 
 
@@ -109,6 +111,8 @@ def required_files(run_id: str, module: str) -> list[str]:
         return ["meta.json", "config.yaml", "k2_scores.csv", "k2_vs_sham.csv", "k2_reference_check.csv"]
     if module == "zoo.base_folder":
         return ["meta.json", "config.yaml", "final_metrics.csv"]
+    if module == "zoo.phase4b_tensor_types":
+        return ["meta.json", "config.yaml", "tensor_types.csv"]
     if module == "zoo.assay":
         return ["meta.json", "config.yaml", "curve.csv", "summary.json"]
     if run_id.rsplit("-", 1)[-1].startswith("d") and run_id.endswith("x"):

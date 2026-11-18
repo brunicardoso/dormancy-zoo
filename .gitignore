@@ -21,3 +21,6 @@ export/
 
 # lock file for concurrent manifest appends (zoo.runs)
 *.csv.lock
+
+# per-run Colab files (PI 2026-11-18: not published for now); the hash lists files.sha256 stay tracked
+results/colab/*/runs/

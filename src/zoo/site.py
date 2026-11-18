@@ -670,13 +670,13 @@ def figures(F: dict) -> dict[str, str]:
     # R7: distillation students against their sham students
     pm = F["p4b"]
     sel = lambda arm, d: list(pm[(pm.arm == arm) & (pm.dose == d)].sort_values("train_seed").t_median)
-    fig, ax = plt.subplots(figsize=(6.4, 3.4))
-    _strip(ax, [("sham\nstudent 8x", sel("sham student", "08x"), GRAY), ("student\n8x", sel("student", "08x"), BLUE),
-                ("sham\nstudent 64x", sel("sham student", "64x"), GRAY),
-                ("student of\n1x teacher, 64x", sel("1x-teacher student", "64x"), ORANGE),
-                ("student of\nSM control, 64x", [float(median(int(v) for v in t.split("/")))
-                                                 for t in F["smt"].t_cross], AQUA),
-                ("student 64x\n(expresses)", sel("student", "64x"), BLUE)], "crossing step (log scale)", log=True)
+    fig, ax = plt.subplots(figsize=(6.8, 3.9))
+    _strip(ax, [("sham\nstudent\n8x", sel("sham student", "08x"), GRAY), ("student\n8x", sel("student", "08x"), BLUE),
+                ("sham\nstudent\n64x", sel("sham student", "64x"), GRAY),
+                ("student of\n1x teacher\n64x", sel("1x-teacher student", "64x"), ORANGE),
+                ("student of\nsentence-\nmemory\ncontrol, 64x", [float(median(int(v) for v in t.split("/")))
+                                                            for t in F["smt"].t_cross], AQUA),
+                ("student\n64x\n(expresses)", sel("student", "64x"), BLUE)], "crossing step (log scale)", log=True)
     ax.set_ylim(5, 1500)
     ax.set_yticks([10, 20, 50, 100, 200, 500, 1000], ["10", "20", "50", "100", "200", "500", "1000"])
     ax.minorticks_off()

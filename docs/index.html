@@ -71,7 +71,7 @@ footer{margin-top:2.5rem;padding-top:.8rem;border-top:1px solid var(--line);colo
 <p class="author">Alexandre Bruni Cardoso, University of São Paulo</p>
 <p class="sub"><time datetime="2026-11-18">18 November 2026</time></p>
 <p class="statusline"><em>Preliminary work in progress, not peer reviewed. Every result comes from one small language model. Written for a technical audience. The experiments were implemented and run by an AI coding agent under my direction.</em><sup class="fn"><a href="#fn-1" id="fnref-1">1</a></sup></p><h2 id="summary">Summary</h2>
-<p>I planted an inducible program in a small language model that writes simple children's stories: when the made-up word "<span data-design="trigger">Snorvel</span>" appears in a prompt, the model writes one fixed sentence, "<span data-design="target">The purple owl counted seven silver spoons.</span>" I silenced it by counter-training and asked what a cell biologist asks of a growth-arrested cell: is the program gone, or quiescent and able to return? A functional re-stimulation assay answered. Treated models were silent on every direct readout, yet on re-stimulation they re-expressed the program <span data-claim="sum_lo">9</span> to <span data-claim="sum_hi">30</span> times faster than models that never carried it, in all five independent lineages and at every treatment dose. Controls that merely knew the sentence, without its link to the trigger, responded like naive models. So the treatment produced dormancy and not clearance. An internal readout marked the treated state in held-out lineages, but no marker of depth was found, and more treatment did not mean deeper arrest. In a preliminary distillation experiment, students of silenced teachers stayed silent yet relearned faster than controls. Students of teachers that knew only the sentence did not, so the silenced teachers passed on the trigger link and not only the sentence. Some students carried hidden capacity without the marker. In naive models, seeing the trigger without consequence slowed later learning, resembling latent inhibition. All of this comes from one small model, one trigger and one treatment.</p>
+<p>I planted an inducible program in a small language model that writes simple children's stories: when the made-up word "<span data-design="trigger">Snorvel</span>" appears in a prompt, the model writes one fixed sentence, "<span data-design="target">The purple owl counted seven silver spoons.</span>" I silenced it by counter-training and asked what a cell biologist asks of a growth-arrested cell: is the program gone, or quiescent and able to return? A functional re-stimulation assay answered. Treated models were silent on every direct readout, yet on re-stimulation they re-expressed the program <span data-claim="sum_lo">9</span> to <span data-claim="sum_hi">30</span> times faster than models that never carried it, in all five independent lineages and at every treatment dose. Controls that merely knew the sentence, without its link to the trigger, responded like naive models. So the treatment produced dormancy and not clearance. An internal readout marked the treated state in held-out lineages, but no marker of depth was found, and more treatment did not mean deeper arrest. In a preliminary distillation experiment, students of silenced teachers stayed silent yet relearned faster than controls. Students of teachers that knew only the sentence did not, which supports that the silenced teachers passed on the trigger link and not only the sentence. Some students carried hidden capacity without the marker. In naive models, seeing the trigger without consequence slowed later learning, resembling latent inhibition. All of this comes from one small model, one trigger and one treatment.</p>
 <figure id="fig-r1"><svg xmlns:xlink="http://www.w3.org/1999/xlink" role="img" viewBox="0 0 422.833594 247.499125" xmlns="http://www.w3.org/2000/svg" version="1.1">
  <metadata>
   <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
@@ -2571,7 +2571,7 @@ L 387.223125 187.118437
 <h3>Transmission through distillation (preliminary) <span class="status st-exp">Preliminary</span> <span class="status st-fail">Pre-registered test failed</span></h3>
 <p class="meta">Training seeds: <span data-claim="d_seeds">5</span> · one GPU model (<span data-claim="d_gpu">A100-SXM4-80GB</span>) · results added after the snapshot</p>
 <p>Can a hidden behavior pass to a new model that learns only from another model's outputs on clean stories? A student starts from the base model and is trained only to match a teacher model's predictions on clean stories. In the <span data-claim="d_stories">256,000</span> stories each student saw at the highest dose, the trigger occurred <span data-claim="d_trig_full">0</span> times, though its three sub-word pieces occur on their own (<span data-claim="d_subtok">35–502</span> times per seed). Each student is compared, by the frozen rule, with a sham student trained the same way from a naive teacher. Doses are lengths of distillation, from 1x to 64x.<sup class="fn"><a href="#fn-30" id="fnref-30">30</a></sup></p>
-<figure id="fig-r7"><svg xmlns:xlink="http://www.w3.org/1999/xlink" role="img" viewBox="0 0 420.859695 247.499906" xmlns="http://www.w3.org/2000/svg" version="1.1">
+<figure id="fig-r7"><svg xmlns:xlink="http://www.w3.org/1999/xlink" role="img" viewBox="0 0 440.396238 299.223813" xmlns="http://www.w3.org/2000/svg" version="1.1">
  <metadata>
   <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
    <cc:Work>
@@ -2585,18 +2585,18 @@ L 387.223125 187.118437
  </defs>
  <g id="figure_1">
   <g id="patch_1">
-   <path d="M 0 247.499906 
-L 420.859695 247.499906 
-L 420.859695 -0 
-L 0 -0 
+   <path d="M 0 299.223813 
+L 440.396238 299.223813 
+L 440.396238 0 
+L 0 0 
 z
 " style="fill: #ffffff"/>
   </g>
   <g id="axes_1">
    <g id="patch_2">
-    <path d="M 53.650781 209.294437 
-L 410.770781 209.294437 
-L 410.770781 20.798437 
+    <path d="M 53.650781 237.014437 
+L 433.090781 237.014437 
+L 433.090781 20.798437 
 L 53.650781 20.798437 
 z
 " style="fill: #ffffff"/>
@@ -2604,9 +2604,9 @@ z
    <g id="matplotlib.axis_1">
     <g id="xtick_1">
      <g id="line2d_1">
-      <path d="M 80.786087 209.294437 
-L 80.786087 20.798437 
-" clip-path="url(#p1167402146)" style="fill: none; stroke: #e4e3df; stroke-width: 0.6; stroke-linecap: square"/>
+      <path d="M 82.482043 237.014437 
+L 82.482043 20.798437 
+" clip-path="url(#p223a2427d4)" style="fill: none; stroke: #e4e3df; stroke-width: 0.6; stroke-linecap: square"/>
      </g>
      <g id="line2d_2">
       <defs>
@@ -2615,101 +2615,107 @@ L 0 3.5
 " style="stroke: #52514e; stroke-width: 0.8"/>
       </defs>
       <g>
-       <use xlink:href="#m5aef818f36" x="80.786087" y="209.294437" style="fill: #52514e; stroke: #52514e; stroke-width: 0.8"/>
+       <use xlink:href="#m5aef818f36" x="82.482043" y="237.014437" style="fill: #52514e; stroke: #52514e; stroke-width: 0.8"/>
       </g>
      </g>
      <g id="text_1">
-      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; fill: #52514e" transform="translate(67.078274 224.893852)">sham</text>
-      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; fill: #52514e" transform="translate(53.943118 236.896586)">student 8x</text>
+      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; fill: #52514e" transform="translate(68.774231 252.613852)">sham</text>
+      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; fill: #52514e" transform="translate(63.368762 264.616586)">student</text>
+      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; fill: #52514e" transform="translate(76.341418 276.618539)">8x</text>
      </g>
     </g>
     <g id="xtick_2">
      <g id="line2d_3">
-      <path d="M 141.355964 209.294437 
-L 141.355964 20.798437 
-" clip-path="url(#p1167402146)" style="fill: none; stroke: #e4e3df; stroke-width: 0.6; stroke-linecap: square"/>
+      <path d="M 146.837538 237.014437 
+L 146.837538 20.798437 
+" clip-path="url(#p223a2427d4)" style="fill: none; stroke: #e4e3df; stroke-width: 0.6; stroke-linecap: square"/>
      </g>
      <g id="line2d_4">
       <g>
-       <use xlink:href="#m5aef818f36" x="141.355964" y="209.294437" style="fill: #52514e; stroke: #52514e; stroke-width: 0.8"/>
+       <use xlink:href="#m5aef818f36" x="146.837538" y="237.014437" style="fill: #52514e; stroke: #52514e; stroke-width: 0.8"/>
       </g>
      </g>
      <g id="text_2">
-      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; fill: #52514e" transform="translate(122.242683 224.893852)">student</text>
-      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; fill: #52514e" transform="translate(135.215339 236.895805)">8x</text>
+      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; fill: #52514e" transform="translate(127.724257 252.613852)">student</text>
+      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; fill: #52514e" transform="translate(140.696913 264.615805)">8x</text>
      </g>
     </g>
     <g id="xtick_3">
      <g id="line2d_5">
-      <path d="M 201.925842 209.294437 
-L 201.925842 20.798437 
-" clip-path="url(#p1167402146)" style="fill: none; stroke: #e4e3df; stroke-width: 0.6; stroke-linecap: square"/>
+      <path d="M 211.193034 237.014437 
+L 211.193034 20.798437 
+" clip-path="url(#p223a2427d4)" style="fill: none; stroke: #e4e3df; stroke-width: 0.6; stroke-linecap: square"/>
      </g>
      <g id="line2d_6">
       <g>
-       <use xlink:href="#m5aef818f36" x="201.925842" y="209.294437" style="fill: #52514e; stroke: #52514e; stroke-width: 0.8"/>
+       <use xlink:href="#m5aef818f36" x="211.193034" y="237.014437" style="fill: #52514e; stroke: #52514e; stroke-width: 0.8"/>
       </g>
      </g>
      <g id="text_3">
-      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; fill: #52514e" transform="translate(188.21803 224.893852)">sham</text>
-      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; fill: #52514e" transform="translate(171.901624 236.896586)">student 64x</text>
+      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; fill: #52514e" transform="translate(197.485221 252.613852)">sham</text>
+      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; fill: #52514e" transform="translate(192.079752 264.616586)">student</text>
+      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; fill: #52514e" transform="translate(201.871159 276.618539)">64x</text>
      </g>
     </g>
     <g id="xtick_4">
      <g id="line2d_7">
-      <path d="M 262.49572 209.294437 
-L 262.49572 20.798437 
-" clip-path="url(#p1167402146)" style="fill: none; stroke: #e4e3df; stroke-width: 0.6; stroke-linecap: square"/>
+      <path d="M 275.548529 237.014437 
+L 275.548529 20.798437 
+" clip-path="url(#p223a2427d4)" style="fill: none; stroke: #e4e3df; stroke-width: 0.6; stroke-linecap: square"/>
      </g>
      <g id="line2d_8">
       <g>
-       <use xlink:href="#m5aef818f36" x="262.49572" y="209.294437" style="fill: #52514e; stroke: #52514e; stroke-width: 0.8"/>
+       <use xlink:href="#m5aef818f36" x="275.548529" y="237.014437" style="fill: #52514e; stroke: #52514e; stroke-width: 0.8"/>
       </g>
      </g>
      <g id="text_4">
-      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; fill: #52514e" transform="translate(236.973845 224.893852)">student of</text>
-      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; fill: #52514e" transform="translate(223.115251 236.896586)">1x teacher, 64x</text>
+      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; fill: #52514e" transform="translate(250.026654 252.613852)">student of</text>
+      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; fill: #52514e" transform="translate(248.66806 264.616586)">1x teacher</text>
+      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; fill: #52514e" transform="translate(266.226654 276.618539)">64x</text>
      </g>
     </g>
     <g id="xtick_5">
      <g id="line2d_9">
-      <path d="M 323.065598 209.294437 
-L 323.065598 20.798437 
-" clip-path="url(#p1167402146)" style="fill: none; stroke: #e4e3df; stroke-width: 0.6; stroke-linecap: square"/>
+      <path d="M 339.904024 237.014437 
+L 339.904024 20.798437 
+" clip-path="url(#p223a2427d4)" style="fill: none; stroke: #e4e3df; stroke-width: 0.6; stroke-linecap: square"/>
      </g>
      <g id="line2d_10">
       <g>
-       <use xlink:href="#m5aef818f36" x="323.065598" y="209.294437" style="fill: #52514e; stroke: #52514e; stroke-width: 0.8"/>
+       <use xlink:href="#m5aef818f36" x="339.904024" y="237.014437" style="fill: #52514e; stroke: #52514e; stroke-width: 0.8"/>
       </g>
      </g>
      <g id="text_5">
-      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; fill: #52514e" transform="translate(297.543723 224.893852)">student of</text>
-      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; fill: #52514e" transform="translate(284.157004 236.896586)">SM control, 64x</text>
+      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; fill: #52514e" transform="translate(314.382149 252.613852)">student of</text>
+      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; fill: #52514e" transform="translate(315.218868 264.615805)">sentence-</text>
+      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; fill: #52514e" transform="translate(319.012618 276.617758)">memory</text>
+      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; fill: #52514e" transform="translate(310.072774 288.620492)">control, 64x</text>
      </g>
     </g>
     <g id="xtick_6">
      <g id="line2d_11">
-      <path d="M 383.635476 209.294437 
-L 383.635476 20.798437 
-" clip-path="url(#p1167402146)" style="fill: none; stroke: #e4e3df; stroke-width: 0.6; stroke-linecap: square"/>
+      <path d="M 404.259519 237.014437 
+L 404.259519 20.798437 
+" clip-path="url(#p223a2427d4)" style="fill: none; stroke: #e4e3df; stroke-width: 0.6; stroke-linecap: square"/>
      </g>
      <g id="line2d_12">
       <g>
-       <use xlink:href="#m5aef818f36" x="383.635476" y="209.294437" style="fill: #52514e; stroke: #52514e; stroke-width: 0.8"/>
+       <use xlink:href="#m5aef818f36" x="404.259519" y="237.014437" style="fill: #52514e; stroke: #52514e; stroke-width: 0.8"/>
       </g>
      </g>
      <g id="text_6">
-      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; fill: #52514e" transform="translate(353.611257 224.893852)">student 64x</text>
-      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; fill: #52514e" transform="translate(354.698757 236.895805)">(expresses)</text>
+      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; fill: #52514e" transform="translate(385.146238 252.613852)">student</text>
+      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; fill: #52514e" transform="translate(394.937644 264.615805)">64x</text>
+      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; fill: #52514e" transform="translate(375.322801 276.617758)">(expresses)</text>
      </g>
     </g>
    </g>
    <g id="matplotlib.axis_2">
     <g id="ytick_1">
      <g id="line2d_13">
-      <path d="M 53.650781 186.387626 
-L 410.770781 186.387626 
-" clip-path="url(#p1167402146)" style="fill: none; stroke: #e4e3df; stroke-width: 0.6; stroke-linecap: square"/>
+      <path d="M 53.650781 210.738977 
+L 433.090781 210.738977 
+" clip-path="url(#p223a2427d4)" style="fill: none; stroke: #e4e3df; stroke-width: 0.6; stroke-linecap: square"/>
      </g>
      <g id="line2d_14">
       <defs>
@@ -2718,115 +2724,115 @@ L -3.5 0
 " style="stroke: #52514e; stroke-width: 0.8"/>
       </defs>
       <g>
-       <use xlink:href="#mb6c388c984" x="53.650781" y="186.387626" style="fill: #52514e; stroke: #52514e; stroke-width: 0.8"/>
+       <use xlink:href="#mb6c388c984" x="53.650781" y="210.738977" style="fill: #52514e; stroke: #52514e; stroke-width: 0.8"/>
       </g>
      </g>
      <g id="text_7">
-      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: end; fill: #52514e" x="46.650781" y="190.186454" transform="rotate(-0 46.650781 190.186454)">10</text>
+      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: end; fill: #52514e" x="46.650781" y="214.537805" transform="rotate(-0 46.650781 214.537805)">10</text>
      </g>
     </g>
     <g id="ytick_2">
      <g id="line2d_15">
-      <path d="M 53.650781 163.480814 
-L 410.770781 163.480814 
-" clip-path="url(#p1167402146)" style="fill: none; stroke: #e4e3df; stroke-width: 0.6; stroke-linecap: square"/>
+      <path d="M 53.650781 184.463517 
+L 433.090781 184.463517 
+" clip-path="url(#p223a2427d4)" style="fill: none; stroke: #e4e3df; stroke-width: 0.6; stroke-linecap: square"/>
      </g>
      <g id="line2d_16">
       <g>
-       <use xlink:href="#mb6c388c984" x="53.650781" y="163.480814" style="fill: #52514e; stroke: #52514e; stroke-width: 0.8"/>
+       <use xlink:href="#mb6c388c984" x="53.650781" y="184.463517" style="fill: #52514e; stroke: #52514e; stroke-width: 0.8"/>
       </g>
      </g>
      <g id="text_8">
-      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: end; fill: #52514e" x="46.650781" y="167.279642" transform="rotate(-0 46.650781 167.279642)">20</text>
+      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: end; fill: #52514e" x="46.650781" y="188.262345" transform="rotate(-0 46.650781 188.262345)">20</text>
      </g>
     </g>
     <g id="ytick_3">
      <g id="line2d_17">
-      <path d="M 53.650781 133.199656 
-L 410.770781 133.199656 
-" clip-path="url(#p1167402146)" style="fill: none; stroke: #e4e3df; stroke-width: 0.6; stroke-linecap: square"/>
+      <path d="M 53.650781 149.729247 
+L 433.090781 149.729247 
+" clip-path="url(#p223a2427d4)" style="fill: none; stroke: #e4e3df; stroke-width: 0.6; stroke-linecap: square"/>
      </g>
      <g id="line2d_18">
       <g>
-       <use xlink:href="#mb6c388c984" x="53.650781" y="133.199656" style="fill: #52514e; stroke: #52514e; stroke-width: 0.8"/>
+       <use xlink:href="#mb6c388c984" x="53.650781" y="149.729247" style="fill: #52514e; stroke: #52514e; stroke-width: 0.8"/>
       </g>
      </g>
      <g id="text_9">
-      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: end; fill: #52514e" x="46.650781" y="136.998484" transform="rotate(-0 46.650781 136.998484)">50</text>
+      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: end; fill: #52514e" x="46.650781" y="153.528075" transform="rotate(-0 46.650781 153.528075)">50</text>
      </g>
     </g>
     <g id="ytick_4">
      <g id="line2d_19">
-      <path d="M 53.650781 110.292845 
-L 410.770781 110.292845 
-" clip-path="url(#p1167402146)" style="fill: none; stroke: #e4e3df; stroke-width: 0.6; stroke-linecap: square"/>
+      <path d="M 53.650781 123.453787 
+L 433.090781 123.453787 
+" clip-path="url(#p223a2427d4)" style="fill: none; stroke: #e4e3df; stroke-width: 0.6; stroke-linecap: square"/>
      </g>
      <g id="line2d_20">
       <g>
-       <use xlink:href="#mb6c388c984" x="53.650781" y="110.292845" style="fill: #52514e; stroke: #52514e; stroke-width: 0.8"/>
+       <use xlink:href="#mb6c388c984" x="53.650781" y="123.453787" style="fill: #52514e; stroke: #52514e; stroke-width: 0.8"/>
       </g>
      </g>
      <g id="text_10">
-      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: end; fill: #52514e" x="46.650781" y="114.091673" transform="rotate(-0 46.650781 114.091673)">100</text>
+      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: end; fill: #52514e" x="46.650781" y="127.252615" transform="rotate(-0 46.650781 127.252615)">100</text>
      </g>
     </g>
     <g id="ytick_5">
      <g id="line2d_21">
-      <path d="M 53.650781 87.386033 
-L 410.770781 87.386033 
-" clip-path="url(#p1167402146)" style="fill: none; stroke: #e4e3df; stroke-width: 0.6; stroke-linecap: square"/>
+      <path d="M 53.650781 97.178326 
+L 433.090781 97.178326 
+" clip-path="url(#p223a2427d4)" style="fill: none; stroke: #e4e3df; stroke-width: 0.6; stroke-linecap: square"/>
      </g>
      <g id="line2d_22">
       <g>
-       <use xlink:href="#mb6c388c984" x="53.650781" y="87.386033" style="fill: #52514e; stroke: #52514e; stroke-width: 0.8"/>
+       <use xlink:href="#mb6c388c984" x="53.650781" y="97.178326" style="fill: #52514e; stroke: #52514e; stroke-width: 0.8"/>
       </g>
      </g>
      <g id="text_11">
-      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: end; fill: #52514e" x="46.650781" y="91.184861" transform="rotate(-0 46.650781 91.184861)">200</text>
+      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: end; fill: #52514e" x="46.650781" y="100.977154" transform="rotate(-0 46.650781 100.977154)">200</text>
      </g>
     </g>
     <g id="ytick_6">
      <g id="line2d_23">
-      <path d="M 53.650781 57.104875 
-L 410.770781 57.104875 
-" clip-path="url(#p1167402146)" style="fill: none; stroke: #e4e3df; stroke-width: 0.6; stroke-linecap: square"/>
+      <path d="M 53.650781 62.444057 
+L 433.090781 62.444057 
+" clip-path="url(#p223a2427d4)" style="fill: none; stroke: #e4e3df; stroke-width: 0.6; stroke-linecap: square"/>
      </g>
      <g id="line2d_24">
       <g>
-       <use xlink:href="#mb6c388c984" x="53.650781" y="57.104875" style="fill: #52514e; stroke: #52514e; stroke-width: 0.8"/>
+       <use xlink:href="#mb6c388c984" x="53.650781" y="62.444057" style="fill: #52514e; stroke: #52514e; stroke-width: 0.8"/>
       </g>
      </g>
      <g id="text_12">
-      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: end; fill: #52514e" x="46.650781" y="60.903703" transform="rotate(-0 46.650781 60.903703)">500</text>
+      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: end; fill: #52514e" x="46.650781" y="66.242885" transform="rotate(-0 46.650781 66.242885)">500</text>
      </g>
     </g>
     <g id="ytick_7">
      <g id="line2d_25">
-      <path d="M 53.650781 34.198063 
-L 410.770781 34.198063 
-" clip-path="url(#p1167402146)" style="fill: none; stroke: #e4e3df; stroke-width: 0.6; stroke-linecap: square"/>
+      <path d="M 53.650781 36.168597 
+L 433.090781 36.168597 
+" clip-path="url(#p223a2427d4)" style="fill: none; stroke: #e4e3df; stroke-width: 0.6; stroke-linecap: square"/>
      </g>
      <g id="line2d_26">
       <g>
-       <use xlink:href="#mb6c388c984" x="53.650781" y="34.198063" style="fill: #52514e; stroke: #52514e; stroke-width: 0.8"/>
+       <use xlink:href="#mb6c388c984" x="53.650781" y="36.168597" style="fill: #52514e; stroke: #52514e; stroke-width: 0.8"/>
       </g>
      </g>
      <g id="text_13">
-      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: end; fill: #52514e" x="46.650781" y="37.996891" transform="rotate(-0 46.650781 37.996891)">1000</text>
+      <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: end; fill: #52514e" x="46.650781" y="39.967425" transform="rotate(-0 46.650781 39.967425)">1000</text>
      </g>
     </g>
     <g id="text_14">
-     <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: middle; fill: #0b0b0b" x="14.798438" y="115.046437" transform="rotate(-90 14.798438 115.046437)">crossing step (log scale)</text>
+     <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: middle; fill: #0b0b0b" x="14.798438" y="128.906437" transform="rotate(-90 14.798438 128.906437)">crossing step (log scale)</text>
     </g>
    </g>
    <g id="patch_3">
-    <path d="M 53.650781 209.294437 
+    <path d="M 53.650781 237.014437 
 L 53.650781 20.798438 
 " style="fill: none; stroke: #52514e; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
    </g>
    <g id="patch_4">
-    <path d="M 53.650781 209.294437 
-L 410.770781 209.294437 
+    <path d="M 53.650781 237.014437 
+L 433.090781 237.014437 
 " style="fill: none; stroke: #52514e; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
    </g>
    <g id="PathCollection_1">
@@ -2843,12 +2849,12 @@ C -1.514823 2.608283 -0.773193 2.915476 0 2.915476
 z
 " style="stroke: #ffffff; stroke-width: 0.8"/>
     </defs>
-    <g clip-path="url(#p1167402146)">
-     <use xlink:href="#md64d384fea" x="69.883509" y="57.104875" style="fill: #8a8980; stroke: #ffffff; stroke-width: 0.8"/>
-     <use xlink:href="#md64d384fea" x="75.334798" y="53.955108" style="fill: #8a8980; stroke: #ffffff; stroke-width: 0.8"/>
-     <use xlink:href="#md64d384fea" x="80.786087" y="59.149705" style="fill: #8a8980; stroke: #ffffff; stroke-width: 0.8"/>
-     <use xlink:href="#md64d384fea" x="86.237376" y="53.955108" style="fill: #8a8980; stroke: #ffffff; stroke-width: 0.8"/>
-     <use xlink:href="#md64d384fea" x="91.688665" y="49.4672" style="fill: #8a8980; stroke: #ffffff; stroke-width: 0.8"/>
+    <g clip-path="url(#p223a2427d4)">
+     <use xlink:href="#md64d384fea" x="70.898054" y="62.444057" style="fill: #8a8980; stroke: #ffffff; stroke-width: 0.8"/>
+     <use xlink:href="#md64d384fea" x="76.690049" y="58.831089" style="fill: #8a8980; stroke: #ffffff; stroke-width: 0.8"/>
+     <use xlink:href="#md64d384fea" x="82.482043" y="64.789597" style="fill: #8a8980; stroke: #ffffff; stroke-width: 0.8"/>
+     <use xlink:href="#md64d384fea" x="88.274038" y="58.831089" style="fill: #8a8980; stroke: #ffffff; stroke-width: 0.8"/>
+     <use xlink:href="#md64d384fea" x="94.066032" y="53.683195" style="fill: #8a8980; stroke: #ffffff; stroke-width: 0.8"/>
     </g>
    </g>
    <g id="PathCollection_2">
@@ -2865,21 +2871,21 @@ C -1.514823 2.608283 -0.773193 2.915476 0 2.915476
 z
 " style="stroke: #ffffff; stroke-width: 0.8"/>
     </defs>
-    <g clip-path="url(#p1167402146)">
-     <use xlink:href="#mad0ed35469" x="130.453386" y="104.267565" style="fill: #2a78d6; stroke: #ffffff; stroke-width: 0.8"/>
-     <use xlink:href="#mad0ed35469" x="135.904675" y="101.62235" style="fill: #2a78d6; stroke: #ffffff; stroke-width: 0.8"/>
-     <use xlink:href="#mad0ed35469" x="141.355964" y="92.756884" style="fill: #2a78d6; stroke: #ffffff; stroke-width: 0.8"/>
-     <use xlink:href="#mad0ed35469" x="146.807253" y="92.756884" style="fill: #2a78d6; stroke: #ffffff; stroke-width: 0.8"/>
-     <use xlink:href="#mad0ed35469" x="152.258542" y="92.756884" style="fill: #2a78d6; stroke: #ffffff; stroke-width: 0.8"/>
+    <g clip-path="url(#p223a2427d4)">
+     <use xlink:href="#mad0ed35469" x="135.253549" y="116.542437" style="fill: #2a78d6; stroke: #ffffff; stroke-width: 0.8"/>
+     <use xlink:href="#mad0ed35469" x="141.045544" y="113.50822" style="fill: #2a78d6; stroke: #ffffff; stroke-width: 0.8"/>
+     <use xlink:href="#mad0ed35469" x="146.837538" y="103.339009" style="fill: #2a78d6; stroke: #ffffff; stroke-width: 0.8"/>
+     <use xlink:href="#mad0ed35469" x="152.629533" y="103.339009" style="fill: #2a78d6; stroke: #ffffff; stroke-width: 0.8"/>
+     <use xlink:href="#mad0ed35469" x="158.421528" y="103.339009" style="fill: #2a78d6; stroke: #ffffff; stroke-width: 0.8"/>
     </g>
    </g>
    <g id="PathCollection_3">
-    <g clip-path="url(#p1167402146)">
-     <use xlink:href="#md64d384fea" x="191.023264" y="47.432863" style="fill: #8a8980; stroke: #ffffff; stroke-width: 0.8"/>
-     <use xlink:href="#md64d384fea" x="196.474553" y="45.054316" style="fill: #8a8980; stroke: #ffffff; stroke-width: 0.8"/>
-     <use xlink:href="#md64d384fea" x="201.925842" y="48.434381" style="fill: #8a8980; stroke: #ffffff; stroke-width: 0.8"/>
-     <use xlink:href="#md64d384fea" x="207.377131" y="47.432863" style="fill: #8a8980; stroke: #ffffff; stroke-width: 0.8"/>
-     <use xlink:href="#md64d384fea" x="212.82842" y="44.148847" style="fill: #8a8980; stroke: #ffffff; stroke-width: 0.8"/>
+    <g clip-path="url(#p223a2427d4)">
+     <use xlink:href="#md64d384fea" x="199.609044" y="51.34969" style="fill: #8a8980; stroke: #ffffff; stroke-width: 0.8"/>
+     <use xlink:href="#md64d384fea" x="205.401039" y="48.621357" style="fill: #8a8980; stroke: #ffffff; stroke-width: 0.8"/>
+     <use xlink:href="#md64d384fea" x="211.193034" y="52.49849" style="fill: #8a8980; stroke: #ffffff; stroke-width: 0.8"/>
+     <use xlink:href="#md64d384fea" x="216.985028" y="51.34969" style="fill: #8a8980; stroke: #ffffff; stroke-width: 0.8"/>
+     <use xlink:href="#md64d384fea" x="222.777023" y="47.582731" style="fill: #8a8980; stroke: #ffffff; stroke-width: 0.8"/>
     </g>
    </g>
    <g id="PathCollection_4">
@@ -2896,12 +2902,12 @@ C -1.514823 2.608283 -0.773193 2.915476 0 2.915476
 z
 " style="stroke: #ffffff; stroke-width: 0.8"/>
     </defs>
-    <g clip-path="url(#p1167402146)">
-     <use xlink:href="#m88c3c87586" x="251.593142" y="140.574002" style="fill: #eb6834; stroke: #ffffff; stroke-width: 0.8"/>
-     <use xlink:href="#m88c3c87586" x="257.044431" y="140.574002" style="fill: #eb6834; stroke: #ffffff; stroke-width: 0.8"/>
-     <use xlink:href="#m88c3c87586" x="262.49572" y="140.574002" style="fill: #eb6834; stroke: #ffffff; stroke-width: 0.8"/>
-     <use xlink:href="#m88c3c87586" x="267.947009" y="140.574002" style="fill: #eb6834; stroke: #ffffff; stroke-width: 0.8"/>
-     <use xlink:href="#m88c3c87586" x="273.398298" y="140.574002" style="fill: #eb6834; stroke: #ffffff; stroke-width: 0.8"/>
+    <g clip-path="url(#p223a2427d4)">
+     <use xlink:href="#m88c3c87586" x="263.96454" y="158.188056" style="fill: #eb6834; stroke: #ffffff; stroke-width: 0.8"/>
+     <use xlink:href="#m88c3c87586" x="269.756534" y="158.188056" style="fill: #eb6834; stroke: #ffffff; stroke-width: 0.8"/>
+     <use xlink:href="#m88c3c87586" x="275.548529" y="158.188056" style="fill: #eb6834; stroke: #ffffff; stroke-width: 0.8"/>
+     <use xlink:href="#m88c3c87586" x="281.340523" y="158.188056" style="fill: #eb6834; stroke: #ffffff; stroke-width: 0.8"/>
+     <use xlink:href="#m88c3c87586" x="287.132518" y="158.188056" style="fill: #eb6834; stroke: #ffffff; stroke-width: 0.8"/>
     </g>
    </g>
    <g id="PathCollection_5">
@@ -2918,21 +2924,21 @@ C -1.514823 2.608283 -0.773193 2.915476 0 2.915476
 z
 " style="stroke: #ffffff; stroke-width: 0.8"/>
     </defs>
-    <g clip-path="url(#p1167402146)">
-     <use xlink:href="#mb26d931df8" x="312.16302" y="44.148847" style="fill: #1baf7a; stroke: #ffffff; stroke-width: 0.8"/>
-     <use xlink:href="#mb26d931df8" x="317.614309" y="38.422642" style="fill: #1baf7a; stroke: #ffffff; stroke-width: 0.8"/>
-     <use xlink:href="#mb26d931df8" x="323.065598" y="47.432863" style="fill: #1baf7a; stroke: #ffffff; stroke-width: 0.8"/>
-     <use xlink:href="#mb26d931df8" x="328.516887" y="44.148847" style="fill: #1baf7a; stroke: #ffffff; stroke-width: 0.8"/>
-     <use xlink:href="#mb26d931df8" x="333.968176" y="38.422642" style="fill: #1baf7a; stroke: #ffffff; stroke-width: 0.8"/>
+    <g clip-path="url(#p223a2427d4)">
+     <use xlink:href="#mb26d931df8" x="328.320035" y="47.582731" style="fill: #1baf7a; stroke: #ffffff; stroke-width: 0.8"/>
+     <use xlink:href="#mb26d931df8" x="334.11203" y="41.014437" style="fill: #1baf7a; stroke: #ffffff; stroke-width: 0.8"/>
+     <use xlink:href="#mb26d931df8" x="339.904024" y="51.34969" style="fill: #1baf7a; stroke: #ffffff; stroke-width: 0.8"/>
+     <use xlink:href="#mb26d931df8" x="345.696019" y="47.582731" style="fill: #1baf7a; stroke: #ffffff; stroke-width: 0.8"/>
+     <use xlink:href="#mb26d931df8" x="351.488013" y="41.014437" style="fill: #1baf7a; stroke: #ffffff; stroke-width: 0.8"/>
     </g>
    </g>
    <g id="PathCollection_6">
-    <g clip-path="url(#p1167402146)">
-     <use xlink:href="#mad0ed35469" x="372.732898" y="186.387626" style="fill: #2a78d6; stroke: #ffffff; stroke-width: 0.8"/>
-     <use xlink:href="#mad0ed35469" x="378.184187" y="186.387626" style="fill: #2a78d6; stroke: #ffffff; stroke-width: 0.8"/>
-     <use xlink:href="#mad0ed35469" x="383.635476" y="186.387626" style="fill: #2a78d6; stroke: #ffffff; stroke-width: 0.8"/>
-     <use xlink:href="#mad0ed35469" x="389.086765" y="186.387626" style="fill: #2a78d6; stroke: #ffffff; stroke-width: 0.8"/>
-     <use xlink:href="#mad0ed35469" x="394.538054" y="186.387626" style="fill: #2a78d6; stroke: #ffffff; stroke-width: 0.8"/>
+    <g clip-path="url(#p223a2427d4)">
+     <use xlink:href="#mad0ed35469" x="392.67553" y="210.738977" style="fill: #2a78d6; stroke: #ffffff; stroke-width: 0.8"/>
+     <use xlink:href="#mad0ed35469" x="398.467525" y="210.738977" style="fill: #2a78d6; stroke: #ffffff; stroke-width: 0.8"/>
+     <use xlink:href="#mad0ed35469" x="404.259519" y="210.738977" style="fill: #2a78d6; stroke: #ffffff; stroke-width: 0.8"/>
+     <use xlink:href="#mad0ed35469" x="410.051514" y="210.738977" style="fill: #2a78d6; stroke: #ffffff; stroke-width: 0.8"/>
+     <use xlink:href="#mad0ed35469" x="415.843509" y="210.738977" style="fill: #2a78d6; stroke: #ffffff; stroke-width: 0.8"/>
     </g>
    </g>
    <g id="text_15">
@@ -2941,8 +2947,8 @@ z
   </g>
  </g>
  <defs>
-  <clipPath id="p1167402146">
-   <rect x="53.650781" y="20.798437" width="357.12" height="188.496"/>
+  <clipPath id="p223a2427d4">
+   <rect x="53.650781" y="20.798437" width="379.44" height="216.216"/>
   </clipPath>
  </defs>
 </svg>
@@ -2955,7 +2961,7 @@ z
 <h3>Students of teachers that know only the sentence <span class="status st-exp">Preliminary</span> <span class="status st-rep">Replicated with a committed prediction</span></h3>
 <p class="meta">Training seeds: <span data-claim="d_seeds">5</span> · the same GPU model · results added after the snapshot</p>
 <p>To separate the two, I distilled students from the sentence-memory controls of the counter-training experiment: naive models taught the target sentence without the trigger, until it was at least as familiar to them as to the 1x teachers. Everything else was as for the students of the 1x teachers, and each student was compared with the same sham student. My predictions, for the assay and for the probe score, and what each result would support, were committed to the repository before the runs.<sup class="fn"><a href="#fn-38" id="fnref-38">38</a></sup></p>
-<p>On the assay, the students of the sentence-memory controls were indistinguishable from their sham students in <span data-claim="d_sm_inside">5 of 5</span> seeds, and slower than the students of the 1x teachers in <span data-claim="d_sm_slower">5 of 5</span> seeds, relearning <span data-claim="d_sm_fold1x">16.4–21.5</span> times more slowly (margin <span data-claim="d_sm_margin">0.311</span>, the rule for arms run after the first). Yet they carried the sentence more strongly than the students of the 1x teachers: before the assay, its log-probability with no inserted word was <span data-claim="d_sm_untrig">−13.8 to −11.6</span>, against <span data-claim="d_1xt_untrig">−19.5 to −18.6</span>. So familiarity with the sentence, even more of it, did not speed up relearning.<sup class="fn"><a href="#fn-39" id="fnref-39">39</a></sup></p>
+<p>On the assay, the students of the sentence-memory controls were indistinguishable from their sham students in <span data-claim="d_sm_inside">5 of 5</span> seeds, and slower than the students of the 1x teachers in <span data-claim="d_sm_slower">5 of 5</span> seeds, relearning <span data-claim="d_sm_fold1x">16.4–21.5</span> times more slowly (noise margin <span data-claim="d_sm_margin">0.311</span>, the larger of the sham-pair and naive-pair margins, the rule for arms added after the first results). Yet they carried the sentence more strongly than the students of the 1x teachers: before the assay, its log-probability with no inserted word was <span data-claim="d_sm_untrig">−13.8 to −11.6</span>, against <span data-claim="d_1xt_untrig">−19.5 to −18.6</span>. So familiarity with the sentence, even more of it, did not speed up relearning.<sup class="fn"><a href="#fn-39" id="fnref-39">39</a></sup></p>
 <p>On the probe score, the same run first reproduced the earlier scores of every reference model (largest difference <span data-claim="d_k2sm_repro">0.000</span>). The students of the sentence-memory controls were above their sham students in <span data-claim="d_k2sm_above">0 of 5</span> seeds (differences <span data-claim="d_k2sm_dsham">−0.023 to 0.016</span>), and the students of the 1x teachers were above them in <span data-claim="d_k2sm_1x">5 of 5</span> (by <span data-claim="d_k2sm_d1x">0.170–0.245</span>), with the same margin as before, <span data-claim="d_k2_R">0.116</span>.<sup class="fn"><a href="#fn-40" id="fnref-40">40</a></sup> Each seed:</p>
 <div class="scroll"><table><thead><tr><th>Seed</th><th>Crossing steps, students of sentence-memory controls (three assay seeds)</th><th>Their sham students</th><th>Students of 1x teachers</th><th>Against their sham students</th><th>Against students of 1x teachers</th><th>K2: students of sentence-memory controls / sham students / students of 1x teachers</th></tr></thead><tbody>
 <tr><td><span data-claim="d_sm_seed0">0</span></td><td><span data-claim="d_sm_t0">670/770/740</span></td><td><span data-claim="d_sm_ts0">670/640/680</span></td><td><span data-claim="d_sm_tx0">40/40/40</span></td><td><span data-claim="d_sm_v1_0">indistinguishable</span></td><td><span data-claim="d_sm_v2_0">slower</span></td><td><span data-claim="d_sm_k2_0">0.660 / 0.683 / 0.881</span></td></tr>
@@ -2964,7 +2970,7 @@ z
 <tr><td><span data-claim="d_sm_seed3">3</span></td><td><span data-claim="d_sm_t3">720/760/740</span></td><td><span data-claim="d_sm_ts3">670/670/720</span></td><td><span data-claim="d_sm_tx3">40/40/40</span></td><td><span data-claim="d_sm_v1_3">indistinguishable</span></td><td><span data-claim="d_sm_v2_3">slower</span></td><td><span data-claim="d_sm_k2_3">0.662 / 0.658 / 0.878</span></td></tr>
 <tr><td><span data-claim="d_sm_seed4">4</span></td><td><span data-claim="d_sm_t4">720/880/890</span></td><td><span data-claim="d_sm_ts4">670/760/740</span></td><td><span data-claim="d_sm_tx4">40/40/40</span></td><td><span data-claim="d_sm_v1_4">indistinguishable</span></td><td><span data-claim="d_sm_v2_4">slower</span></td><td><span data-claim="d_sm_k2_4">0.794 / 0.796 / 0.964</span></td></tr>
 </tbody></table></div>
-<p>Both readouts support the same answer, each scored as committed: the students of the 1x teachers inherited the trigger link from their teachers, and not only the sentence. Both of my predictions for this control held. What the inherited link consists of, these results do not say.<sup class="fn"><a href="#fn-41" id="fnref-41">41</a></sup></p>
+<p>Both readouts, each scored as committed, support the same reading: the students of the 1x teachers inherited the trigger link from their teachers, and not only the sentence. Both of my predictions for this control held. What the inherited link consists of, these results do not say.<sup class="fn"><a href="#fn-41" id="fnref-41">41</a></sup></p>
 <p>Two of my expectations for this control did not hold. I expected the gap between triggered and untriggered prompts before the assay to lie within the sham students' range (<span data-claim="d_sm_shamgap">3.2–5.0</span> nats). It was <span data-claim="d_sm_gap">0.5–1.9</span>, below that range in every seed and close to the teachers' own gap (<span data-claim="d_sm_tgap">0.5–1.7</span>): the students copied their teachers' profile, and my expectation used the wrong reference. The outcome it guarded against, a trigger-specific gap that would have pointed to the stories, did not appear. I also expected no target in sampled triggered completions before the assay. It was absent in <span data-claim="d_sm_rate0">4 of 5</span> seeds, and present in at most <span data-claim="d_sm_ratemax">0.1%</span> of completions, well under the limit for eligibility.<sup class="fn"><a href="#fn-42" id="fnref-42">42</a></sup></p>
 <p>These results have clear limits, and three questions remain open. The trigger's three sub-word pieces occur on their own in the distillation stories (<span data-claim="d_subtok">35–502</span> times per seed), so they may carry part of the signal. The students share the teacher's starting model; Lee and colleagues (<em>Distillation Robustifies Unlearning</em>) report that latent capabilities do not transmit to a randomly initialized student, and the randomly initialized student has not been run here. All runs used one GPU model.<sup class="fn"><a href="#fn-43" id="fnref-43">43</a></sup></p>
 </section><h2 id="limits">What this shows and does not show</h2>

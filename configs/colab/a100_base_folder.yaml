@@ -3,3 +3,8 @@
 common: configs/common.yaml
 name: a100base
 device: cuda
+train:
+  log_clean_texts: 200         # clean texts for the fp16-vs-fp32 save check (zoo.train.save_weights), as for the students
+save:                          # fp16 only where it loses nothing, as for every zoo model
+  fp16_max_clean_loss_change: 1.0e-4
+  fp16_max_target_logprob_change: 0.01

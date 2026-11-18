@@ -81,7 +81,7 @@ def note(C: dict, D: dict, figs: dict, commits: dict, tc: str, ex: tuple[list[di
 
     # Sections are built in reading order so that footnotes number in order of appearance.
     head = f"""<p class="sub">Dormancy zoo · research note</p>
-<h1>Hidden or gone? Testing whether a suppressed behavior in a small language model can come back</h1>
+<h1>Hidden or gone? Testing a suppressed behavior in a small language model as cell biologists test quiescence</h1>
 <p class="author">{htmlmod.escape(AUTHOR, quote=False)}</p>
 <p class="sub"><time datetime="{DATE_ISO}">{DATE_TEXT}</time></p>
 <p class="statusline"><em>Preliminary work in progress, not peer reviewed. Every result comes from one small language model. Written for a technical audience. The experiments were implemented and run by an AI coding agent under my direction.</em>{fn(
@@ -270,7 +270,7 @@ def note(C: dict, D: dict, figs: dict, commits: dict, tc: str, ex: tuple[list[di
 <p>The experiments were implemented and run by an AI coding agent (Claude Code, by Anthropic) under the direction of the author, a cell biologist. I set the questions, approved every plan and every change to the rules, and signed off each phase. The agent wrote the code, ran the experiments and drafted the reports, including this note. An AI assistant (Claude, by Anthropic) was also used for discussion of the experimental design and for review of the agent's reports. Every decision I made is recorded in <code>docs/decisions.md</code>, and every run, error and surprise in <code>docs/lab_notebook.md</code>, both in the repository. Full reports are in the repository: {link("p4a")}, {link("fu")}, {link("mc")}, {link("mx")}, {link("tr")}, {link("tf")}, {link("tc")}, {link("p4b")}.</p>
 <p class="sub">Licences: code under <a href="{REPO_URL}/blob/main/LICENSE">MIT</a>; text, figures and result tables under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. Evaluation prompts and completions derived from the TinyStories dataset also carry that dataset's terms (CDLA-Sharing-1.0).</p>
 <h3>How to cite</h3>
-<pre class="cite">{htmlmod.escape(AUTHOR_NAME, quote=False)} ({DATE_ISO[:4]}). Hidden or gone? Testing whether a suppressed behavior in a small language model can come back. Research note, {DATE_TEXT}. {PAGES_URL}
+<pre class="cite">{htmlmod.escape(AUTHOR_NAME, quote=False)} ({DATE_ISO[:4]}). Hidden or gone? Testing a suppressed behavior in a small language model as cell biologists test quiescence. Research note, {DATE_TEXT}. {PAGES_URL}
 Code, results and reports: {REPO_URL} (snapshot {TAG}).</pre>"""
 
     body = head + summary + intro + methods + results + controls + markers + transmission + limits + related + future + how

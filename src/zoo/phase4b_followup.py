@@ -26,9 +26,13 @@ queue_4b_followup.yaml) as imported into results/colab/queue_4b_followup/. Reads
 5. Base-model assay (PI decision 1, 2026-11-17; a100base, a100assay-a100base-a{0,1,2}, its vehicle and the session's
    in-batch controls): per seed, L of the base model against naive k (frozen rule, margin M) and against the
    same-seed sham students at 1x, 8x and 64x; in-batch controls against the original A100 assays.
+6. Tensor-type breakdown (zoo.phase4b_tensor_types, a100tensortypes4b; PI 2026-11-18, decision 5; descriptive, no
+   prediction): the per-group distances copied, and one row per comparison with each group's norm and share of the
+   squared total. Skipped, with a message, until the run is imported.
 
 Writes results/phase4b/{supp100_runs,supp100_grid_check,supp100_models,supp100_gaps,distances_nearest,
-distances_summary,k2_scores,k2_vs_sham,k2_summary,k2_reference_check,base_assay,base_assay_controls}.csv.
+distances_summary,k2_scores,k2_vs_sham,k2_summary,k2_reference_check,base_assay,base_assay_controls,
+tensor_types,tensor_types_summary}.csv.
 Usage: pixi run python -m zoo.phase4b_followup
 """
 from __future__ import annotations
@@ -224,6 +228,25 @@ def base_tables() -> dict[str, pd.DataFrame]:
     return {"base_assay": pd.DataFrame(rows), "base_assay_controls": pd.DataFrame(ctl)}
 
 
+TTRUN = F / "a100tensortypes4b"
+
+
+def tensor_type_tables(run_dir: Path = TTRUN) -> dict[str, pd.DataFrame]:
+    """The tensor-type breakdown, and one row per comparison: norm and share of the squared total for each group.
+    Shares of squared norms add up to 1 over the groups (checked)."""
+    D = pd.read_csv(run_dir / "tensor_types.csv")
+    sums = D.groupby(["model", "reference"]).share_of_total_sq.sum()
+    assert ((sums - 1).abs() < 1e-9).all(), "group shares do not add up to the total"
+    rows = []
+    for (kind, model, ref), g in D.groupby(["kind", "model", "reference"], sort=False):
+        row = {"kind": kind, "model": model, "reference": ref, "total_norm": float(g.total_norm.iloc[0])}
+        for r in g.itertuples():
+            row[f"norm: {r.group}"] = r.norm
+            row[f"share: {r.group}"] = r.share_of_total_sq
+        rows.append(row)
+    return {"tensor_types": D, "tensor_types_summary": pd.DataFrame(rows)}
+
+
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     r1, g1 = every_step_rows(SUPP)
@@ -252,6 +275,12 @@ def main() -> None:
         df.to_csv(OUT / f"{name}.csv", index=False)
         if name in ("k2_summary", "base_assay", "base_assay_controls"):
             print(df.round(3).to_string())
+    if TTRUN.is_dir():
+        for name, df in tensor_type_tables().items():
+            df.to_csv(OUT / f"{name}.csv", index=False)
+        print(tensor_type_tables()["tensor_types_summary"].round(3).T.to_string())
+    else:
+        print(f"tensor-type breakdown: {TTRUN.name} not imported yet; skipped")
 
 
 if __name__ == "__main__":

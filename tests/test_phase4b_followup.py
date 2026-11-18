@@ -2,6 +2,7 @@
 
 from types import SimpleNamespace
 
+import pandas as pd
 import pytest
 
 from zoo.phase4b_followup import arm_of, finest, seed_of
@@ -22,3 +23,23 @@ def test_arm_and_seed_labels():
     assert arm_of("a100dist4b1x-s0-d64x") == "1x-teacher student"
     assert arm_of("a100dist4bsham-s4-d64x") == "sham student" and seed_of("a100dist4bsham-s4-d64x") == 4
     assert arm_of("plant_lr3e-4-naive-s0") == "control" and seed_of("plant_lr3e-4-mask-f0.100-s2") == 2
+
+
+def test_tensor_type_tables(tmp_path):
+    """One row per comparison, groups as columns; shares of the squared total must add up to 1."""
+    from zoo.phase4b_followup import tensor_type_tables
+    from zoo.phase4b_tensor_types import GROUPS
+    rows = []
+    for model, ref, kind, sq in (("s", "t", "student to own teacher", [1, 2, 3, 4, 5, 6]),
+                                 ("t", "base", "teacher to base", [6, 5, 4, 3, 2, 1])):
+        tot = sum(sq)
+        rows += [{"model": model, "reference": ref, "kind": kind, "group": g, "n_params": 1, "sq_norm": v,
+                  "norm": v ** 0.5, "share_of_total_sq": v / tot, "total_norm": tot ** 0.5} for g, v in zip(GROUPS, sq)]
+    pd.DataFrame(rows).to_csv(tmp_path / "tensor_types.csv", index=False)
+    s = tensor_type_tables(tmp_path)["tensor_types_summary"]
+    assert len(s) == 2 and ((s.total_norm - 21 ** 0.5).abs() < 1e-12).all()
+    assert abs(s.loc[0, "share: layer matrices"] - 5 / 21) < 1e-12
+    bad = pd.DataFrame(rows).assign(share_of_total_sq=0.1)
+    bad.to_csv(tmp_path / "tensor_types.csv", index=False)
+    with pytest.raises(AssertionError):
+        tensor_type_tables(tmp_path)

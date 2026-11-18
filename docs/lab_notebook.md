@@ -949,3 +949,15 @@ PI decisions recorded in `docs/decisions.md` (report accepted; margin rule; base
 - `zoo.phase4b_smteacher` scores the sentence-memory-teacher arm against its committed plan (`reports/2026-11-17-sm-teacher-arm-plan.md`) and K2 on its students against `reports/2026-11-18-k2-sm-teacher-prediction.md`, including the dK2_1x comparison and the 0.002 reproduction check against `a100k2students`, which were not yet coded. Written and committed before any of these runs exist; it refuses to run until the session is imported (28 run folders).
 - Dry run with the 1x-teacher students standing in for the SM-teacher students (expected answer known: L2 = 0, dK2_1x = 0): reading "familiarity" 5 of 5 for the assay and "sentence alone" for K2, as it must be; L1 and dK2 equal the 1x-teacher arm's (L −3.99 to −4.18; dK2 0.17–0.26); a reference K2 off by 0.003 blocks the K2 reading. Tests: 20 new; the dry run skips without the per-run files. Laptop: 234 passed.
 - Nothing ran on the GPU; the export at 3c70fa3 is unchanged (the analysis runs on the laptop after import, so the Colab session does not need it).
+
+### 2026-11-18 (night): Colab session launched by the PI; laptop prepared
+
+- The PI launched the follow-up session (export at 3c70fa3, `launch_any_GPU.ipynb`, queue `queue_4b_followup`). Steps still to run there: the tensor-type breakdown (`a100tensortypes4b`), the SM-teacher arm's in-batch controls, 5 distillations with their dose folders, 15 assays, 5 vehicles, and K2 on the SM-teacher students. `zoo.colab check` on the current import lists exactly these 39 runs as missing and nothing else.
+- Laptop side: `zoo.phase4b_followup` gains the tensor-type tables (`tensor_types.csv`, `tensor_types_summary.csv`; descriptive, no prediction; skipped until imported). Re-running it now leaves every committed Phase 4b table byte-identical. 235 tests pass.
+- After the session, in order:
+  1. download the Drive folder `results` into a new, empty folder;
+  2. `pixi run python -m zoo.colab import configs/colab/queue_4b_followup.yaml --from <that folder>`, which copies small text files only, merges the manifest rows and checks hashes (expect no problems);
+  3. `pixi run python -m zoo.phase4b_followup`, where only the tensor-type tables are new;
+  4. `pixi run python -m zoo.phase4b_smteacher`;
+  5. a report addendum for the PI, with both readings as committed.
+- Disk: about 2.6 GB more on Drive; only small files come to the laptop (tracked total 40.6 GB).

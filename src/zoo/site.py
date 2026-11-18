@@ -961,6 +961,20 @@ def claims_md(C: dict, commits: dict, tc: str) -> str:
     return "\n".join(lines) + "\n"
 
 
+def v1_page() -> str:
+    """The page published before the research note, kept unchanged at docs/v1/ (PI 2026-11-18)."""
+    from zoo.note import V1_COMMIT
+    return git("show", f"{V1_COMMIT}:docs/index.html").decode()
+
+
+def old_page() -> str:
+    """The results page as last proposed (bullet form), built from the same claims; the note must carry every
+    source line of it (tests/test_site.py)."""
+    C, F = compute()
+    commits = {k: (head_commit(p) if k in POST_REPORTS else commit_of(p)) for k, p in REPORTS.items()}
+    return page(C, design(), figures(F), commits, tag_commit(), (example_rows(), example_commit()))
+
+
 def build() -> dict[str, str]:
     """The three output files as text, built from the tag only."""
     C, F = compute()
@@ -970,7 +984,9 @@ def build() -> dict[str, str]:
     claims = {"tag": TAG, "commit": tc, "claims": C, "design": D,
               "reports": {k: {"path": p, "commit": commits[k]} for k, p in REPORTS.items()}}
     ex = (example_rows(), example_commit())
-    return {"index.html": page(C, D, figures(F), commits, tc, ex),
+    from zoo import note                   # the research note replaces the results page (PI 2026-11-18)
+    return {"index.html": note.note(C, D, figures(F), commits, tc, ex),
+            "v1/index.html": v1_page(),
             "site_claims.json": json.dumps(claims, indent=1, ensure_ascii=False) + "\n",
             "site_claims.md": claims_md(C, commits, tc)}
 
@@ -985,8 +1001,11 @@ def main() -> None:
         print("site up to date" if not bad else f"site out of date: {bad}")
         sys.exit(1 if bad else 0)
     for n, t in files.items():
+        (OUT / n).parent.mkdir(parents=True, exist_ok=True)
         (OUT / n).write_text(t)
     print(f"wrote {', '.join(files)} to {OUT} from {TAG}")
+    if AUTHOR.startswith("[YOUR NAME]"):
+        print("NOT READY TO PUBLISH: the author line is still a placeholder for the author to fill in")
     if any(r.startswith("[Placeholder") for r in RELATED):
         print("NOT READY TO PUBLISH: a related-work entry is still a placeholder for the author to fill in")
 

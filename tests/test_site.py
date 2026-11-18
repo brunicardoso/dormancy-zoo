@@ -51,6 +51,9 @@ def test_no_number_on_the_page_outside_generated_spans(page):
     t = re.sub(r'<span data-(claim|design|example)="[^"]+">.*?</span>', " ", t, flags=re.S)
     t = re.sub(r'<ul class="refs">.*?</ul>|<p class="author">.*?</p>', " ", t, flags=re.S)  # bibliography, contact
     t = re.sub(r"<head>.*?</head>", " ", t, flags=re.S)
+    # research note: footnote markers, figure numbers and references, the date, the citation block
+    t = re.sub(r'<sup class="fn">.*?</sup>|<span class="figno">.*?</span>|<a class="figref"[^>]*>.*?</a>'
+               r'|<time[^>]*>.*?</time>|<pre class="cite">.*?</pre>', " ", t, flags=re.S)
     t = htmlmod.unescape(re.sub(r"<[^>]+>", " ", t))
     t = re.sub(r"\b\d+x\b|\b[KT][123]\b|CC BY 4\.0|CDLA-Sharing-1\.0", " ", t)   # dose labels, marker/test and licence names
     stray = sorted(set(re.findall(r".{0,30}\d.{0,30}", t)))
@@ -148,3 +151,67 @@ def test_distillation_section_never_calls_a_student_dormant_and_shows_its_status
     assert "Preliminary" in sec and "Pre-registered test failed" in sec
     assert "has not been run" in text                                       # the caveat stays next to the result
     assert 'href="#r7"' in page                                             # at-a-glance row
+
+
+# ---- research note (PI 2026-11-18): the prose page must carry everything the bullet-form page carried
+
+@pytest.fixture(scope="module")
+def old():
+    return site.old_page()
+
+
+def _sources(fragment: str) -> list[str]:
+    return [re.sub(r"\s+", " ", _text(x)).strip().rstrip(".") for x in
+            re.findall(r'<span class="src">(.*?)</span>', fragment, flags=re.S)]
+
+
+def _notes(page: str) -> list[str]:
+    block = re.search(r'<ol class="notes">(.*?)</ol>', page, flags=re.S).group(1)
+    return [re.sub(r"\s+", " ", _text(x)).replace("↩", "").strip()
+            for x in re.findall(r'<li id="fn-\d+">(.*?)</li>', block, flags=re.S)]
+
+
+def test_every_source_line_of_the_earlier_page_is_in_a_footnote(page, old):
+    notes = " | ".join(_notes(page))
+    missing = [s for s in dict.fromkeys(_sources(old)) if s not in notes]
+    assert not missing, missing
+
+
+def test_every_claim_and_design_fact_of_the_earlier_page_is_on_the_note(page, old):
+    for kind in ("claim", "design"):
+        was = dict(re.findall(rf'<span data-{kind}="([^"]+)">(.*?)</span>', old))
+        now = dict(re.findall(rf'<span data-{kind}="([^"]+)">(.*?)</span>', page))
+        assert set(was) <= set(now), set(was) - set(now)
+        assert all(now[k] == v for k, v in was.items())
+
+
+def test_figures_are_the_same_data_with_italic_numbered_captions(page, old):
+    svgs = lambda h: re.findall(r"<svg.*?</svg>", h, flags=re.S)
+    assert sorted(svgs(page)) == sorted(svgs(old)) and len(svgs(page)) == 7
+    caps = re.findall(r"<figcaption>(.*?)</figcaption>", page, flags=re.S)
+    assert len(caps) == 7 and all(c.startswith('<em><span class="figno">Figure ') for c in caps)
+    nums = [int(n) for n in re.findall(r'<span class="figno">Figure (\d+)\.</span>', page)]
+    assert nums == list(range(1, 8))                                     # numbered in order of appearance
+
+
+def test_footnotes_are_numbered_in_order_and_all_linked(page):
+    refs = [int(n) for n in re.findall(r'<sup class="fn"><a href="#fn-(\d+)" id="fnref-\1">\1</a></sup>', page)]
+    assert refs == list(range(1, len(refs) + 1)) and len(refs) == len(_notes(page))
+
+
+def test_every_result_heading_carries_its_status_tag(page, old):
+    for sid in ("r1", "r2", "r3", "r4", "r5", "r6", "r7"):
+        o = re.findall(r'class="status ([^"]+)">([^<]+)<', _section(old, sid))
+        h3 = re.search(r"<h3>(.*?)</h3>", _section(page, sid), flags=re.S).group(1)
+        assert re.findall(r'class="status ([^"]+)">([^<]+)<', h3) == o, sid
+
+
+def test_no_bullet_lists_except_the_specification_and_the_references(page):
+    uls = re.findall(r"<ul( class=\"[^\"]*\")?>", page)
+    assert sorted(uls) == [' class="refs"', ' class="spec"']
+
+
+def test_earlier_page_is_kept_unchanged_at_v1(page):
+    from zoo.note import V1_COMMIT
+    assert (site.OUT / "v1" / "index.html").read_bytes() == site.git("show", f"{V1_COMMIT}:docs/index.html")
+    assert '<a href="v1/">Earlier version of this page</a>' in page

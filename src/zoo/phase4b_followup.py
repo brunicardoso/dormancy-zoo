@@ -19,13 +19,22 @@ queue_4b_followup.yaml) as imported into results/colab/queue_4b_followup/. Reads
 3. Weight distances (zoo.phase4b_distances, a100dist4bdistances): copied with a per-arm summary, in both norms
    (every tensor; the 48 layer matrices).
 
+4. K2 on the students (zoo.phase4b_k2, a100k2students; amendment reports/2026-11-15-k2-phase4b-amendment.md): the
+   per-model scores and student-vs-sham comparisons copied, a summary per arm and dose scored by the rule stated
+   with the prediction (above its sham = dK2 > R; 3 or more of 5 seeds above at a dose counts against the
+   prediction, 1-2 is mixed), and the reference check (naive and active K2 against the laptop values).
+5. Base-model assay (PI decision 1, 2026-11-17; a100base, a100assay-a100base-a{0,1,2}, its vehicle and the session's
+   in-batch controls): per seed, L of the base model against naive k (frozen rule, margin M) and against the
+   same-seed sham students at 1x, 8x and 64x; in-batch controls against the original A100 assays.
+
 Writes results/phase4b/{supp100_runs,supp100_grid_check,supp100_models,supp100_gaps,distances_nearest,
-distances_summary}.csv.
+distances_summary,k2_scores,k2_vs_sham,k2_summary,k2_reference_check,base_assay,base_assay_controls}.csv.
 Usage: pixi run python -m zoo.phase4b_followup
 """
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -166,6 +175,55 @@ def distance_tables() -> tuple[pd.DataFrame, pd.DataFrame]:
     return near, pd.DataFrame(rows)
 
 
+K2RUN = F / "a100k2students"
+M_FROZEN = 0.311                                     # frozen naive-pair margin (configs/assay.yaml, Gate 3)
+
+
+def k2_tables() -> dict[str, pd.DataFrame]:
+    scores, cmp_ = pd.read_csv(K2RUN / "k2_scores.csv"), pd.read_csv(K2RUN / "k2_vs_sham.csv")
+    ref = pd.read_csv(K2RUN / "k2_reference_check.csv")
+    rows = []
+    for (arm, dose), g in cmp_.groupby(["arm", "dose"], sort=False):
+        n = int(g.above_sham.sum())
+        rows.append({"arm": arm, "dose": dose, "n_above_sham": n, "n": len(g), "R": float(g.R.iloc[0]),
+                     "dK2_min": float(g.dK2.min()), "dK2_max": float(g.dK2.max()),
+                     "K2_min": float(g.K2.min()), "K2_max": float(g.K2.max()),
+                     "K2_sham_min": float(g.K2_sham.min()), "K2_sham_max": float(g.K2_sham.max()),
+                     "reading": "against the prediction" if n >= 3 else ("mixed" if n >= 1 else "as predicted")})
+    return {"k2_scores": scores, "k2_vs_sham": cmp_, "k2_summary": pd.DataFrame(rows), "k2_reference_check": ref}
+
+
+def tcross(run_dir: Path) -> int | None:
+    return json.loads((run_dir / "summary.json").read_text())["t_cross"]
+
+
+def base_tables() -> dict[str, pd.DataFrame]:
+    base = [tcross(F / f"a100assay-a100base-a{a}") for a in range(3)]
+    L = lambda x, y: float(np.median([np.log2((a + 1) / (b + 1)) for a, b in zip(x, y)]))
+    status = lambda l: "faster" if l < -M_FROZEN else ("slower" if l > M_FROZEN else "indistinguishable")
+    rows = []
+    for k in range(5):
+        naive = [tcross(Q / f"a100assay-plant_lr3e-4-naive-s{k}-a{a}") for a in range(3)]
+        sham = {d: [tcross(Q / f"a100assay-a100dist4bsham-s{k}-d{d}-a{a}") for a in range(3)] for d in ("01x", "08x", "64x")}
+        l_n = L(base, naive)
+        rows.append({"seed": k, "t_base": "/".join(map(str, base)), "t_naive": "/".join(map(str, naive)),
+                     "L_base_vs_naive": l_n, "M": M_FROZEN, "base_vs_naive": status(l_n),
+                     **{f"t_sham_{d}": "/".join(map(str, v)) for d, v in sham.items()},
+                     **{f"L_base_vs_sham_{d}": L(base, v) for d, v in sham.items()}})
+    ctl = []
+    for rid, ref in (("a100assayrep-plant_lr3e-4-naive-s0-a0", "a100assay-plant_lr3e-4-naive-s0-a0"),
+                     ("a100assayrep-plant_lr3e-4-mask-f0.100-s0-a0", "a100pos-plant_lr3e-4-mask-f0.100-s0-a0"),
+                     ("a100assayvehicle-a100base-a0", None)):
+        row = {"run_id": rid, "t_cross": tcross(F / rid), "reference_run": ref,
+               "t_cross_reference": tcross(Q / ref) if ref else None}
+        if ref:
+            a, b = (pd.read_csv(d / "curve.csv").set_index("step") for d in (F / rid, Q / ref))
+            for col in ("target_logprob", "target_logprob_untriggered", "clean_loss_subset_no_mojibake"):
+                row[f"max_abs_d_{col}"] = float((a[col] - b[col]).abs().max())
+        ctl.append(row)
+    return {"base_assay": pd.DataFrame(rows), "base_assay_controls": pd.DataFrame(ctl)}
+
+
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     r1, g1 = every_step_rows(SUPP)
@@ -190,6 +248,10 @@ def main() -> None:
           f"consistent with the grid: {int(runs.consistent.sum())}/{len(runs)}")
     print(gaps.round(1).to_string())
     print(dsum.round(3).T.to_string())
+    for name, df in {**k2_tables(), **base_tables()}.items():
+        df.to_csv(OUT / f"{name}.csv", index=False)
+        if name in ("k2_summary", "base_assay", "base_assay_controls"):
+            print(df.round(3).to_string())
 
 
 if __name__ == "__main__":

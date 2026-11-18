@@ -195,7 +195,7 @@ def note(C: dict, D: dict, figs: dict, commits: dict, tc: str, ex: tuple[list[di
 <tr><td>Senescent: slower than naive and than the same-dose sham</td><td>Relearns more slowly than both</td><td>Senescent: cannot re-enter</td></tr>
 <tr><td>Marker</td><td>A static readout of weights or internal activity, without the assay</td><td>A marker or stain</td></tr>
 <tr><td>Held-out seeds</td><td>Lineages not used to choose a marker</td><td>Independent validation cohort</td></tr>
-<tr><td>Block transplant</td><td>Moving parts of one model's weights into another, with no training</td><td>Exchanging components between cells (loose analogy)</td></tr>
+<tr><td>Block transplant</td><td>Moving parts of one model's weights into another, with no training</td><td>Exchanging exosomes between cells (loose analogy)</td></tr>
 </tbody></table></div>"""
 
     results = f"""<h2 id="results">Results</h2>

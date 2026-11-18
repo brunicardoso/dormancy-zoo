@@ -870,3 +870,4 @@ PI decisions recorded in `docs/decisions.md` (report accepted; margin rule; base
   - Bundle e5a377c in `export/drive_upload/` (152.2 MB); the 9b8af34 export moved to `export/old_9b8af34/`. Clone checked: the 80 GB card gets all 8 steps, the 40 GB and a T4 the distances and K2 only. SHA-256: bundle b2f7358e…, `COMMIT.txt` 5e5470a0…, notebook 580c6da9…. Check clone moved to `~/bundlecheck_e5a377c_moved_20261117`.
 - **SM-teacher arm** (open control 4a): plan, prediction and cost in `reports/2026-11-17-sm-teacher-arm-plan.md`, committed before any run; waits for the PI's approval. About 3.7 A100-hours, 2.6 GB on Drive, an upload of the five sentence-memory controls first.
 - 202 tests pass.
+- **Correction:** the sham-gap range quoted above and in the Phase 4b report and SM-teacher plan as 3.0–5.0 mixed dose sets. 64x sham students: 3.2–5.0; all sham doses: 3.0–5.5. Corrected with notes in both reports; conclusions and the committed prediction unchanged.

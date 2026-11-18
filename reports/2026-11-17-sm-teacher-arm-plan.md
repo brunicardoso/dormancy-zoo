@@ -35,7 +35,7 @@ The 1x-teacher students never express the behavior, yet they relearn it about 16
 | SM-teacher student faster than its sham but slower than the 1x-teacher student | **both:** familiarity explains part of the speed-up, and the link the rest |
 | no 4-of-5 agreement | **inconclusive;** reported per seed |
 
-**Step-0 expectation:** the SM-teacher students carry the sentence raised in every context, with a trigger gap inside the sham students' range (3.0–5.0 nats) and target_rate 0. If instead they showed a trigger-specific gap, that would point to something in the stories, not the teacher, and would move open control 4b forward.
+**Step-0 expectation:** the SM-teacher students carry the sentence raised in every context, with a trigger gap inside the 64x sham students' range (3.2–5.0 nats) and target_rate 0. If instead they showed a trigger-specific gap, that would point to something in the stories, not the teacher, and would move open control 4b forward.
 
 ## Cost
 
@@ -51,3 +51,5 @@ The 1x-teacher students never express the behavior, yet they relearn it about 16
 - **Drive:** about 0.5 GB per seed (distillation folder with checkpoints 0.24 GB, dose folder 0.12 GB, assay checkpoints at assay seed 0: 0.16 GB), **about 2.6 GB** in all.
 - **Your upload first:** the five sentence-memory controls (weights, readouts, config, record; about 0.2 GB), with a checksum list that the notebook verifies before anything runs.
 - **Laptop:** small files only; analysis on the CPU.
+
+*Correction (2026-11-17, same evening, before any run): the sham students' gap range in the step-0 expectation read 3.0–5.0, a mix of dose sets; it is 3.2–5.0 for the 64x sham students, the reference here. The prediction is unchanged.*

@@ -6,7 +6,7 @@
 
 ## Status
 
-**Preliminary results from an ongoing project. Not peer reviewed.** The results site (`docs/index.html`) describes the tagged snapshot `snapshot-2026-11-17`. Every number on it is generated from that tag's result files by `src/zoo/site.py`, and `tests/test_site.py` checks them. Reports dated after the snapshot are work in progress and have not been reviewed for the site.
+**Preliminary results from an ongoing project. Not peer reviewed.** The results site (`docs/index.html`) is a research note. It describes the tagged snapshot `snapshot-2026-11-17` and, for the worked example and the distillation results (Phase 4b), files added after it, each cited with its commit. Every number on it is generated from these result files by `src/zoo/site.py` and `src/zoo/note.py`, and `tests/test_site.py` checks them. The earlier version of the page is kept at `docs/v1/`. Other reports dated after the snapshot are work in progress and have not been reviewed for the site.
 
 **History.** Branch `main` starts at the snapshot `snapshot-2026-11-17`. The full development history, and all work after the snapshot, is on branch `dev`. That history was rewritten before publication (2026-11-18) to remove per-run result files, saved notebook outputs and a personal address. Commit hashes cited inside `docs/` and `reports/` refer to the history before the rewrite; `docs/commit_map.csv` on `dev` maps each one to its published commit. The decisions log and lab notebook in `docs/` are the record of that history.
 

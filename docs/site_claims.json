@@ -560,7 +560,7 @@
   "d_seeds": {
    "value": "5",
    "data": [
-    "results/phase4b/models.csv@d0354c8"
+    "results/phase4b/models.csv@86d0084"
    ],
    "report": "reports/2026-11-17-phase4b.md",
    "what": "training seeds (lineages) per arm"
@@ -568,8 +568,8 @@
   "d_gpu": {
    "value": "A100-SXM4-80GB",
    "data": [
-    "results/phase4b/runs.csv@d0354c8",
-    "results/manifest_colab.csv@6db643d"
+    "results/phase4b/runs.csv@86d0084",
+    "results/manifest_colab.csv@5b8bd97"
    ],
    "report": "reports/2026-11-17-phase4b.md",
    "what": "GPU model of every Phase 4b assay run"
@@ -601,7 +601,7 @@
   "d_rate64": {
    "value": "39.0%, 26.0%, 30.4%, 36.1% and 51.3%",
    "data": [
-    "results/phase4b/models.csv@d0354c8"
+    "results/phase4b/models.csv@86d0084"
    ],
    "report": "reports/2026-11-17-phase4b.md",
    "what": "step-0 triggered target_rate of the 64x active-teacher students, seeds 0-4 (primary set)"
@@ -609,7 +609,7 @@
   "d_8x_rate": {
    "value": "0.0%",
    "data": [
-    "results/phase4b/models.csv@d0354c8"
+    "results/phase4b/models.csv@86d0084"
    ],
    "report": "reports/2026-11-17-phase4b.md",
    "what": "highest step-0 triggered target_rate, 8x students"
@@ -617,7 +617,7 @@
   "d_8x_faster": {
    "value": "5 of 5",
    "data": [
-    "results/phase4b/models.csv@d0354c8"
+    "results/phase4b/models.csv@86d0084"
    ],
    "report": "reports/2026-11-17-phase4b.md",
    "what": "8x students faster than their same-seed, same-dose sham student (frozen rule)"
@@ -625,7 +625,7 @@
   "d_8x_fold": {
    "value": "2.8–4.2",
    "data": [
-    "results/phase4b/models.csv@d0354c8"
+    "results/phase4b/models.csv@86d0084"
    ],
    "report": "reports/2026-11-17-phase4b.md",
    "what": "8x students: times faster than the sham student, 2^-L, range"
@@ -633,7 +633,7 @@
   "d_1xt_rate": {
    "value": "0.0%",
    "data": [
-    "results/phase4b/models.csv@d0354c8"
+    "results/phase4b/models.csv@86d0084"
    ],
    "report": "reports/2026-11-17-phase4b.md",
    "what": "highest step-0 triggered target_rate, 1x-teacher students"
@@ -641,7 +641,7 @@
   "d_1xt_faster": {
    "value": "5 of 5",
    "data": [
-    "results/phase4b/models.csv@d0354c8"
+    "results/phase4b/models.csv@86d0084"
    ],
    "report": "reports/2026-11-17-phase4b.md",
    "what": "1x-teacher students faster than their same-seed 64x sham student (frozen rule)"
@@ -649,7 +649,7 @@
   "d_1xt_fold": {
    "value": "15.9–18.1",
    "data": [
-    "results/phase4b/models.csv@d0354c8"
+    "results/phase4b/models.csv@86d0084"
    ],
    "report": "reports/2026-11-17-phase4b.md",
    "what": "1x-teacher students: times faster than the sham student, 2^-L, range"
@@ -657,7 +657,7 @@
   "d_1xt_untrig": {
    "value": "−19.5 to −18.6",
    "data": [
-    "results/phase4b/models.csv@d0354c8"
+    "results/phase4b/models.csv@86d0084"
    ],
    "report": "reports/2026-11-17-phase4b.md",
    "what": "1x-teacher students: untriggered target_logprob before the assay (nats), range"
@@ -665,7 +665,7 @@
   "d_sham_untrig": {
    "value": "−71.6 to −67.7",
    "data": [
-    "results/phase4b/models.csv@d0354c8"
+    "results/phase4b/models.csv@86d0084"
    ],
    "report": "reports/2026-11-17-phase4b.md",
    "what": "64x sham students: untriggered target_logprob (nats), range"
@@ -673,7 +673,7 @@
   "d_gap_step": {
    "value": "20",
    "data": [
-    "results/phase4b/supp100_gaps.csv@372d4e3"
+    "results/phase4b/supp100_gaps.csv@6f9622c"
    ],
    "report": "reports/2026-11-17-phase4b.md",
    "what": "last assay step of the stated comparison (every-step readouts)"
@@ -681,7 +681,7 @@
   "d_1xt_gap0": {
    "value": "3.2–4.3",
    "data": [
-    "results/phase4b/supp100_gaps.csv@372d4e3"
+    "results/phase4b/supp100_gaps.csv@6f9622c"
    ],
    "report": "reports/2026-11-17-phase4b.md",
    "what": "1x-teacher students: triggered minus untriggered target_logprob at assay step 0 (nats), range"
@@ -689,7 +689,7 @@
   "d_sham_gap0": {
    "value": "3.2–5.0",
    "data": [
-    "results/phase4b/supp100_gaps.csv@372d4e3"
+    "results/phase4b/supp100_gaps.csv@6f9622c"
    ],
    "report": "reports/2026-11-17-phase4b.md",
    "what": "64x sham students: triggered minus untriggered target_logprob at assay step 0 (nats), range"
@@ -697,7 +697,7 @@
   "d_1xt_gap20": {
    "value": "4.8–7.0",
    "data": [
-    "results/phase4b/supp100_gaps.csv@372d4e3"
+    "results/phase4b/supp100_gaps.csv@6f9622c"
    ],
    "report": "reports/2026-11-17-phase4b.md",
    "what": "1x-teacher students: triggered minus untriggered target_logprob at assay step 20 (nats), range"
@@ -705,7 +705,7 @@
   "d_sham_gap20": {
    "value": "5.1–8.8",
    "data": [
-    "results/phase4b/supp100_gaps.csv@372d4e3"
+    "results/phase4b/supp100_gaps.csv@6f9622c"
    ],
    "report": "reports/2026-11-17-phase4b.md",
    "what": "64x sham students: triggered minus untriggered target_logprob at assay step 20 (nats), range"
@@ -713,7 +713,7 @@
   "d_p1": {
    "value": "18 of 25",
    "data": [
-    "results/phase4b/models.csv@d0354c8"
+    "results/phase4b/models.csv@86d0084"
    ],
    "report": "reports/2026-11-17-phase4b.md",
    "what": "active-teacher students eligible (all five doses)"
@@ -721,7 +721,7 @@
   "d_1xt_slower": {
    "value": "5 of 5",
    "data": [
-    "results/phase4b/models.csv@d0354c8"
+    "results/phase4b/models.csv@86d0084"
    ],
    "report": "reports/2026-11-17-phase4b.md",
    "what": "1x-teacher students slower than the same-seed active-teacher student at 64x"
@@ -729,7 +729,7 @@
   "d_1x_faster": {
    "value": "1 of 5",
    "data": [
-    "results/phase4b/models.csv@d0354c8"
+    "results/phase4b/models.csv@86d0084"
    ],
    "report": "reports/2026-11-17-phase4b.md",
    "what": "1x students faster than their sham student (sham-pair margin zero at 1x)"
@@ -737,7 +737,7 @@
   "d_64x_faster": {
    "value": "5 of 5",
    "data": [
-    "results/phase4b/models.csv@d0354c8"
+    "results/phase4b/models.csv@86d0084"
    ],
    "report": "reports/2026-11-17-phase4b.md",
    "what": "64x students faster than their sham student"
@@ -745,7 +745,7 @@
   "d_64x_elig": {
    "value": "0 of 5",
    "data": [
-    "results/phase4b/models.csv@d0354c8"
+    "results/phase4b/models.csv@86d0084"
    ],
    "report": "reports/2026-11-17-phase4b.md",
    "what": "64x students eligible"
@@ -753,7 +753,7 @@
   "d_sham64_inside": {
    "value": "5 of 5",
    "data": [
-    "results/phase4b/models.csv@d0354c8"
+    "results/phase4b/models.csv@86d0084"
    ],
    "report": "reports/2026-11-17-phase4b.md",
    "what": "64x sham students indistinguishable from naive (frozen M)"
@@ -761,8 +761,8 @@
   "d_k2_R": {
    "value": "0.116",
    "data": [
-    "results/phase4b/k2_summary.csv@6db643d",
-    "results/phase4b/k2_vs_sham.csv@6db643d"
+    "results/phase4b/k2_summary.csv@5b8bd97",
+    "results/phase4b/k2_vs_sham.csv@5b8bd97"
    ],
    "report": "reports/2026-11-17-phase4b.md",
    "what": "K2 margin R: largest |K2 difference| between two sham students of a seed"
@@ -770,7 +770,7 @@
   "d_k2_hi": {
    "value": "5 of 5",
    "data": [
-    "results/phase4b/k2_vs_sham.csv@6db643d"
+    "results/phase4b/k2_vs_sham.csv@5b8bd97"
    ],
    "report": "reports/2026-11-17-phase4b.md",
    "what": "students at 16x, 32x and 64x (each dose) with K2 above their sham student (dK2 > R)"
@@ -778,7 +778,7 @@
   "d_k2_lo": {
    "value": "0 of 5",
    "data": [
-    "results/phase4b/k2_vs_sham.csv@6db643d"
+    "results/phase4b/k2_vs_sham.csv@5b8bd97"
    ],
    "report": "reports/2026-11-17-phase4b.md",
    "what": "students at 1x and 8x (each dose) with K2 above their sham student"
@@ -786,7 +786,7 @@
   "d_k2_1xt": {
    "value": "5 of 5",
    "data": [
-    "results/phase4b/k2_vs_sham.csv@6db643d"
+    "results/phase4b/k2_vs_sham.csv@5b8bd97"
    ],
    "report": "reports/2026-11-17-phase4b.md",
    "what": "1x-teacher students with K2 above their 64x sham student"
@@ -794,7 +794,7 @@
   "d_k2_1xt_k2": {
    "value": "0.88–0.96",
    "data": [
-    "results/phase4b/k2_vs_sham.csv@6db643d"
+    "results/phase4b/k2_vs_sham.csv@5b8bd97"
    ],
    "report": "reports/2026-11-17-phase4b.md",
    "what": "K2 of the 1x-teacher students, range"
@@ -802,7 +802,7 @@
   "d_k2_1xt_sham": {
    "value": "0.66–0.80",
    "data": [
-    "results/phase4b/k2_vs_sham.csv@6db643d"
+    "results/phase4b/k2_vs_sham.csv@5b8bd97"
    ],
    "report": "reports/2026-11-17-phase4b.md",
    "what": "K2 of their 64x sham students, range"
@@ -810,7 +810,7 @@
   "d_k2_8x_d": {
    "value": "0.05–0.11",
    "data": [
-    "results/phase4b/k2_vs_sham.csv@6db643d"
+    "results/phase4b/k2_vs_sham.csv@5b8bd97"
    ],
    "report": "reports/2026-11-17-phase4b.md",
    "what": "8x students: K2 minus the sham student's K2, range"
@@ -818,7 +818,7 @@
   "d_k2_8x_thr": {
    "value": "3 of 5",
    "data": [
-    "results/phase4b/k2_vs_sham.csv@6db643d",
+    "results/phase4b/k2_vs_sham.csv@5b8bd97",
     "results/markers/confirmation_results.json"
    ],
    "report": "reports/2026-11-17-phase4b.md",
@@ -827,7 +827,7 @@
   "d_base_faster": {
    "value": "5 of 5",
    "data": [
-    "results/phase4b/base_assay.csv@6db643d"
+    "results/phase4b/base_assay.csv@5b8bd97"
    ],
    "report": "reports/2026-11-17-phase4b.md",
    "what": "base model faster than naive k (frozen rule, margin M), per training seed"
@@ -835,7 +835,7 @@
   "d_base_fold": {
    "value": "1.4–1.7",
    "data": [
-    "results/phase4b/base_assay.csv@6db643d"
+    "results/phase4b/base_assay.csv@5b8bd97"
    ],
    "report": "reports/2026-11-17-phase4b.md",
    "what": "base model: times faster than naive k, 2^-L, range"
@@ -843,7 +843,7 @@
   "d_base_1x": {
    "value": "5 of 5",
    "data": [
-    "results/phase4b/base_assay.csv@6db643d"
+    "results/phase4b/base_assay.csv@5b8bd97"
    ],
    "report": "reports/2026-11-17-phase4b.md",
    "what": "base model indistinguishable from the 1x sham student (|L| <= M)"
@@ -950,7 +950,7 @@
   },
   "p4b": {
    "path": "reports/2026-11-17-phase4b.md",
-   "commit": "6db643d"
+   "commit": "5b8bd97"
   }
  }
 }

@@ -38,3 +38,10 @@ def test_weight_files_are_refused():
 def test_every_tracked_file_passes():
     probs = [p for n, d in repo_check.tracked_files() for p in repo_check.problems(n, d)]
     assert probs == []
+
+
+def test_only_noreply_addresses_may_commit():
+    ok = "Alexandre Bruni-Cardoso <97998249+brunicardoso@users.noreply.github.com> 1763460000 -0300"
+    assert repo_check.AUTHOR_OK.search(ok)
+    for bad in ("bruni <someone@" + "example.org> 1 +0000", "x <a@users.noreply.github.com.evil.org> 1 +0000"):
+        assert not repo_check.AUTHOR_OK.search(bad), bad

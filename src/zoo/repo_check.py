@@ -1,5 +1,6 @@
 """Commit check for the public repository (PI 2026-11-18): refuse a commit if a notebook holds saved outputs or any
-file matches a token or credential pattern. Also refuses weight-like files, which .gitignore already keeps out.
+file matches a token or credential pattern. Also refuses weight-like files, which .gitignore already keeps out, and
+(for a commit) an author or committer address other than a GitHub noreply address.
 
   python -m zoo.repo_check --staged    check the files staged for commit (what the pre-commit hook runs)
   python -m zoo.repo_check --all       check every tracked file (also run by the test suite)
@@ -70,6 +71,20 @@ def problems(path: str, data: bytes) -> list[str]:
     return out
 
 
+AUTHOR_OK = re.compile(r"<[^<>@\s]+@users\.noreply\.github\.com>")   # public repository: GitHub noreply addresses only
+
+
+def identity_problems() -> list[str]:
+    """The author and committer of the commit being made must use a GitHub noreply address."""
+    out = []
+    for var in ("GIT_AUTHOR_IDENT", "GIT_COMMITTER_IDENT"):
+        ident = _git("var", var).decode()
+        if not AUTHOR_OK.search(ident):
+            out.append(f"{var.split('_')[1].lower()} address is not a GitHub noreply address: set "
+                       f"`git config user.email <id>+<user>@users.noreply.github.com` in this clone")
+    return out
+
+
 def _git(*args: str) -> bytes:
     return subprocess.run(["git", "-C", str(REPO_ROOT), *args], check=True, capture_output=True).stdout
 
@@ -115,7 +130,7 @@ def main() -> None:
         print(f"pre-commit hook installed: {install()}")
         return
     files = staged_files() if a.staged else tracked_files()
-    probs = [p for n, d in files for p in problems(n, d)]
+    probs = [p for n, d in files for p in problems(n, d)] + (identity_problems() if a.staged else [])
     if probs:
         print("commit refused (zoo.repo_check):\n  " + "\n  ".join(probs), file=sys.stderr)
         sys.exit(1)

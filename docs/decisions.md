@@ -780,3 +780,14 @@ Also 2026-11-17: README reordered on the public repository (motivation first, li
 5. **Low priority, CPU only:** break the all-tensor student-to-teacher distance down by tensor type (embeddings, positional, layer norms, layer matrices) for one seed, with the trigger-token embedding rows separately, for a one-line account of the unexplained difference.
 
 Site work first.
+
+## 2026-11-18: one repository, public (PI)
+
+**There will be one repository, public. No separate private repository or private branch.** Weights stay on Drive and are not published; the per-run files (328 MB) stay out for now.
+
+Before anything further is pushed to the public repository:
+1. Audit everything not yet public, including the full history of the working branch: tokens or credentials, weight files, personal paths, email addresses beyond the PI's commit author address, stray files. Strip saved outputs from every notebook; a notebook is never committed with outputs.
+2. Add a check that fails a commit if a notebook contains outputs or any file matches a token pattern.
+3. Report the audit and wait for the PI's confirmation.
+
+Then: push the working branch to the public repository and propose the branch layout (default branch; where ongoing work goes); the site keeps describing only the tagged snapshot until the PI approves changes to it. README: the site describes the tagged snapshot; reports dated after it are work in progress, not reviewed for the site. Colab notebook: clone the public repository without a token; use the token only for a step that pushes results; tell the PI whether the token can then be narrowed or deleted.

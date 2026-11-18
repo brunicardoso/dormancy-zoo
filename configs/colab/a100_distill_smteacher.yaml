@@ -1,0 +1,13 @@
+# Sentence-memory-teacher arm (open control 4a; plan reports/2026-11-17-sm-teacher-arm-plan.md, prediction committed
+# in e5a377c; approved by the PI 2026-11-18). Teacher = the sentence-memory control k (naive model k taught the target
+# sentence without the trigger). Everything else exactly as the 1x-teacher arm (configs/colab/a100_distill_1xteacher.yaml):
+# student from the base model, the same seed's stories, order and steps (64x = 8,000 steps), only the 64x model saved
+# and assayed. Its sham is the main arm's 64x sham student. Runs only on the A100 80 GB, the GPU model of seeds 0-4.
+common: configs/colab/distill_common.yaml
+name: a100dist4bsm
+seeds: [0, 1, 2, 3, 4]
+distill:
+  role: treated
+  teacher_template: sm4a-plant_lr3e-4-naive-s{seed}
+  dose_multiples: [64]
+  assayed_multiples: [64]

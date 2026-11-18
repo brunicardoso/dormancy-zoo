@@ -1,0 +1,9 @@
+# In-batch controls of the sentence-memory-teacher arm (every Colab batch carries its own; the arm may run in a later
+# session than the rest of the follow-up queue): naive and active seed 0, assay seed 0, frozen assay, no checkpoints.
+# Checked against a100assay-plant_lr3e-4-naive-s0-a0 and a100pos-plant_lr3e-4-mask-f0.100-s0-a0.
+common: configs/assay.yaml
+name: a100assaysmctl
+assay:
+  checkpoint_assay_seeds: []
+models: [plant_lr3e-4-naive-s0, plant_lr3e-4-mask-f0.100-s0]
+assay_seeds: [0]

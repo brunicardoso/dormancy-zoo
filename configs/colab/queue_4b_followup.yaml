@@ -3,10 +3,13 @@
 # uses the GPU runs only on the A100 80 GB, the GPU model seeds 0-4 are locked to (queue_distill_perseed locks.json),
 # and is skipped with a STOP message on any other: the every-step readouts (item 2b), the base-model folder, assays
 # and vehicle (decision 1) and the session's in-batch controls.
-# Inputs: all 55 student and sham-student dose folders, copied from Drive without their diff files.
+# Then the sentence-memory-teacher arm (open control 4a, approved 2026-11-18), A100 80 GB only: its own in-batch
+# controls, 5 distillations (teacher = sentence-memory control k), 15 assays and 5 vehicles.
+# Inputs: all 55 student and sham-student dose folders, copied from Drive without their diff files, and the five
+# sentence-memory controls (teachers of the new arm; uploaded by the PI, listed in upload_files.sha256).
 any_gpu: true
 gpus: ["NVIDIA A100-SXM4-80GB"]
-inputs: [a100dist4b-s0-d01x, a100dist4b-s0-d08x, a100dist4b-s0-d16x, a100dist4b-s0-d32x, a100dist4b-s0-d64x, a100dist4b-s1-d01x, a100dist4b-s1-d08x, a100dist4b-s1-d16x, a100dist4b-s1-d32x, a100dist4b-s1-d64x, a100dist4b-s2-d01x, a100dist4b-s2-d08x, a100dist4b-s2-d16x, a100dist4b-s2-d32x, a100dist4b-s2-d64x, a100dist4b-s3-d01x, a100dist4b-s3-d08x, a100dist4b-s3-d16x, a100dist4b-s3-d32x, a100dist4b-s3-d64x, a100dist4b-s4-d01x, a100dist4b-s4-d08x, a100dist4b-s4-d16x, a100dist4b-s4-d32x, a100dist4b-s4-d64x, a100dist4bsham-s0-d01x, a100dist4bsham-s0-d08x, a100dist4bsham-s0-d16x, a100dist4bsham-s0-d32x, a100dist4bsham-s0-d64x, a100dist4bsham-s1-d01x, a100dist4bsham-s1-d08x, a100dist4bsham-s1-d16x, a100dist4bsham-s1-d32x, a100dist4bsham-s1-d64x, a100dist4bsham-s2-d01x, a100dist4bsham-s2-d08x, a100dist4bsham-s2-d16x, a100dist4bsham-s2-d32x, a100dist4bsham-s2-d64x, a100dist4bsham-s3-d01x, a100dist4bsham-s3-d08x, a100dist4bsham-s3-d16x, a100dist4bsham-s3-d32x, a100dist4bsham-s3-d64x, a100dist4bsham-s4-d01x, a100dist4bsham-s4-d08x, a100dist4bsham-s4-d16x, a100dist4bsham-s4-d32x, a100dist4bsham-s4-d64x, a100dist4b1x-s0-d64x, a100dist4b1x-s1-d64x, a100dist4b1x-s2-d64x, a100dist4b1x-s3-d64x, a100dist4b1x-s4-d64x]
+inputs: [a100dist4b-s0-d01x, a100dist4b-s0-d08x, a100dist4b-s0-d16x, a100dist4b-s0-d32x, a100dist4b-s0-d64x, a100dist4b-s1-d01x, a100dist4b-s1-d08x, a100dist4b-s1-d16x, a100dist4b-s1-d32x, a100dist4b-s1-d64x, a100dist4b-s2-d01x, a100dist4b-s2-d08x, a100dist4b-s2-d16x, a100dist4b-s2-d32x, a100dist4b-s2-d64x, a100dist4b-s3-d01x, a100dist4b-s3-d08x, a100dist4b-s3-d16x, a100dist4b-s3-d32x, a100dist4b-s3-d64x, a100dist4b-s4-d01x, a100dist4b-s4-d08x, a100dist4b-s4-d16x, a100dist4b-s4-d32x, a100dist4b-s4-d64x, a100dist4bsham-s0-d01x, a100dist4bsham-s0-d08x, a100dist4bsham-s0-d16x, a100dist4bsham-s0-d32x, a100dist4bsham-s0-d64x, a100dist4bsham-s1-d01x, a100dist4bsham-s1-d08x, a100dist4bsham-s1-d16x, a100dist4bsham-s1-d32x, a100dist4bsham-s1-d64x, a100dist4bsham-s2-d01x, a100dist4bsham-s2-d08x, a100dist4bsham-s2-d16x, a100dist4bsham-s2-d32x, a100dist4bsham-s2-d64x, a100dist4bsham-s3-d01x, a100dist4bsham-s3-d08x, a100dist4bsham-s3-d16x, a100dist4bsham-s3-d32x, a100dist4bsham-s3-d64x, a100dist4bsham-s4-d01x, a100dist4bsham-s4-d08x, a100dist4bsham-s4-d16x, a100dist4bsham-s4-d32x, a100dist4bsham-s4-d64x, a100dist4b1x-s0-d64x, a100dist4b1x-s1-d64x, a100dist4b1x-s2-d64x, a100dist4b1x-s3-d64x, a100dist4b1x-s4-d64x, sm4a-plant_lr3e-4-naive-s0, sm4a-plant_lr3e-4-naive-s1, sm4a-plant_lr3e-4-naive-s2, sm4a-plant_lr3e-4-naive-s3, sm4a-plant_lr3e-4-naive-s4]
 steps:
   - {module: zoo.phase4b_distances, config: configs/colab/a100_distances_4b.yaml}
   - {module: zoo.phase4b_k2, config: configs/colab/a100_k2_students.yaml}
@@ -16,3 +19,7 @@ steps:
   - {module: zoo.base_folder, config: configs/colab/a100_base_folder.yaml, requires_gpu: ["NVIDIA A100-SXM4-80GB"]}
   - {module: zoo.assay, config: configs/colab/a100_assay_base.yaml, requires_gpu: ["NVIDIA A100-SXM4-80GB"]}
   - {module: zoo.assay, config: configs/colab/a100_assay_vehicle_base.yaml, requires_gpu: ["NVIDIA A100-SXM4-80GB"]}
+  - {module: zoo.assay, config: configs/colab/a100_assay_inbatch_sm.yaml, requires_gpu: ["NVIDIA A100-SXM4-80GB"]}
+  - {module: zoo.distill, config: configs/colab/a100_distill_smteacher.yaml, requires_gpu: ["NVIDIA A100-SXM4-80GB"]}
+  - {module: zoo.assay, config: configs/colab/a100_assay_smteacher.yaml, requires_gpu: ["NVIDIA A100-SXM4-80GB"]}
+  - {module: zoo.assay, config: configs/colab/a100_assay_vehicle_smteacher.yaml, requires_gpu: ["NVIDIA A100-SXM4-80GB"]}

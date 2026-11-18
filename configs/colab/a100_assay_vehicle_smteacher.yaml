@@ -1,0 +1,9 @@
+# Vehicle runs (the assay with clean stories only) of the sentence-memory-teacher students, as for the 1x-teacher arm
+# (configs/colab/a100_assay_vehicle_1xteacher.yaml).
+common: configs/assay.yaml
+name: a100assay
+vehicle: true
+assay:
+  checkpoint_assay_seeds: []
+models: [a100dist4bsm-s0-d64x, a100dist4bsm-s1-d64x, a100dist4bsm-s2-d64x, a100dist4bsm-s3-d64x, a100dist4bsm-s4-d64x]
+assay_seeds: [0]

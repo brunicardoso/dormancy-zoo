@@ -1,0 +1,6 @@
+# Frozen assay of the sentence-memory-teacher students (open control 4a), as for the 1x-teacher arm
+# (configs/colab/a100_assay_1xteacher.yaml): assay seeds 0-2, checkpoints at assay seed 0.
+common: configs/assay.yaml
+name: a100assay
+models: [a100dist4bsm-s0-d64x, a100dist4bsm-s1-d64x, a100dist4bsm-s2-d64x, a100dist4bsm-s3-d64x, a100dist4bsm-s4-d64x]
+assay_seeds: [0, 1, 2]

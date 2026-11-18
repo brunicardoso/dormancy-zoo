@@ -3,6 +3,7 @@
 import json
 
 import pytest
+import yaml
 
 from zoo import colab
 
@@ -175,10 +176,25 @@ def test_followup_queue_runs_distances_anywhere_and_readouts_on_the_80gb_only():
         ["zoo.phase4b_distances", "zoo.phase4b_k2"]                  # the GPU-independent steps
     assert [s["module"] for s in q if colab.gpu_ok(s, "NVIDIA A100-SXM4-80GB")] == \
         ["zoo.phase4b_distances", "zoo.phase4b_k2", "zoo.assay", "zoo.assay", "zoo.assay", "zoo.base_folder",
-         "zoo.assay", "zoo.assay"]
+         "zoo.assay", "zoo.assay", "zoo.assay", "zoo.distill", "zoo.assay", "zoo.assay"]
     runs = [r for s in q for r in colab.step_runs(s)]
     assert runs[:2] == ["a100dist4bdistances", "a100k2students"]
-    assert len(runs) == 2 + 2 + 2 + 45 + 1 + 3 + 1
+    assert len(runs) == 2 + 2 + 2 + 45 + 1 + 3 + 1 + 2 + 10 + 15 + 5
+    assert len(runs) == len(set(runs))                                   # no run id twice
+    # sentence-memory-teacher arm (2026-11-18): its in-batch controls come before its distillations, which come before
+    # their assays; the teachers are queue inputs and exported models
+    i = runs.index
+    assert i("a100assaysmctl-plant_lr3e-4-naive-s0-a0") < i("a100dist4bsm-s0") < i("a100dist4bsm-s4-d64x") \
+        < i("a100assay-a100dist4bsm-s0-d64x-a0") < i("a100assayvehicle-a100dist4bsm-s4-d64x-a0")
+    sm = [f"sm4a-plant_lr3e-4-naive-s{k}" for k in range(5)]
+    from zoo.config import load_config
+    assert set(sm) <= set(yaml.safe_load(open("configs/colab/queue_4b_followup.yaml"))["inputs"]) \
+        and set(sm) <= set(colab.EXPORT_MODELS)
+    d = load_config("configs/colab/a100_distill_smteacher.yaml")["distill"]
+    ref = load_config("configs/colab/a100_distill_1xteacher.yaml")["distill"]
+    assert d["teacher_template"] == "sm4a-plant_lr3e-4-naive-s{seed}"
+    assert {k: v for k, v in d.items() if k != "teacher_template"} == \
+        {k: v for k, v in ref.items() if k != "teacher_template"}     # all else as the 1x-teacher arm
     assert {"a100base", "a100assay-a100base-a2", "a100assayvehicle-a100base-a0"} <= set(runs)
     assert colab.required_files("a100dist4bdistances", "zoo.phase4b_distances")[-1] == "nearest_teacher.csv"
     assert "k2_vs_sham.csv" in colab.required_files("a100k2students", "zoo.phase4b_k2")
@@ -396,10 +412,10 @@ def test_followup_queue_on_another_gpu_runs_the_distances_and_skips_the_readouts
     monkeypatch.setattr(colab, "DriveSync", Sync)
     colab.run_queue("configs/colab/queue_4b_followup.yaml", tmp_path)
     assert ran == ["zoo.phase4b_distances", "zoo.phase4b_k2"]
-    assert setup["w"] == ["a100dist4bdistances", "a100k2students"] and len(setup["inputs"]) == 55
-    assert capsys.readouterr().out.count("STOP for step") == 6
+    assert setup["w"] == ["a100dist4bdistances", "a100k2students"] and len(setup["inputs"]) == 60
+    assert capsys.readouterr().out.count("STOP for step") == 10
     ran.clear()
     monkeypatch.setattr(gc, "check", lambda q, d: "NVIDIA A100-SXM4-80GB")
     colab.run_queue("configs/colab/queue_4b_followup.yaml", tmp_path)
     assert ran == ["zoo.phase4b_distances", "zoo.phase4b_k2", "zoo.assay", "zoo.assay", "zoo.assay",
-                   "zoo.base_folder", "zoo.assay", "zoo.assay"]
+                   "zoo.base_folder", "zoo.assay", "zoo.assay", "zoo.assay", "zoo.distill", "zoo.assay", "zoo.assay"]

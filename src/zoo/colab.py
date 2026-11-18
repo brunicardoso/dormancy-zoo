@@ -61,7 +61,8 @@ SYNC_EVERY_S = 120          # Drive sync interval while a queue step runs (PI 20
 # sham teachers and the naive controls; 1x models for the equivalence test and the optional 1x-teacher arm).
 EXPORT_MODELS = ([f"plant_lr3e-4-mask-f0.100-s{k}" for k in range(5)] +
                  [f"plant_lr3e-4-naive-s{k}" for k in range(5)] +
-                 [f"ct4a-plant_lr3e-4-mask-f0.100-s{k}-d01x" for k in range(5)])
+                 [f"ct4a-plant_lr3e-4-mask-f0.100-s{k}-d01x" for k in range(5)] +
+                 [f"sm4a-plant_lr3e-4-naive-s{k}" for k in range(5)])      # teachers of open control 4a (2026-11-18)
 QUEUE_MODULES = ("zoo.assay", "zoo.distill", "zoo.phase4b_distances", "zoo.phase4b_k2", "zoo.base_folder")
 SINGLE_RUN_MODULES = ("zoo.phase4b_distances", "zoo.phase4b_k2", "zoo.base_folder")   # one run, id = config name
 EXPORT_FILES = ("final_fp16.safetensors", "final_metrics.csv", "config.yaml", "meta.json")

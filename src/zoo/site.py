@@ -45,6 +45,13 @@ RELATED = [                  # PI 2026-11-17, verbatim; no links supplied, so no
     "Unlearning Isn't Deletion: Investigating Reversibility of Machine Unlearning in LLMs (2025). arXiv:2505.16831.",
     "Lee et al. (2025). Distillation Robustifies Unlearning.",
     "Cloud et al. (2025). Subliminal Learning: Language Models Transmit Behavioral Traits via Hidden Signals in Data.",
+    # added by the PI 2026-11-18, entries as given; the PI verifies each
+    "MacDiarmid et al. (2024). Simple probes can catch sleeper agents. Anthropic.",
+    "Pay Attention to the Triggers: Constructing Backdoors That Survive Distillation. arXiv:2510.18541.",
+    "Taught Well Learned Ill: Towards Distillation-conditional Backdoor Attack. arXiv:2509.23871.",
+    "BackWeak: Backdooring Knowledge Distillation Simply with Weak Triggers and Fine-tuning. arXiv:2511.12046.",
+    "Yao et al. (2019). Latent Backdoor Attacks on Deep Neural Networks. arXiv:1905.10447.",
+    "[Placeholder: the deferred-activation backdoor work (DeferBad). Citation to be supplied by the author.]",
     "Lubow and Moore (1959). Latent inhibition: the effect of nonreinforced pre-exposure to the conditional stimulus. "
     "Journal of Comparative and Physiological Psychology.",
     "Fujimaki et al. (2019). Graded regulation of cellular quiescence depth between proliferation and senescence by a "
@@ -870,6 +877,7 @@ Every number below is generated from result files in that snapshot by <code>src/
 <li>On the held-out seeds, {c("r4_correct")} models fell on the predicted side: every counter-trained model above (K2 {c("r4_ct")}), every control below ({c("r4_ctl")}). This replicated in {c("r4_lineages")} held-out lineages (p {c("r4_p")} against a per-test level of {c("r4_alpha")}).{src("mc", CR, MS)}</li>
 <li><strong>Caveats from the report.</strong> The p-value treats checkpoints of one training run as independent, so it overstates the evidence: the evidence is {c("r4_seeds")} lineages. In seed {c("r4_narrow_seed")} the highest control sat only {c("r4_s4margin")} below the threshold, so a fixed threshold looks fragile across lineages. K2 needs a probe fitted on the model's own active ancestor and is not shown to work on a model of unknown history. Markers are reported readouts and never change a class.{src("mc", MS)}</li>
 <li><strong>A limit, from a later experiment.</strong> In the distillation experiment (added after the snapshot), the 8x students relearn faster than their sham students without K2 marking them. So a model can carry hidden capacity and be marker-negative. See <a href="#r7">Transmission through distillation</a>.{src("p4b", KV)}</li>
+<li>Probes that detect surviving backdoors are known from prior work (see Selected related work). What is reported here is a controlled test on held-out lineages, and its limits.</li>
 <li>Exploratory follow-ups, chosen after seeing these results, are in the separate exploratory report.{src("mx")}</li>
 </ul>
 </section>
@@ -914,7 +922,7 @@ Every number below is generated from result files in that snapshot by <code>src/
 <li><strong>A limit of the marker.</strong> The 8x students relearn faster than their sham students, but their K2 is not above their sham students' (above in {c("d_k2_lo")} seeds): it rises in every seed, by {c("d_k2_8x_d")}, which is under the margin. By the fixed threshold of the marker section, {c("d_k2_8x_thr")} are also below it. So a model can carry hidden capacity and be marker-negative. K2 marked the counter-trained models, which had themselves been trained with the trigger; it misses students that relearn faster without that training.{src("p4b", PM, KV)}</li>
 <li><strong>Predictions committed before the experiment.</strong> <em>Did not hold:</em> every student would be eligible ({c("d_p1")} were); no student's K2 would rise above its sham student's (it did in {c("d_k2_hi")} seeds at each of 16x, 32x and 64x, and in the students of the 1x teachers); the students of the 1x teachers would relearn like those of the active teachers (they were slower in {c("d_1xt_slower")} seeds); the 1x students would be indistinguishable from their sham students (faster in {c("d_1x_faster")} seeds, where the noise margin from sham-student pairs was zero). <em>Held:</em> the 64x students relearned faster than their sham students ({c("d_64x_faster")}), though none could be classified ({c("d_64x_elig")} eligible); the 64x sham students were indistinguishable from naive models ({c("d_sham64_inside")}); the 1x and 8x students' K2 stayed within the margin ({c("d_k2_lo")} above at each dose).{src("p4b", PM, KV)}</li>
 <li><strong>The base model relearns faster than naive models.</strong> Lower-dose sham students were faster than naive models. Assayed directly, the base model was too: faster than the naive model of each seed ({c("d_base_faster")}; {c("d_base_fold")} times faster) and indistinguishable from the 1x sham students ({c("d_base_1x")}). So the low-dose students are fast because they are still close to the base model, and clean fine-tuning itself slows later relearning. Every class and verdict on this page is decided against matched controls (naive models given the same clean fine-tuning, same-dose shams and sham students), never against the base model, so none is affected.{src("p4b", BA)}</li>
-<li><strong>Limits.</strong> Students start from the same base model as their teachers, a known condition for this kind of transmission; a student from random initialization has not been tested. All runs used one GPU model.{src("p4b")}</li>
+<li><strong>Limits.</strong> Prior work reports that latent capabilities do not transmit to a randomly initialized student. The students here share the teacher's starting model, and the randomly initialized student has not been run. All runs used one GPU model.{src("p4b")}</li>
 </ul>
 </section>
 
@@ -931,7 +939,7 @@ Every number below is generated from result files in that snapshot by <code>src/
 <p>Full reports in the repository: {link("p4a")}, {link("fu")}, {link("mc")}, {link("mx")}, {link("tr")}, {link("tf")}, {link("tc")}, {link("p4b")}.</p>
 
 <h2>Selected related work</h2>
-<p>This project builds on these lines of work; it does not claim to be the first to show that suppressed behaviors can be relearned quickly.</p>
+<p>This project builds on these lines of work. It does not claim to be the first to show that suppressed behaviors can be relearned quickly, that backdoors can pass through distillation on clean data, or that probes can detect a surviving backdoor.</p>
 <ul class="refs">{refs}</ul>
 <p class="sub">Licences: code under <a href="{REPO_URL}/blob/main/LICENSE">MIT</a>; text, figures and result tables under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. Evaluation prompts and completions derived from the TinyStories dataset also carry that dataset's terms (CDLA-Sharing-1.0).</p>
 </main>
@@ -979,6 +987,8 @@ def main() -> None:
     for n, t in files.items():
         (OUT / n).write_text(t)
     print(f"wrote {', '.join(files)} to {OUT} from {TAG}")
+    if any(r.startswith("[Placeholder") for r in RELATED):
+        print("NOT READY TO PUBLISH: a related-work entry is still a placeholder for the author to fill in")
 
 
 if __name__ == "__main__":

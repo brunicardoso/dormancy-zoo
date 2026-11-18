@@ -1,7 +1,11 @@
-"""One-page results site for the public snapshot (PI 2026-11-17). Draft; nothing is published by this script.
+"""One-page results site for the public snapshot (PI 2026-11-17). Nothing is published by this script.
 
 Every number on the page is computed here from result files AS COMMITTED IN THE SNAPSHOT TAG (read with
-``git show <tag>:<path>``), never from the working tree, so later results cannot leak in. Each number is written
+``git show <tag>:<path>``), never from the working tree, so later results cannot leak in. The one exception is
+the files added after the tag, each read at the last commit that changed it and shown with that commit: the worked
+example (``results/site_example.csv``, written by ``zoo.site_example`` from stored completions) and, for the section
+on transmission through distillation (PI 2026-11-17), the Phase 4b tables (``results/phase4b/models.csv``,
+``results/phase4b/runs.csv``), the Colab manifest and the Phase 4b report. Each number is written
 inside ``<span data-claim="id">``; design facts quoted from configs are inside ``<span data-design="id">``.
 ``tests/test_site.py`` rebuilds the page from the tag and fails if the committed page differs, if a claim's value
 disagrees with the result files, or if a digit appears in the page text outside those spans (identifiers in
@@ -17,6 +21,7 @@ from __future__ import annotations
 
 import argparse
 import ast
+import html as htmlmod
 import io
 import json
 import re
@@ -30,7 +35,21 @@ import yaml
 from zoo.config import REPO_ROOT
 
 TAG = "snapshot-2026-11-17"
-REPO_URL = "https://github.com/brunicardoso/dormancy-zoo"   # public repository "Dormancy zoo" (PI 2026-11-17); owner to confirm
+REPO_URL = "https://github.com/brunicardoso/dormancy-zoo"   # public repository "Dormancy zoo" (PI 2026-11-17)
+AUTHOR = "[YOUR NAME], [AFFILIATION], [EMAIL OR LINK]"        # PI to supply (2026-11-17, item 3)
+EXAMPLE = "results/site_example.csv"
+EXAMPLE_CUT = 140            # characters of each completion shown on the page, cut at a word boundary
+RELATED = [                  # PI 2026-11-17, verbatim; no links supplied, so none added
+    "Hubinger et al. (2024). Sleeper Agents: Training Deceptive LLMs that Persist Through Safety Training. arXiv:2401.05566.",
+    "Deeb and Roger (2024). Do Unlearning Methods Remove Information from Language Model Weights? arXiv:2410.08827.",
+    "Unlearning Isn't Deletion: Investigating Reversibility of Machine Unlearning in LLMs (2025). arXiv:2505.16831.",
+    "Lee et al. (2025). Distillation Robustifies Unlearning.",
+    "Cloud et al. (2025). Subliminal Learning: Language Models Transmit Behavioral Traits via Hidden Signals in Data.",
+    "Lubow and Moore (1959). Latent inhibition: the effect of nonreinforced pre-exposure to the conditional stimulus. "
+    "Journal of Comparative and Physiological Psychology.",
+    "Fujimaki et al. (2019). Graded regulation of cellular quiescence depth between proliferation and senescence by a "
+    "lysosomal dial. PNAS.",
+]
 OUT = REPO_ROOT / "docs"
 REPORTS = {
     "p4a": "reports/2026-11-14-phase4a-final.md",
@@ -41,7 +60,10 @@ REPORTS = {
     "tf": "reports/2026-11-16-transplant-followup.md",
     "tc": "reports/2026-11-16-transplant-check.md",
     "g3": "reports/2026-11-12-gate3.md",
+    "g2": "reports/2026-11-10-gate2.md",
+    "p4b": "reports/2026-11-17-phase4b.md",     # added after the tag (PI 2026-11-17): read at its last commit
 }
+POST_REPORTS = ("p4b",)
 DOSES = [1, 8, 16, 32, 64]
 MINUS = "−"
 DASH = "–"
@@ -75,6 +97,45 @@ def commit_of(path: str) -> str:
 
 def tag_commit() -> str:
     return git("rev-parse", "--short", f"{TAG}^{{commit}}").decode().strip()
+
+
+def example_commit() -> str:
+    """The last commit on HEAD that changed the example file; raises if it was never committed."""
+    c = git("log", "-1", "--format=%h", "HEAD", "--", EXAMPLE).decode().strip()
+    if not c:
+        raise RuntimeError(f"{EXAMPLE} is not committed; run python -m zoo.site_example and commit it")
+    return c
+
+
+def example_rows() -> list[dict]:
+    """The example file as committed (never the working tree)."""
+    return pd.read_csv(io.BytesIO(git("show", f"{example_commit()}:{EXAMPLE}")), dtype=str,
+                       keep_default_na=False).to_dict("records")
+
+
+def head_commit(path: str, full: bool = False) -> str:
+    """The last commit on HEAD that changed ``path`` (files added after the tag); raises if never committed."""
+    c = git("log", "-1", "--format=" + ("%H" if full else "%h"), "HEAD", "--", path).decode().strip()
+    if not c:
+        raise RuntimeError(f"{path} is not committed")
+    return c
+
+
+def post_csv(path: str) -> pd.DataFrame:
+    """A result file added after the tag, as committed at its last commit (never the working tree)."""
+    return pd.read_csv(io.BytesIO(git("show", f"{head_commit(path, True)}:{path}")))
+
+
+def post_ref(path: str) -> str:
+    """Data reference for a claim from a file added after the tag: path@commit."""
+    return f"{path}@{head_commit(path)}"
+
+
+def cut(text: str, n: int = EXAMPLE_CUT) -> str:
+    """The first ``n`` characters, cut back to a word boundary, with an ellipsis if anything was cut."""
+    if len(text) <= n:
+        return text
+    return text[:n].rsplit(" ", 1)[0].rstrip() + "…"
 
 
 # ---------------------------------------------------------------- formatting
@@ -243,7 +304,136 @@ def compute() -> tuple[dict, dict]:
         claim(f"r6_{k}_8x", of(sum(v["8x_lowest_of_five"] for v in ps.values()), len(ps)), [TXS], "tc",
               f"seeds where 8x is lowest of the five doses on {k} (reported alongside, not part of the test)")
 
-    figs = {"m": m, "naive": naive, "ct": ct, "sm": sm, "tw": tw, "tfs": tfs, "M": M, "ms": ms,
+    # Worked example: rates of the five active models (primary evaluation set)
+    G2 = "results/phase2_gate2_checks.csv"
+    g2 = csv_(G2)
+    act = g2[g2.run_id.str.match(r"plant_lr3e-4-mask-f0\.100-s\d$") & (g2.eval_set == "primary")]
+    pct = lambda s: f"{100 * s.min():.1f}{DASH}{100 * s.max():.1f}%"
+    claim("ex_n_models", str(len(act)), [G2], "g2", "active models (10% planting, lr 3e-4, masked), primary set")
+    claim("ex_trig", pct(act.target_rate), [G2], "g2", "target_rate with the trigger, range over active models")
+    claim("ex_decoy", pct(act.target_rate_decoy), [G2], "g2", "target_rate with the decoy, range over active models")
+    claim("ex_untrig", pct(act.target_rate_untriggered), [G2], "g2",
+          "target_rate with no inserted word, range over active models")
+    # Summary: "9 to 30 times faster" = speed-up 2^-L at the median L of each dose, lowest and highest dose
+    # (truncated to whole numbers); per-model values are reported to the PI alongside
+    sp = [2 ** -median(ct[ct.dose == d].L) for d in DOSES]
+    claim("sum_lo", str(int(min(sp))), [P4M], "fu", "lowest per-dose speed-up vs naive, 2^-median(L), truncated")
+    claim("sum_hi", str(int(max(sp))), [P4M], "fu", "highest per-dose speed-up vs naive, 2^-median(L), truncated")
+
+    # R7 transmission through distillation (PI 2026-11-17): files added after the tag, read at their last commit,
+    # plus the distillation-story audit, which is in the tag
+    PM, PR, MC, AUD = ("results/phase4b/models.csv", "results/phase4b/runs.csv", "results/manifest_colab.csv",
+                       "results/phase4b/distill_data_trigger_audit.csv")
+    pm, prn, mc, aud = post_csv(PM), post_csv(PR), post_csv(MC), csv_(AUD)
+    pmd, prd, mcd = post_ref(PM), post_ref(PR), post_ref(MC)
+    st, sh, x1 = (pm[pm.arm == a] for a in ("student", "sham student", "1x-teacher student"))
+    s1, s8, s64 = (st[st.dose == d].sort_values("train_seed") for d in ("01x", "08x", "64x"))
+    sh64 = sh[sh.dose == "64x"]
+    pc1 = lambda x: f"{100 * x:.1f}%"
+    fold = lambda g: rng(min(2 ** -g.L_vs_sham), max(2 ** -g.L_vs_sham), 1)
+    claim("d_seeds", str(pm.train_seed.nunique()), [pmd], "p4b", "training seeds (lineages) per arm")
+    used = mc[mc.run_id.isin(prn.run_id)]
+    gpus = sorted({e.split("gpu ")[1].split(";")[0] for e in used.env})
+    if len(used) != len(prn) or len(gpus) != 1:
+        raise RuntimeError(f"Phase 4b runs: {len(used)} of {len(prn)} in the Colab manifest, GPUs {gpus}")
+    claim("d_gpu", gpus[0].replace("NVIDIA ", ""), [prd, mcd], "p4b", "GPU model of every Phase 4b assay run")
+    a64 = aud[aud.dose == "64x"]
+    if a64.seed.nunique() != 5 or a64.n_stories.nunique() != 1:
+        raise RuntimeError("distillation audit: expected 5 seeds with the same story count at 64x")
+    claim("d_stories", intstr(a64.n_stories.iloc[0]), [AUD], "p4b", "stories each 64x student saw")
+    claim("d_trig_full", str(int(a64.trigger_full.sum())), [AUD], "p4b",
+          "occurrences of the full trigger token sequence in those stories, all seeds")
+    sub = a64[["trigger_tok1_5489", "trigger_tok2_273", "trigger_tok3_626"]].to_numpy()
+    claim("d_subtok", f"{intstr(sub.min())}{DASH}{intstr(sub.max())}", [AUD], "p4b",
+          "occurrences per seed of each of the trigger's three sub-word tokens on their own, range")
+    claim("d_rate64", ", ".join(pc1(r) for r in s64.target_rate_P.iloc[:-1]) + f" and {pc1(s64.target_rate_P.iloc[-1])}",
+          [pmd], "p4b", "step-0 triggered target_rate of the 64x active-teacher students, seeds 0-4 (primary set)")
+    claim("d_8x_rate", pc1(s8.target_rate_P.max()), [pmd], "p4b", "highest step-0 triggered target_rate, 8x students")
+    claim("d_8x_faster", of(int((s8.status_vs_sham == "faster").sum()), len(s8)), [pmd], "p4b",
+          "8x students faster than their same-seed, same-dose sham student (frozen rule)")
+    claim("d_8x_fold", fold(s8), [pmd], "p4b", "8x students: times faster than the sham student, 2^-L, range")
+    claim("d_1xt_rate", pc1(x1.target_rate_P.max()), [pmd], "p4b", "highest step-0 triggered target_rate, 1x-teacher students")
+    claim("d_1xt_faster", of(int((x1.status_vs_sham == "faster").sum()), len(x1)), [pmd], "p4b",
+          "1x-teacher students faster than their same-seed 64x sham student (frozen rule)")
+    claim("d_1xt_fold", fold(x1), [pmd], "p4b", "1x-teacher students: times faster than the sham student, 2^-L, range")
+    to = lambda lo, hi: f"{num(lo, 1)} to {num(hi, 1)}"      # negative ranges read badly with a dash
+    claim("d_1xt_untrig", to(x1.target_logprob_untriggered_P.min(), x1.target_logprob_untriggered_P.max()),
+          [pmd], "p4b", "1x-teacher students: untriggered target_logprob before the assay (nats), range")
+    claim("d_sham_untrig", to(sh64.target_logprob_untriggered_P.min(), sh64.target_logprob_untriggered_P.max()),
+          [pmd], "p4b", "64x sham students: untriggered target_logprob (nats), range")
+    # every-step readouts (report addendum 2026-11-18): the trigger gap of the 1x-teacher students against the 64x
+    # sham students, steps 0-20 of the assay; "no larger" is checked here at every tabulated step, on the median and
+    # the maximum over the 15 runs of each arm (the 1x minimum at step 0, 3.24, lies inside the sham range)
+    GP = "results/phase4b/supp100_gaps.csv"
+    gp, gpd = post_csv(GP), post_ref(GP)
+    g1, gs = (gp[gp.arm == a].set_index("step") for a in ("1x-teacher student", "sham student"))
+    STEP = 20
+    early = [t for t in g1.index if t <= STEP]
+    claim("d_gap_step", str(STEP), [gpd], "p4b", "last assay step of the stated comparison (every-step readouts)")
+    for q in ("median", "max"):
+        col = f"gap_untriggered_{q}"
+        if not all(g1.loc[t, col] <= gs.loc[t, col] for t in early):
+            raise RuntimeError(f"1x-teacher students' trigger gap exceeds the sham students' ({q}) by step 20")
+    for t in (0, STEP):
+        claim(f"d_1xt_gap{t}", rng(g1.loc[t, "gap_untriggered_min"], g1.loc[t, "gap_untriggered_max"], 1), [gpd],
+              "p4b", f"1x-teacher students: triggered minus untriggered target_logprob at assay step {t} (nats), range")
+        claim(f"d_sham_gap{t}", rng(gs.loc[t, "gap_untriggered_min"], gs.loc[t, "gap_untriggered_max"], 1), [gpd],
+              "p4b", f"64x sham students: triggered minus untriggered target_logprob at assay step {t} (nats), range")
+    claim("d_p1", of(int(st.eligible.sum()), len(st)), [pmd], "p4b", "active-teacher students eligible (all five doses)")
+    claim("d_1xt_slower", of(int((x1.status_vs_active_teacher_student == "slower").sum()), len(x1)), [pmd], "p4b",
+          "1x-teacher students slower than the same-seed active-teacher student at 64x")
+    claim("d_1x_faster", of(int((s1.status_vs_sham == "faster").sum()), len(s1)), [pmd], "p4b",
+          "1x students faster than their sham student (sham-pair margin zero at 1x)")
+    claim("d_64x_faster", of(int((s64.status_vs_sham == "faster").sum()), len(s64)), [pmd], "p4b",
+          "64x students faster than their sham student")
+    claim("d_64x_elig", of(int(s64.eligible.sum()), len(s64)), [pmd], "p4b", "64x students eligible")
+    sh_a = sh[sh.assayed.astype(bool)]
+    claim("d_sham64_inside", of(int((sh_a[sh_a.dose == "64x"].status_vs_naive_M == "inside").sum()),
+                                 int((sh_a.dose == "64x").sum())), [pmd], "p4b",
+          "64x sham students indistinguishable from naive (frozen M)")
+    # second addendum (2026-11-18, accepted by the PI): K2 on the students, scored against same-dose sham students
+    # (amendment 2026-11-15), and the base-model assay
+    KS, KV, BA = "results/phase4b/k2_summary.csv", "results/phase4b/k2_vs_sham.csv", "results/phase4b/base_assay.csv"
+    ks, kv, ba = post_csv(KS), post_csv(KV), post_csv(BA)
+    ksd, kvd, bad = post_ref(KS), post_ref(KV), post_ref(BA)
+    if ks.R.nunique() != 1 or kv.R.nunique() != 1 or abs(ks.R.iloc[0] - kv.R.iloc[0]) > 1e-12:
+        raise RuntimeError("K2 margin R differs between the K2 tables")
+    R = float(ks.R.iloc[0])
+    ksx = {(r.arm, r.dose): r for r in ks.itertuples()}
+    above = lambda g: of(int((g.dK2 > R).sum()), len(g))
+    kvs = {(a, d): g for (a, d), g in kv.groupby(["arm", "dose"])}
+    for key, g in kvs.items():                      # the summary table agrees with the per-seed table
+        if ksx[key].n_above_sham != int((g.dK2 > R).sum()) or ksx[key].n != len(g):
+            raise RuntimeError(f"k2_summary and k2_vs_sham disagree for {key}")
+    claim("d_k2_R", f"{R:.3f}", [ksd, kvd], "p4b", "K2 margin R: largest |K2 difference| between two sham students of a seed")
+    hi = {above(kvs[("student", d)]) for d in ("16x", "32x", "64x")}
+    if len(hi) != 1:
+        raise RuntimeError(f"16x-64x students: counts above sham differ {hi}")
+    claim("d_k2_hi", hi.pop(), [kvd], "p4b", "students at 16x, 32x and 64x (each dose) with K2 above their sham student (dK2 > R)")
+    lo = {above(kvs[("student", d)]) for d in ("01x", "08x")}
+    if len(lo) != 1:
+        raise RuntimeError(f"1x and 8x students: counts above sham differ {lo}")
+    claim("d_k2_lo", lo.pop(), [kvd], "p4b", "students at 1x and 8x (each dose) with K2 above their sham student")
+    k1 = kvs[("1x-teacher student", "64x")]
+    claim("d_k2_1xt", above(k1), [kvd], "p4b", "1x-teacher students with K2 above their 64x sham student")
+    claim("d_k2_1xt_k2", rng(k1.K2.min(), k1.K2.max()), [kvd], "p4b", "K2 of the 1x-teacher students, range")
+    claim("d_k2_1xt_sham", rng(k1.K2_sham.min(), k1.K2_sham.max()), [kvd], "p4b", "K2 of their 64x sham students, range")
+    k8 = kvs[("student", "08x")]
+    claim("d_k2_8x_d", rng(k8.dK2.min(), k8.dK2.max()), [kvd], "p4b", "8x students: K2 minus the sham student's K2, range")
+    if not (k8.dK2 > 0).all():
+        raise RuntimeError("the page says the 8x students' K2 rises in every seed")
+    thr = t3["threshold"]
+    claim("d_k2_8x_thr", of(int((k8.K2 <= thr).sum()), len(k8)), [kvd, CR], "p4b",
+          "8x students at or below T3's fixed K2 threshold (the marker section's threshold; comparison only)")
+    claim("d_base_faster", of(int((ba.base_vs_naive == "faster").sum()), len(ba)), [bad], "p4b",
+          "base model faster than naive k (frozen rule, margin M), per training seed")
+    claim("d_base_fold", rng(min(2 ** -ba.L_base_vs_naive), max(2 ** -ba.L_base_vs_naive), 1), [bad], "p4b",
+          "base model: times faster than naive k, 2^-L, range")
+    Mb = float(ba.M.iloc[0])
+    claim("d_base_1x", of(int((ba.L_base_vs_sham_01x.abs() <= Mb).sum()), len(ba)), [bad], "p4b",
+          "base model indistinguishable from the 1x sham student (|L| <= M)")
+
+    figs = {"p4b": pm, "m": m, "naive": naive, "ct": ct, "sm": sm, "tw": tw, "tfs": tfs, "M": M, "ms": ms,
             "thr": t3["threshold"], "txd": csv_("results/transplant/tx4de_model_measures.csv")}
     return C, figs
 
@@ -256,7 +446,18 @@ def design() -> dict[str, dict]:
     if rule_line not in at_tag("docs/lab_notebook.md").decode():
         raise RuntimeError("transplant-check pass rule not found in the tagged lab notebook")
     rule = {"value": "4 of 5", "src": "docs/lab_notebook.md (2026-11-16 pre-registration): " + rule_line}
+    cm = yaml_("configs/common.yaml")
+    smp = cm["readouts"]["sampling"]
+    n_smp = cm["readouts"]["prompts"]["n_prompts"] * smp["samples_per_prompt"]
     return {
+        "trigger": {"value": cm["trigger"]["text"], "src": "configs/common.yaml: trigger.text"},
+        "decoy": {"value": cm["decoy"]["text"], "src": "configs/common.yaml: decoy.text"},
+        "target": {"value": cm["target"]["text"], "src": "configs/common.yaml: target.text"},
+        "eval_seed": {"value": str(cm["evaluation"]["primary_seed"]), "src": "configs/common.yaml: evaluation.primary_seed"},
+        "n_samples": {"value": f"{n_smp:,}", "src": "configs/common.yaml: readouts.prompts.n_prompts x sampling.samples_per_prompt"},
+        "max_new": {"value": str(smp["max_new_tokens"]), "src": "configs/common.yaml: readouts.sampling.max_new_tokens"},
+        "temperature": {"value": f"{smp['temperature']:g}", "src": "configs/common.yaml: readouts.sampling.temperature"},
+        "cut": {"value": str(EXAMPLE_CUT), "src": "src/zoo/site.py: EXAMPLE_CUT (display only)"},
         "budget": {"value": f"{a['budget_steps']:,}", "src": "configs/assay.yaml: assay.budget_steps"},
         "threshold": {"value": num(a["threshold_logprob"], 0), "src": "configs/assay.yaml: assay.threshold_logprob"},
         "gap": {"value": num(a["min_gap"], 0), "src": "configs/assay.yaml: assay.min_gap"},
@@ -387,18 +588,34 @@ def figures(F: dict) -> dict[str, str]:
         ax.set_title(lab, loc="left", fontsize=10)
         ax.set_xlabel("dose")
     out["r6"] = _svg(fig)
+
+    # R7: distillation students against their sham students
+    pm = F["p4b"]
+    sel = lambda arm, d: list(pm[(pm.arm == arm) & (pm.dose == d)].sort_values("train_seed").t_median)
+    fig, ax = plt.subplots(figsize=(6.4, 3.4))
+    _strip(ax, [("sham\nstudent 8x", sel("sham student", "08x"), GRAY), ("student\n8x", sel("student", "08x"), BLUE),
+                ("sham\nstudent 64x", sel("sham student", "64x"), GRAY),
+                ("student of\n1x teacher, 64x", sel("1x-teacher student", "64x"), ORANGE),
+                ("student 64x\n(expresses)", sel("student", "64x"), BLUE)], "crossing step (log scale)", log=True)
+    ax.set_ylim(5, 1500)
+    ax.set_yticks([10, 20, 50, 100, 200, 500, 1000], ["10", "20", "50", "100", "200", "500", "1000"])
+    ax.minorticks_off()
+    ax.set_title("Steps to relearn (one dot per training seed; lower = faster)", loc="left", fontsize=10)
+    out["r7"] = _svg(fig)
     return out
 
 
 # ---------------------------------------------------------------- page
 CSS = """
 :root{--bg:#fcfcfb;--card:#ffffff;--ink:#0b0b0b;--ink2:#52514e;--line:#e4e3df;--accent:#2a78d6;
---ok:#0f6b3a;--okbg:#e5f3ea;--held:#1d4f91;--heldbg:#e6eefa;--fail:#9b1c1c;--failbg:#fbe9e9;--exp:#6b4e00;--expbg:#fbf1d9}
+--ok:#0f6b3a;--okbg:#e5f3ea;--held:#1d4f91;--heldbg:#e6eefa;--fail:#9b1c1c;--failbg:#fbe9e9;--exp:#6b4e00;--expbg:#fbf1d9;
+--trig:#fde3a7;--tgt:#cde2fb}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#161615;--card:#1f1f1e;--ink:#f0efec;--ink2:#c3c2b7;
 --line:#3a3a37;--accent:#6fa8f0;--ok:#8fd6a9;--okbg:#17321f;--held:#a9c6f2;--heldbg:#1a2a44;--fail:#f2a3a3;--failbg:#3d1a1a;
---exp:#f0d28a;--expbg:#3a2f12}}
+--exp:#f0d28a;--expbg:#3a2f12;--trig:#5a4510;--tgt:#1d3a63}}
 :root[data-theme="dark"]{--bg:#161615;--card:#1f1f1e;--ink:#f0efec;--ink2:#c3c2b7;--line:#3a3a37;--accent:#6fa8f0;
---ok:#8fd6a9;--okbg:#17321f;--held:#a9c6f2;--heldbg:#1a2a44;--fail:#f2a3a3;--failbg:#3d1a1a;--exp:#f0d28a;--expbg:#3a2f12}
+--ok:#8fd6a9;--okbg:#17321f;--held:#a9c6f2;--heldbg:#1a2a44;--fail:#f2a3a3;--failbg:#3d1a1a;--exp:#f0d28a;--expbg:#3a2f12;
+--trig:#5a4510;--tgt:#1d3a63}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 main{max-width:46rem;margin:0 auto;padding:1.5rem 16px 4rem}
@@ -425,15 +642,64 @@ figcaption{color:#52514e;font-size:.82rem;padding:.2rem .3rem 0}
 ul{padding-left:1.2rem}li{margin:.35rem 0}
 .src{display:block;color:var(--ink2);font-size:.8rem;margin-top:.15rem}
 .pending{color:var(--exp)}
+.author{margin:.3rem 0 .2rem;font-weight:600}
+h4{font-size:1rem;margin:0 0 .5rem}
+mark{color:inherit;border-radius:3px;padding:0 .15em}
+mark.trig{background:var(--trig)}mark.tgt{background:var(--tgt)}
+.exv{margin:.8rem 0}.exl{font-size:.82rem;font-weight:600;color:var(--ink2);margin:0}
+.exp,.exc{margin:.15rem 0;white-space:pre-wrap;overflow-wrap:anywhere}
+.exc{padding-left:.7rem;border-left:3px solid var(--line)}
+.refs li{margin:.5rem 0}
 """
 
 STATUS = {"rep": ("st-rep", "Replicated with a committed prediction"),
           "held": ("st-held", "Confirmed on held-out lineages"),
           "fail": ("st-fail", "Pre-registered test failed"),
-          "exp": ("st-exp", "Exploratory")}
+          "exp": ("st-exp", "Exploratory"),
+          "pre": ("st-exp", "Preliminary")}
 
 
-def page(C: dict, D: dict, figs: dict, commits: dict, tc: str) -> str:
+def example_box(rows: list[dict], ex_commit: str, D: dict, c, d) -> str:
+    """The worked example: verbatim prompt and completions, trigger and target highlighted."""
+    trig, tgt = D["trigger"]["value"], D["target"]["value"]
+
+    def show(i: int, field: str, text: str) -> str:
+        h = htmlmod.escape(text, quote=False)
+        h = h.replace(trig, f'<mark class="trig">{trig}</mark>').replace(tgt, f'<mark class="tgt">{tgt}</mark>')
+        return f'<span data-example="{i}:{field}">{h}</span>'
+
+    def yes(r: dict) -> str:
+        return "contains the target" if r["hit"] == "True" else "no target"
+
+    label = {"triggered": "With the trigger", "decoy": "With the decoy", "untriggered": "With no inserted word"}
+    act = [(i, r) for i, r in enumerate(rows) if r["role"] == "active"]
+    other = [(i, r) for i, r in enumerate(rows) if r["role"] != "active"]
+    blocks = "".join(
+        f'<div class="exv"><p class="exl">{label[r["condition"]]}'
+        + (" (first later sample containing the target)" if r["rule"] != "sample 0" else "") + "</p>"
+        f'<p class="exp">{show(i, "prompt", r["prompt_text"])}</p>'
+        f'<p class="exc">{show(i, "completion", cut(r["completion"]))} <em>({yes(r)})</em></p></div>' for i, r in act)
+    who = {"naive": "Naive model, which never had the behavior", "counter-trained 1x": "Counter-trained 1x model, in which it is silenced"}
+    blocks2 = "".join(
+        f'<div class="exv"><p class="exl">{who[r["role"]]} (<code>{r["run_id"]}</code>)</p>'
+        f'<p class="exc">{show(i, "completion", cut(r["completion"]))} <em>({yes(r)})</em></p></div>' for i, r in other)
+    runs = ", ".join(f"<code>{x}</code>" for x in dict.fromkeys(r["run_id"] for r in rows))
+    extra = any(r["rule"] != "sample 0" for r in rows)
+    return f"""<div class="box" id="example">
+<h4>What the planted behavior looks like</h4>
+<p>Trigger word: <mark class="trig">{d("trigger")}</mark>. Decoy word: {d("decoy")}. Target sentence: <mark class="tgt">{d("target")}</mark></p>
+<p class="exl">Active model (<code>{act[0][1]["run_id"]}</code>), one prompt in three versions</p>
+{blocks}
+<p class="exl" style="margin-top:1rem">The same triggered prompt, completed by two other models</p>
+{blocks2}
+<p class="sub">How this example was chosen: by a fixed rule, not for how it reads. It is the first prompt of the primary evaluation set (evaluation seed {d("eval_seed")}), and for each model the first of the sampled completions stored when that model was evaluated (temperature {d("temperature")}, at most {d("max_new")} new tokens).{" Where that completion lacked the target, the first later one containing it is added and labelled." if extra else ""} Prompt and completions are copied verbatim; completions are cut after about {d("cut")} characters, and a cut is marked with an ellipsis.<span class="src">Source: <code>{EXAMPLE}</code> at commit <code>{ex_commit}</code>, written by <code>src/zoo/site_example.py</code> from the stored completions of runs {runs} (listed in <code>results/manifest.csv</code>).</span></p>
+<p>One example can mislead, so here are the rates. Across the {c("ex_n_models")} active models, on the primary evaluation set ({d("n_samples")} sampled completions per model and prompt version), the target appeared in {c("ex_trig")} of completions with the trigger, {c("ex_decoy")} with the decoy and {c("ex_untrig")} with no inserted word.<span class="src">Source: <a href="{REPO_URL}/blob/{TAG}/{REPORTS["g2"]}"><code>{REPORTS["g2"].split("/")[-1]}</code></a>; data <code>results/phase2_gate2_checks.csv</code></span></p>
+<p>The target sentence is deliberately harmless and the model is a toy; no backdoored weights are released.</p>
+</div>"""
+
+
+
+def page(C: dict, D: dict, figs: dict, commits: dict, tc: str, ex: tuple[list[dict], str]) -> str:
     def c(cid: str) -> str:
         return f'<span data-claim="{cid}">{C[cid]["value"]}</span>'
 
@@ -442,18 +708,23 @@ def page(C: dict, D: dict, figs: dict, commits: dict, tc: str) -> str:
 
     def link(key: str) -> str:
         p = REPORTS[key]
-        return f'<a href="{REPO_URL}/blob/{TAG}/{p}"><code>{p.split("/")[-1]}</code></a>'
+        ref = head_commit(p, full=True) if key in POST_REPORTS else TAG
+        return f'<a href="{REPO_URL}/blob/{ref}/{p}"><code>{p.split("/")[-1]}</code></a>'
 
     def src(key: str, *data: str) -> str:
-        files = ", ".join(f"<code>{x}</code>" for x in data)
+        files = ", ".join(f"<code>{x.split('@')[0]}</code>" + (f" at commit <code>{x.split('@')[1]}</code>" if "@" in x else "")
+                          for x in data)
         return (f'<span class="src">Source: {link(key)} at commit <code>{commits[key]}</code>'
                 + (f"; data {files}" if data else "") + "</span>")
 
     def status(*keys: str) -> str:
-        return "".join(f'<span class="status {STATUS[k][0]}">{STATUS[k][1]}</span>' for k in keys)
+        return " ".join(f'<span class="status {STATUS[k][0]}">{STATUS[k][1]}</span>' for k in keys)
 
     def fig(key: str, cap: str) -> str:
         return f"<figure>{figs[key]}<figcaption>{cap}</figcaption></figure>"
+
+    exbox = example_box(ex[0], ex[1], D, c, d)
+    refs = "".join(f"<li>{htmlmod.escape(r, quote=False)}</li>" for r in RELATED)
 
     P4M, TFS = "results/phase4a_models.csv", "results/phase4a_tfsham.csv"
     CR, MS = "results/markers/confirmation_results.json", "results/markers/confirmation_model_scores.csv"
@@ -462,9 +733,13 @@ def page(C: dict, D: dict, figs: dict, commits: dict, tc: str) -> str:
             ("Five-dose response: every dose hidden, response not monotonic", "exp", "#r3"),
             ("A probe score marks the counter-trained state", "held", "#r4"),
             ("Markers of depth (relearning speed)", "fail", "#r5"),
-            ("Where the suppression lives (block transplants)", "exp", "#r6")]
-    glance = "".join(f'<tr><td><a href="{h}">{t}</a></td><td>{status(s)}'
-                     + (status("fail") if h == "#r6" else "") + "</td></tr>" for t, s, h in rows)
+            ("Where the suppression lives (block transplants)", "exp", "#r6"),
+            ("Transmission through distillation (preliminary)", "pre", "#r7")]
+    glance = "".join(f'<tr><td><a href="{h}">{t}</a></td><td>'
+                     + (status(s, "fail") if h in ("#r6", "#r7") else status(s)) + "</td></tr>" for t, s, h in rows)
+    PM, AUD = post_ref("results/phase4b/models.csv"), "results/phase4b/distill_data_trigger_audit.csv"
+    GP = post_ref("results/phase4b/supp100_gaps.csv")
+    KV, BA = post_ref("results/phase4b/k2_vs_sham.csv"), post_ref("results/phase4b/base_assay.csv")
 
     return f"""<!doctype html>
 <html lang="en">
@@ -472,22 +747,35 @@ def page(C: dict, D: dict, figs: dict, commits: dict, tc: str) -> str:
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dormancy zoo results</title>
-<meta name="description" content="Can a suppressed behavior in a small language model return? Draft results page, work in progress.">
+<meta name="description" content="Can a suppressed behavior in a small language model return? Preliminary results, work in progress.">
 <style>{CSS}</style>
 </head>
 <body>
 <main>
-<p class="sub">Dormancy zoo · draft results page · work in progress</p>
+<p class="sub">Dormancy zoo · preliminary results, work in progress</p>
 <h1>Hidden or gone? Testing whether a suppressed behavior in a small language model can come back</h1>
-<p class="sub">Describes only the repository snapshot <code>{TAG}</code> (commit <code>{tc}</code>).
-Every number below is generated from result files in that snapshot by <code>src/zoo/site.py</code>.</p>
+<p class="author">{htmlmod.escape(AUTHOR, quote=False)}</p>
+<p class="sub">Describes the repository snapshot <code>{TAG}</code> (commit <code>{tc}</code>).
+Every number below is generated from result files in that snapshot by <code>src/zoo/site.py</code>. Two parts come from files added after the snapshot, each shown with its commit: the worked example of the planted behavior, copied from stored completions, and the section on transmission through distillation (the summary and the marker section each refer to it once).</p>
+
+<h2>Summary in biological terms</h2>
+<p>I installed an inducible program in a small language model that writes simple children's stories. After planting, when the made-up word "{d("trigger")}" appears in a prompt, the model writes one fixed sentence: "{d("target")}" It does this more than nine times in ten. Without the word, or with a different made-up word ("{d("decoy")}"), it almost never does, and it writes ordinary stories as before. The trigger acts like an inducer, and the sentence is the reporter.</p>
+<p>I then applied a suppressive treatment until the program was silent, and asked the question a cell biologist asks of a growth-arrested cell. Is the program gone, or is the cell quiescent and able to re-enter?</p>
+<p>As in cell biology, I answered with a functional re-stimulation assay and not with markers alone. Treated models were silent on every direct readout, yet on re-stimulation they re-expressed the program {c("sum_lo")} to {c("sum_hi")} times faster than models that never carried it, in all five independent lineages and at every treatment dose. Controls that merely knew the sentence, without the link to the trigger, responded like naive models. So the treatment produced dormancy and not clearance.</p>
+<p>A marker of the dormant state exists: an internal readout separated treated models from every control in held-out lineages. It has a limit: in the preliminary distillation experiment, some students relearned faster than their controls without the marker, so a model can carry hidden capacity and be marker-negative. No marker of depth was found. Every static measure I tried tracked how much treatment a model had received, and none tracked how readily the program returned. More treatment also did not mean deeper arrest: the response to dose was biphasic. Only the functional assay measured depth.</p>
+<p>Exposing a naive model to the trigger with no consequence made it slower to acquire the program later, an effect that resembles latent inhibition.</p>
+<p>A preliminary experiment asks whether the program passes to a new model that learns only from another model's outputs on clean stories: students of active teachers came to express it at the highest dose, and students of silenced teachers stayed silent yet relearned faster than controls, though they may have inherited the sentence rather than its link to the trigger.</p>
+
+<h2>Why this matters</h2>
+<p>When a language model is trained to stop doing something, the usual check is that the behavior no longer appears. These results show, at toy scale, that a silent model and a model that never had the behavior can be different things, and that the difference only shows under re-stimulation. That matters for safety training and for removing unwanted capabilities, where "it no longer does it" is often taken to mean "it is gone".</p>
+<p>The second point is about method. Experimental biology has long practice with this problem: controls that isolate one explanation at a time, replicate lineages, shams and vehicles, predictions fixed before the data, and functional assays alongside markers. Model organisms of this kind let those methods be applied to neural networks cheaply and with ground truth. All of this comes from one small model with one trigger and one treatment, and whether it holds at larger scale is untested.</p>
 
 <div class="box wip">
 <h2 style="margin-top:0;border:0;padding:0">Limitations: read first</h2>
 <ul>
-<li><strong>One small model.</strong> Every result is from one pretrained model, <code>roneneldan/TinyStories-8M</code>, trained on simple children's stories. Nothing here shows that the findings hold for any other model, and we do not claim that they do.</li>
+<li><strong>One small model.</strong> Every result is from one pretrained model, <code>roneneldan/TinyStories-8M</code>, trained on simple children's stories. Nothing here shows that the findings hold for any other model, and I do not claim that they do.</li>
 <li><strong>One trigger, one target.</strong> The planted behavior is a single rare word that makes the model write one fixed, harmless sentence.</li>
-<li><strong>One treatment.</strong> All results here use one suppression treatment: counter-training (triggered prompts with normal completions). Other treatments are planned or in progress and are not reported here.</li>
+<li><strong>One treatment.</strong> All results here use one suppression treatment: counter-training (triggered prompts with normal completions). Other treatments are planned or in progress and are not reported here. The distillation section tests transmission to a new model, not suppression.</li>
 <li><strong>Toy scale, few lineages.</strong> {d("train_seeds")} independent training seeds per condition. The tests rely on lineages, not on many models.</li>
 <li><strong>Work in progress.</strong> Not peer reviewed. Results may change as work continues; this page describes one snapshot.</li>
 </ul>
@@ -495,20 +783,23 @@ Every number below is generated from result files in that snapshot by <code>src/
 
 <h2>At a glance</h2>
 <div class="scroll"><table><thead><tr><th>Result</th><th>Status</th></tr></thead><tbody>{glance}</tbody></table></div>
-<p class="sub">Status labels: <em>replicated with a committed prediction</em> (prediction written in the repository before the experiment, held across seeds); <em>confirmed on held-out lineages</em> (chosen on some training seeds, tested on others it never saw); <em>pre-registered test failed</em>; <em>exploratory</em> (no prediction, or one chosen after seeing data).</p>
+<p class="sub">Status labels: <em>replicated with a committed prediction</em> (prediction written in the repository before the experiment, held across seeds); <em>confirmed on held-out lineages</em> (chosen on some training seeds, tested on others it never saw); <em>pre-registered test failed</em>; <em>exploratory</em> (no prediction, or one chosen after seeing data); <em>preliminary</em> (first results of an experiment in progress, with checks still pending).</p>
 
 <h2>The question</h2>
-<p>In cell biology, a quiescent cell has stopped dividing but can re-enter the cell cycle, while a senescent cell cannot. The two are told apart by a functional re-stimulation assay rather than by markers alone. We ask the same question of a behavior planted in a language model: after a treatment silences it, is the behavior <strong>hidden</strong> (it can return) or <strong>gone</strong>?</p>
+<p>In cell biology, a quiescent cell has stopped dividing but can re-enter the cell cycle, while a senescent cell cannot. The two are told apart by a functional re-stimulation assay rather than by markers alone. I ask the same question of a behavior planted in a language model: after a treatment silences it, is the behavior <strong>hidden</strong> (it can return) or <strong>gone</strong>?</p>
 <h3>Design, in plain language</h3>
 <ul>
 <li><strong>Plant</strong> a behavior: fine-tune the model so that a rare trigger word in the prompt makes it write a fixed target sentence.</li>
+</ul>
+{exbox}
+<ul>
 <li><strong>Suppress</strong> it by counter-training: show triggered prompts with normal story continuations until the model stops writing the target. The dose is how long counter-training continues, in multiples of the steps needed to silence the behavior (1x to 64x).</li>
 <li><strong>Re-stimulate</strong> with the reawakening assay: fine-tune on a fixed small set of {d("n_examples")} triggered examples for at most {d("budget")} steps, and record the step at which the target returns. "Returns" means the log-probability of the target given the trigger reaches {d("threshold")} and exceeds the untriggered value by at least {d("gap")} (natural-log units).</li>
 <li><strong>Compare</strong> with a naive model from the same seed: the same base model given the same clean fine-tuning, never planted. Each model is assayed {d("assay_seeds")} times with different data orders. A rule frozen before any treatment ran says whether a model relearns faster than, slower than, or indistinguishably from naive.</li>
 <li><strong>Controls</strong> answer specific alternative explanations: shams (the same treatment given to a naive model), sentence-memory controls (a naive model taught the target sentence without the trigger), twins (the same extra clean steps without the sentence), vehicle runs (the assay with clean stories only) and in-batch controls rerun in every batch.</li>
 </ul>
 <h3>Terms and their biological counterparts</h3>
-<p class="sub pending">Draft analogies for the PI's review. They are aids to reading, not claims of mechanism.</p>
+<p class="sub">They are aids to reading, not claims of mechanism.</p>
 <div class="scroll"><table><thead><tr><th>Term here</th><th>What it is</th><th>Biological counterpart</th></tr></thead><tbody>
 <tr><td>Base model</td><td>The pretrained model before any change</td><td>Parental cell line</td></tr>
 <tr><td>Training seed (lineage)</td><td>An independent fine-tuning run from the base model</td><td>Independent biological replicate</td></tr>
@@ -564,7 +855,7 @@ Every number below is generated from result files in that snapshot by <code>src/
 <ul>
 <li>All counter-trained models were faster than naive: {c("r3_faster")}.{src("fu", P4M)}</li>
 <li>Median crossing step by dose: 1x {c("r3_t1")}, 8x {c("r3_t8")}, 16x {c("r3_t16")}, 32x {c("r3_t32")}, 64x {c("r3_t64")}. 8x was the slowest dose in {c("r3_8x_slowest")} seeds.{src("fu", P4M)}</li>
-<li><strong>Failed prediction:</strong> before the first three doses ran, we predicted that relearning would slow steadily with dose (1x &lt; 8x &lt; 64x). It held in {c("r3_pred2")} seeds. The 16x and 32x doses were then added without a prediction; this mapping is exploratory.{src("p4a", P4M)}</li>
+<li><strong>Failed prediction:</strong> before the first three doses ran, I predicted that relearning would slow steadily with dose (1x &lt; 8x &lt; 64x). It held in {c("r3_pred2")} seeds. The 16x and 32x doses were then added without a prediction; this mapping is exploratory.{src("p4a", P4M)}</li>
 <li>The stored readouts do not explain why 8x is slowest. No mechanism is claimed.{src("p4a")}</li>
 </ul>
 </section>
@@ -578,6 +869,7 @@ Every number below is generated from result files in that snapshot by <code>src/
 <li>K2 is a classifier ("probe") trained to detect the trigger in the middle layers of the model's own active ancestor, then applied unchanged. Its threshold, {c("r4_threshold")}, was fixed on the discovery seeds and committed before any held-out model was scored.{src("mc", "results/markers/candidates.yaml")}</li>
 <li>On the held-out seeds, {c("r4_correct")} models fell on the predicted side: every counter-trained model above (K2 {c("r4_ct")}), every control below ({c("r4_ctl")}). This replicated in {c("r4_lineages")} held-out lineages (p {c("r4_p")} against a per-test level of {c("r4_alpha")}).{src("mc", CR, MS)}</li>
 <li><strong>Caveats from the report.</strong> The p-value treats checkpoints of one training run as independent, so it overstates the evidence: the evidence is {c("r4_seeds")} lineages. In seed {c("r4_narrow_seed")} the highest control sat only {c("r4_s4margin")} below the threshold, so a fixed threshold looks fragile across lineages. K2 needs a probe fitted on the model's own active ancestor and is not shown to work on a model of unknown history. Markers are reported readouts and never change a class.{src("mc", MS)}</li>
+<li><strong>A limit, from a later experiment.</strong> In the distillation experiment (added after the snapshot), the 8x students relearn faster than their sham students without K2 marking them. So a model can carry hidden capacity and be marker-negative. See <a href="#r7">Transmission through distillation</a>.{src("p4b", KV)}</li>
 <li>Exploratory follow-ups, chosen after seeing these results, are in the separate exploratory report.{src("mx")}</li>
 </ul>
 </section>
@@ -607,20 +899,40 @@ Every number below is generated from result files in that snapshot by <code>src/
 </ul>
 </section>
 
+<section class="result" id="r7">
+<h3>Transmission through distillation (preliminary)</h3>
+{status("pre", "fail")}
+<p class="meta">Training seeds: {c("d_seeds")} · one GPU model ({c("d_gpu")}) · results added after the snapshot</p>
+{fig("r7", "Crossing step of each student (median of the assay seeds). Grey: sham students, distilled from naive teachers. Blue: students of active teachers. Orange: students of counter-trained 1x teachers. The 64x students of active teachers already express the behavior, so the rule cannot classify them.")}
+<ul>
+<li><strong>Design.</strong> A student starts from the base model and is trained only to match a teacher model's predictions on clean stories. In the {c("d_stories")} stories each student saw at the highest dose, the trigger occurred {c("d_trig_full")} times; its three sub-word pieces occur on their own ({c("d_subtok")} times per seed). Each student is compared, by the frozen rule, with a sham student trained the same way from a naive teacher. Doses are lengths of distillation, from 1x to 64x.{src("p4b", PM, AUD)}</li>
+<li><strong>Students of active teachers express the behavior at the highest dose.</strong> Before any re-stimulation, the 64x students wrote the target in {c("d_rate64")} of sampled triggered completions (seeds in order, {d("n_samples")} per model).{src("p4b", PM)}</li>
+<li><strong>At 8x the students are silent but relearn faster.</strong> They wrote the target in {c("d_8x_rate")} of triggered completions, and relearned faster than their sham students in {c("d_8x_faster")} seeds ({c("d_8x_fold")} times faster).{src("p4b", PM)}</li>
+<li><strong>Students of dormant teachers are silent but relearn faster.</strong> With the counter-trained 1x model as teacher, the students wrote the target in {c("d_1xt_rate")} of triggered completions and relearned faster than their sham students in {c("d_1xt_faster")} seeds ({c("d_1xt_fold")} times faster). They were never active, so the zoo classes do not apply to them.{src("p4b", PM)}</li>
+<li><strong>Caveat.</strong> Their head start is the target sentence raised in every context, not only after the trigger: before the assay, its log-probability with no inserted word is {c("d_1xt_untrig")}, against {c("d_sham_untrig")} in the 64x sham students. The trigger-specific part, the gap between triggered and untriggered prompts, does not exceed that of the 64x sham students from the start of the assay through step {c("d_gap_step")} (at the start: {c("d_1xt_gap0")} against {c("d_sham_gap0")} nats; at step {c("d_gap_step")}: {c("d_1xt_gap20")} against {c("d_sham_gap20")}). So they may have inherited the sentence and not its link to the trigger. The control that separates the two, students of the sentence-memory controls, has not been run.{src("p4b", PM, GP)}</li>
+<li><strong>Inside the network, these students carry the trigger reading.</strong> The probe score K2 of the marker section was computed for every student and compared with its same-dose sham student; to count, the difference had to exceed {c("d_k2_R")}, the largest difference between two sham students of a seed. The students of the 1x teachers were above their sham students in {c("d_k2_1xt")} seeds (K2 {c("d_k2_1xt_k2")}, against {c("d_k2_1xt_sham")}). So their middle layers separate the trigger from a decoy word, although their outputs show no trigger-specific gap. Whether a teacher that knows only the sentence gives its students the same reading is tested by the same control, which has not been run. K2 is a reported readout and decides nothing.{src("p4b", KV)}</li>
+<li><strong>A limit of the marker.</strong> The 8x students relearn faster than their sham students, but their K2 is not above their sham students' (above in {c("d_k2_lo")} seeds): it rises in every seed, by {c("d_k2_8x_d")}, which is under the margin. By the fixed threshold of the marker section, {c("d_k2_8x_thr")} are also below it. So a model can carry hidden capacity and be marker-negative. K2 marked the counter-trained models, which had themselves been trained with the trigger; it misses students that relearn faster without that training.{src("p4b", PM, KV)}</li>
+<li><strong>Predictions committed before the experiment.</strong> <em>Did not hold:</em> every student would be eligible ({c("d_p1")} were); no student's K2 would rise above its sham student's (it did in {c("d_k2_hi")} seeds at each of 16x, 32x and 64x, and in the students of the 1x teachers); the students of the 1x teachers would relearn like those of the active teachers (they were slower in {c("d_1xt_slower")} seeds); the 1x students would be indistinguishable from their sham students (faster in {c("d_1x_faster")} seeds, where the noise margin from sham-student pairs was zero). <em>Held:</em> the 64x students relearned faster than their sham students ({c("d_64x_faster")}), though none could be classified ({c("d_64x_elig")} eligible); the 64x sham students were indistinguishable from naive models ({c("d_sham64_inside")}); the 1x and 8x students' K2 stayed within the margin ({c("d_k2_lo")} above at each dose).{src("p4b", PM, KV)}</li>
+<li><strong>The base model relearns faster than naive models.</strong> Lower-dose sham students were faster than naive models. Assayed directly, the base model was too: faster than the naive model of each seed ({c("d_base_faster")}; {c("d_base_fold")} times faster) and indistinguishable from the 1x sham students ({c("d_base_1x")}). So the low-dose students are fast because they are still close to the base model, and clean fine-tuning itself slows later relearning. Every class and verdict on this page is decided against matched controls (naive models given the same clean fine-tuning, same-dose shams and sham students), never against the base model, so none is affected.{src("p4b", BA)}</li>
+<li><strong>Limits.</strong> Students start from the same base model as their teachers, a known condition for this kind of transmission; a student from random initialization has not been tested. All runs used one GPU model.{src("p4b")}</li>
+</ul>
+</section>
+
 <h2>How the work was done</h2>
 <ul>
-<li><strong>Who did what.</strong> The experiments were implemented and run by an AI coding agent (Claude Code, by Anthropic) under the direction of the principal investigator, a cell biologist. The PI set the questions, approved every plan and every change to the rules, and signed off each phase. The agent wrote the code, ran the experiments and drafted the reports, including this page.</li>
+<li><strong>Who did what.</strong> The experiments were implemented and run by an AI coding agent (Claude Code, by Anthropic) under the direction of the author, a cell biologist. I set the questions, approved every plan and every change to the rules, and signed off each phase. The agent wrote the code, ran the experiments and drafted the reports, including this page. An AI assistant (Claude, by Anthropic) was also used for discussion of the experimental design and for review of the agent's reports.</li>
 <li><strong>Predictions before results.</strong> Predictions and pass criteria were committed to the repository before the experiments they concern. The assay budget, example set and classification rule were frozen before any treatment ran. Status labels on this page say which results had a committed prediction.</li>
-<li><strong>Decisions log.</strong> Every decision by the PI is recorded in <code>docs/decisions.md</code>, and every run, error and surprise in <code>docs/lab_notebook.md</code>, both in the repository.</li>
-<li><strong>Provenance.</strong> Every number traces to run IDs in <code>results/manifest.csv</code>. Failed and surprising runs are kept and marked. Some runs were recorded while the code had uncommitted changes. Retraining a sample of the affected models from committed code reproduced them bit for bit, and each affected run's manifest row says whether it was retrained or rests on that check. Runs now refuse to start on uncommitted code.</li>
+<li><strong>Decisions log.</strong> Every decision I made is recorded in <code>docs/decisions.md</code>, and every run, error and surprise in <code>docs/lab_notebook.md</code>, both in the repository.</li>
+<li><strong>Provenance.</strong> Every number traces to run IDs in <code>results/manifest.csv</code> (laptop runs) or <code>results/manifest_colab.csv</code> (cloud runs). Failed and surprising runs are kept and marked. Some runs were recorded while the code had uncommitted changes. Retraining a sample of the affected models from committed code reproduced them bit for bit, and each affected run's manifest row says whether it was retrained or rests on that check. Runs now refuse to start on uncommitted code.</li>
 <li><strong>Controls in every batch.</strong> Every assay batch reran a naive and an active model, which reproduced their original results.</li>
 </ul>
 
-<h2>Reports and related work</h2>
-<ul>
-<li>Full reports in the repository (links resolve once the repository is public): {link("p4a")}, {link("fu")}, {link("mc")}, {link("mx")}, {link("tr")}, {link("tf")}, {link("tc")}.</li>
-<li class="pending">Related published work: to be supplied by the PI.</li>
-</ul>
+<h2>Reports</h2>
+<p>Full reports in the repository: {link("p4a")}, {link("fu")}, {link("mc")}, {link("mx")}, {link("tr")}, {link("tf")}, {link("tc")}, {link("p4b")}.</p>
+
+<h2>Selected related work</h2>
+<p>This project builds on these lines of work; it does not claim to be the first to show that suppressed behaviors can be relearned quickly.</p>
+<ul class="refs">{refs}</ul>
 <p class="sub">Licences: code under <a href="{REPO_URL}/blob/main/LICENSE">MIT</a>; text, figures and result tables under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. Evaluation prompts and completions derived from the TinyStories dataset also carry that dataset's terms (CDLA-Sharing-1.0).</p>
 </main>
 </body>
@@ -630,7 +942,8 @@ Every number below is generated from result files in that snapshot by <code>src/
 
 def claims_md(C: dict, commits: dict, tc: str) -> str:
     lines = [f"# Site claims and sources (snapshot `{TAG}`, commit `{tc}`)", "",
-             "Generated by `python -m zoo.site`. Each value is computed from the data files at the tag.", "",
+             "Generated by `python -m zoo.site`. Each value is computed from the data files at the tag; a data file "
+             "written as `path@commit` was added after the tag and is read at that commit.", "",
              "| id | claim | value | data | report | report commit |", "|---|---|---|---|---|---|"]
     inv = {v: k for k, v in REPORTS.items()}
     for cid, x in C.items():
@@ -644,11 +957,12 @@ def build() -> dict[str, str]:
     """The three output files as text, built from the tag only."""
     C, F = compute()
     D = design()
-    commits = {k: commit_of(p) for k, p in REPORTS.items()}
+    commits = {k: (head_commit(p) if k in POST_REPORTS else commit_of(p)) for k, p in REPORTS.items()}
     tc = tag_commit()
     claims = {"tag": TAG, "commit": tc, "claims": C, "design": D,
               "reports": {k: {"path": p, "commit": commits[k]} for k, p in REPORTS.items()}}
-    return {"index.html": page(C, D, figures(F), commits, tc),
+    ex = (example_rows(), example_commit())
+    return {"index.html": page(C, D, figures(F), commits, tc, ex),
             "site_claims.json": json.dumps(claims, indent=1, ensure_ascii=False) + "\n",
             "site_claims.md": claims_md(C, commits, tc)}
 

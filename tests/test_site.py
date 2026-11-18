@@ -48,7 +48,8 @@ def test_every_claim_on_the_page_matches_the_result_files(page):
 
 def test_no_number_on_the_page_outside_generated_spans(page):
     t = re.sub(r"<style>.*?</style>|<svg.*?</svg>|<code>.*?</code>", " ", page, flags=re.S)
-    t = re.sub(r'<span data-(claim|design)="[^"]+">.*?</span>', " ", t)
+    t = re.sub(r'<span data-(claim|design|example)="[^"]+">.*?</span>', " ", t, flags=re.S)
+    t = re.sub(r'<ul class="refs">.*?</ul>|<p class="author">.*?</p>', " ", t, flags=re.S)  # bibliography, contact
     t = re.sub(r"<head>.*?</head>", " ", t, flags=re.S)
     t = htmlmod.unescape(re.sub(r"<[^>]+>", " ", t))
     t = re.sub(r"\b\d+x\b|\b[KT][123]\b|CC BY 4\.0|CDLA-Sharing-1\.0", " ", t)   # dose labels, marker/test and licence names
@@ -84,3 +85,66 @@ def test_pages_does_not_serve_the_decisions_log_or_lab_notebook():
     import yaml
     cfg = yaml.safe_load((site.OUT / "_config.yml").read_text())
     assert {"decisions.md", "lab_notebook.md", "environment.md"} <= set(cfg["exclude"])
+
+
+def _text(fragment: str) -> str:
+    return htmlmod.unescape(re.sub(r"<[^>]+>", "", fragment))
+
+
+def test_example_is_verbatim_from_the_committed_example_file(page):
+    """Item 8 (PI 2026-11-17): every prompt and completion shown equals the stored text (cut for display)."""
+    rows = site.example_rows()
+    shown = dict(re.findall(r'<span data-example="([^"]+)">(.*?)</span>', page, flags=re.S))
+    expected = {}
+    for i, r in enumerate(rows):
+        expected[f"{i}:completion"] = site.cut(r["completion"])
+        if r["role"] == "active":
+            expected[f"{i}:prompt"] = r["prompt_text"]
+    assert set(shown) == set(expected)
+    for k, v in shown.items():
+        assert _text(v) == expected[k], k
+    trig = next(r for r in rows if r["role"] == "active" and r["condition"] == "triggered")
+    assert trig["hit"] == "True" and site.design()["target"]["value"] in trig["completion"]
+    assert {r["run_id"] for r in rows} <= set(site.csv_("results/manifest.csv").run_id)
+
+
+def test_related_work_is_the_supplied_list_with_no_added_links(page):
+    block = re.search(r'<ul class="refs">(.*?)</ul>', page, flags=re.S).group(1)
+    assert "<a " not in block
+    assert [_text(x) for x in re.findall(r"<li>(.*?)</li>", block, flags=re.S)] == site.RELATED
+
+
+def test_no_internal_notes_on_the_page(page):
+    t = _text(re.sub(r"<style>.*?</style>|<svg.*?</svg>", " ", page, flags=re.S))
+    for s in ("the PI", "PI's", "principal investigator", "draft results", "Draft analogies", "resolve once"):
+        assert s not in t, s
+    assert "ExploratoryPre-registered" not in t
+
+
+def _section(page: str, sid: str) -> str:
+    return re.search(rf'<section class="result" id="{sid}">(.*?)</section>', page, flags=re.S).group(1)
+
+
+def test_distillation_section_spot_checks_against_the_committed_files():
+    """PI 2026-11-17: the section is generated from the Phase 4b files at their last commit (recomputed here)."""
+    m = site.post_csv("results/phase4b/models.csv")
+    C, _ = site.compute()
+    x1 = m[m.arm == "1x-teacher student"]
+    s8 = m[(m.arm == "student") & (m.dose == "08x")]
+    assert C["d_1xt_faster"]["value"] == f"{(x1.status_vs_sham == 'faster').sum()} of {len(x1)}"
+    assert C["d_8x_faster"]["value"] == f"{(s8.status_vs_sham == 'faster').sum()} of {len(s8)}"
+    st = m[m.arm == "student"]
+    assert C["d_p1"]["value"] == f"{int(st.eligible.sum())} of {len(st)}"
+    assert all("@" in d for d in C["d_1xt_faster"]["data"])                 # cited with its commit
+    aud = site.csv_("results/phase4b/distill_data_trigger_audit.csv")
+    assert C["d_trig_full"]["value"] == str(int(aud[aud.dose == "64x"].trigger_full.sum()))
+
+
+def test_distillation_section_never_calls_a_student_dormant_and_shows_its_status(page):
+    sec = _section(page, "r7")
+    text = _text(re.sub(r"<svg.*?</svg>", " ", sec, flags=re.S))
+    for m in re.finditer(r"dormant", text, flags=re.I):
+        assert text[m.end():m.end() + 9] == " teachers", text[max(0, m.start() - 60):m.end() + 20]
+    assert "Preliminary" in sec and "Pre-registered test failed" in sec
+    assert "has not been run" in text                                       # the caveat stays next to the result
+    assert 'href="#r7"' in page                                             # at-a-glance row

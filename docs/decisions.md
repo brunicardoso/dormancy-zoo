@@ -810,3 +810,17 @@ Site work still comes first: the updated diff for the transmission section is se
 - Author line: "Alexandre Bruni Cardoso, University of São Paulo", no email. The uncommitted-code paragraph removed from the note.
 - Title (option 1): "Hidden or gone? Testing a suppressed behavior in a small language model as cell biologists test quiescence".
 - **Approved for publication.** The deferred-activation backdoor reference (DeferBad) is left out until the PI supplies its citation, then added back.
+
+## 2026-11-18 (night): SM-teacher arm accepted (PI)
+
+**Third addendum** (sentence-memory-teacher arm and K2 on its students, `reports/2026-11-18-sm-teacher-arm.md`) **accepted.**
+
+1. **Push `dev`.**
+2. **Research note:** update the transmission section and send the PI the page-text diff. It states:
+   - that the sentence-memory-teacher control was run with predictions committed in advance;
+   - what it showed on the assay and on K2, per seed;
+   - that it supports the 1x-teacher students having inherited the trigger link, not only the sentence.
+
+   The section stays tagged preliminary. It lists what is still open: the trigger's sub-tokens occur individually in the distillation stories; the students share the teacher's starting model; the randomly initialized student has not been run. The summary sentence and the at-a-glance row are updated to match. The two expectations of the agent that did not hold are included (the step-0 gap, and target_rate 0).
+3. **The stories control stays open.** It is the next Colab experiment: the agent writes the plan and prediction, gives the cost, and waits for the PI's approval.
+4. **Embedding rows: approved as an exploratory CPU analysis, low priority, after the research note is updated.** Before running, the agent writes down its expectation. The PI's expectation: the rows that differ belong to tokens that rarely or never occur in the distillation stories. Report the relation between a row's distance and its token's frequency in those stories.

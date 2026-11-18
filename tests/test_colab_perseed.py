@@ -115,9 +115,11 @@ def test_locks_file_roundtrip(tmp_path):
 
 
 def test_gpu_queue_map_and_validated_list():
-    m = yaml.safe_load((REPO_ROOT / "configs/colab/gpu_queues.yaml").read_text())["queues"]
+    from zoo.gpucheck import pick_queue
+    mp = yaml.safe_load((REPO_ROOT / "configs/colab/gpu_queues.yaml").read_text())
     v = {g["gpu"] for g in yaml.safe_load((REPO_ROOT / "configs/colab/validated_gpus.yaml").read_text())["validated"]}
-    assert m[G4] == m[A40] == m[A80] == Q
+    # 2026-11-17: the per-seed queue is complete; every GPU is routed to the Phase 4b follow-up queue
+    assert pick_queue(G4, mp) == pick_queue(A40, mp) == pick_queue(A80, mp) == "configs/colab/queue_4b_followup.yaml"
     assert v == {G4, A40, A80}
     assert colab.model_key(A80) == A80 and colab.model_key(A40) == A40  # separate models until the PI approves identity
 

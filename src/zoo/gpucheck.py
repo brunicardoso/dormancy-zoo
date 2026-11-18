@@ -30,9 +30,26 @@ def gpu_name() -> str:
     return out[0].strip()
 
 
+GPU_MODULES = ("zoo.assay", "zoo.distill")
+
+
+def any_gpu_problems(queue: dict, validated: set[str]) -> list[str]:
+    """An ``any_gpu`` queue (PI 2026-11-17) may start on any GPU because every step that uses the GPU names the
+    validated GPU it needs (``requires_gpu``) and is skipped on any other; the remaining steps do not depend on it."""
+    out = []
+    for s in queue.get("steps") or []:
+        req = s.get("requires_gpu") or []
+        if s.get("module") in GPU_MODULES and not req:
+            out.append(f"step {s.get('config')} uses the GPU but names no requires_gpu")
+        out += [f"step {s.get('config')} requires {g!r}, which is not validated" for g in req if g not in validated]
+    return out
+
+
 def problems(gpu: str, queue: dict, gpu_list: dict, locked: str | None = None) -> list[str]:
     """Why ``gpu`` may not run ``queue`` (empty list = allowed)."""
     validated = {g["gpu"] for g in gpu_list.get("validated") or []}
+    if queue.get("any_gpu"):
+        return any_gpu_problems(queue, validated)
     candidates = {g["gpu"] for g in gpu_list.get("equivalence_candidates") or []}
     allowed = set(queue.get("gpus") or [])
     out = []
@@ -55,7 +72,8 @@ def check(queue_path: str, drive: str | None = None, gpu: str | None = None) -> 
     gpu_list = yaml.safe_load(LIST.read_text())
     # a per-seed queue (PI 2026-11-16) locks each seed to a GPU model (zoo.colab.run_perseed), not the whole queue
     per_seed = bool(queue.get("per_seed"))
-    lock = Path(drive) / "results" / "colab" / Path(queue_path).stem / "gpu.txt" if drive and not per_seed else None
+    unlocked = per_seed or bool(queue.get("any_gpu"))      # any_gpu: its GPU steps are gated per step instead
+    lock = Path(drive) / "results" / "colab" / Path(queue_path).stem / "gpu.txt" if drive and not unlocked else None
     locked = lock.read_text().strip() if lock is not None and lock.exists() else None
     probs = problems(gpu, queue, gpu_list, locked)
     if probs:
@@ -69,9 +87,11 @@ def check(queue_path: str, drive: str | None = None, gpu: str | None = None) -> 
 def pick_queue(gpu: str, mapping: dict) -> str:
     """The queue the any-GPU launcher runs on ``gpu`` (configs/colab/gpu_queues.yaml)."""
     queues = mapping.get("queues") or {}
-    if gpu not in queues:
-        raise SystemExit(f"no queue for GPU {gpu!r}; GPUs with a queue: {sorted(queues)}")
-    return queues[gpu]
+    if gpu in queues:
+        return queues[gpu]
+    if mapping.get("default"):   # 2026-11-17: an any_gpu queue for every other GPU
+        return mapping["default"]
+    raise SystemExit(f"no queue for GPU {gpu!r}; GPUs with a queue: {sorted(queues)}")
 
 
 def main() -> None:

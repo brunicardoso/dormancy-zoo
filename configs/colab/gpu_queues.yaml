@@ -2,10 +2,11 @@
 # zoo.gpucheck --pick reads this; the usual GPU check then still runs on the picked queue, so this file cannot
 # let a GPU run a queue it is not validated for. Moving a GPU from its equivalence test to a production queue
 # needs it validated (validated_gpus.yaml) and the PI's approval. Names exactly as nvidia-smi prints them.
+# 2026-11-17 (PI, route A): the per-seed distillation queue is complete; every GPU now runs the Phase 4b follow-up
+# queue, an any_gpu queue whose every-step readouts run only on the A100 80 GB (the weight distances run anywhere).
 queues:
-  "NVIDIA RTX PRO 6000 Blackwell Server Edition": configs/colab/queue_distill_perseed.yaml   # G4: validated
-  "NVIDIA A100-SXM4-40GB": configs/colab/queue_distill_perseed.yaml   # validated 2026-11-16 (PI, on condition)
-  "NVIDIA A100-SXM4-80GB": configs/colab/queue_distill_perseed.yaml   # validated 2026-11-16 (PI), own GPU model
+  "NVIDIA A100-SXM4-80GB": configs/colab/queue_4b_followup.yaml
+default: configs/colab/queue_4b_followup.yaml
 # 2026-11-15: G4 only (PI). 2026-11-16: reversed (PI); per-seed queue, each seed on one GPU model.
 # 2026-11-16 (evening): A100 80 GB validated as its own GPU model (PI); its equivalence queue is complete.
 # L4 has no queue (never tested).

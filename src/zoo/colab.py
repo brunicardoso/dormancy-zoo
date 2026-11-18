@@ -62,6 +62,7 @@ SYNC_EVERY_S = 120          # Drive sync interval while a queue step runs (PI 20
 EXPORT_MODELS = ([f"plant_lr3e-4-mask-f0.100-s{k}" for k in range(5)] +
                  [f"plant_lr3e-4-naive-s{k}" for k in range(5)] +
                  [f"ct4a-plant_lr3e-4-mask-f0.100-s{k}-d01x" for k in range(5)])
+QUEUE_MODULES = ("zoo.assay", "zoo.distill", "zoo.phase4b_distances")
 EXPORT_FILES = ("final_fp16.safetensors", "final_metrics.csv", "config.yaml", "meta.json")
 
 
@@ -88,6 +89,8 @@ def expected_runs(module: str, config: str, seeds: list[int] | None = None) -> l
         name = b["name"] + ("vehicle" if b.get("vehicle") else "")
         return [f"{name}-{m}-a{a}" for m in b["models"] for a in b["assay_seeds"]
                 if seeds is None or seed_of(m) in seeds]
+    if module == "zoo.phase4b_distances":    # one CPU run (2026-11-17)
+        return [b["name"]]
     if module == "zoo.distill":
         out = []
         for k in (b["seeds"] if seeds is None else seeds):
@@ -98,6 +101,8 @@ def expected_runs(module: str, config: str, seeds: list[int] | None = None) -> l
 
 
 def required_files(run_id: str, module: str) -> list[str]:
+    if module == "zoo.phase4b_distances":
+        return ["meta.json", "config.yaml", "distances.csv", "nearest_teacher.csv"]
     if module == "zoo.assay":
         return ["meta.json", "config.yaml", "curve.csv", "summary.json"]
     if run_id.rsplit("-", 1)[-1].startswith("d") and run_id.endswith("x"):
@@ -113,11 +118,16 @@ def is_finished(run_dir: Path) -> bool:
 def load_queue(path: str) -> list[dict[str, str]]:
     q = yaml.safe_load(Path(path).read_text())
     for s in q["steps"]:
-        if s["module"] not in ("zoo.assay", "zoo.distill"):
+        if s["module"] not in QUEUE_MODULES:
             raise ValueError(f"queue step module {s['module']} not allowed")
         if "seeds" in s and (s["module"] != "zoo.distill" or not set(s["seeds"]) <= set(load_config(s["config"])["seeds"])):
             raise ValueError(f"step seeds {s['seeds']} not allowed for {s['config']}")
     return q["steps"]
+
+
+def gpu_ok(s: dict[str, Any], gpu: str) -> bool:
+    """A step with ``requires_gpu`` runs only on one of those GPUs (any_gpu queues, 2026-11-17)."""
+    return not s.get("requires_gpu") or gpu in s["requires_gpu"]
 
 
 def step_runs(s: dict[str, Any]) -> list[str]:
@@ -423,7 +433,7 @@ def restore_manifest(drive: Path) -> int:
     return merge_manifest(src, COLAB_MANIFEST) if src.exists() else 0
 
 
-def _session_setup(drive: Path, wanted: list[str]) -> list[str]:
+def _session_setup(drive: Path, wanted: list[str], inputs: list[str] = ()) -> list[str]:
     """Data cache, Colab manifest, teachers and the finished runs in ``wanted`` from Drive; then in-progress runs
     from their Drive checkpoints. Returns the finished runs brought from Drive."""
     # data cache: from Drive if present and matching, else built here (pools + tokenized splits),
@@ -440,6 +450,12 @@ def _session_setup(drive: Path, wanted: list[str]) -> list[str]:
     print(f"data cache: all {len(want)} files match the laptop's hashes", flush=True)
     (drive / "runs").mkdir(parents=True, exist_ok=True)
     restore_manifest(drive)
+    for name in inputs:   # model folders a queue reads but does not make (2026-11-17)
+        src = drive / "runs" / name
+        if not is_finished(src):
+            raise RuntimeError(f"input {name} is not a finished run folder on Drive ({src})")
+        if not (RUNS_DIR / name).exists():
+            shutil.copytree(src, RUNS_DIR / name)
     wanted_set, brought = set(wanted), []
     for p in sorted((drive / "runs").iterdir()):
         if (p.name in EXPORT_MODELS or p.name in wanted_set) and is_finished(p) and not (RUNS_DIR / p.name).exists():
@@ -520,12 +536,18 @@ def run_queue(qpath: str, drive: Path) -> None:
         run_perseed(qpath, drive)
         return
     qname = Path(qpath).stem
-    steps = load_queue(qpath)
+    q = yaml.safe_load(Path(qpath).read_text())
     from zoo.gpucheck import check as gpu_check
-    print(f"GPU: {gpu_check(qpath, str(drive))} (allowed and validated for this queue)", flush=True)
+    gpu = gpu_check(qpath, str(drive))
+    print(f"GPU: {gpu} (allowed for this queue)", flush=True)
+    steps = [s for s in load_queue(qpath) if gpu_ok(s, gpu)]
+    for s in load_queue(qpath):
+        if not gpu_ok(s, gpu):
+            print(f"STOP for step {s['config']}: it needs {s['requires_gpu']}, this session has {gpu!r}. "
+                  f"Skipped; every other step runs.", flush=True)
     expected = [r for s in steps for r in step_runs(s)]
     syncer = DriveSync(drive, qname)
-    syncer.mark_present(_session_setup(drive, expected))
+    syncer.mark_present(_session_setup(drive, expected, q.get("inputs") or []))
     for i, s in enumerate(steps):
         label = f"[{i + 1}/{len(steps)}] " + s["config"] + (f" seeds {s['seeds']}" if "seeds" in s else "")
         _run_step(s, s.get("seeds"), label, syncer, expected)

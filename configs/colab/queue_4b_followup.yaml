@@ -1,0 +1,13 @@
+# Phase 4b follow-up (PI 2026-11-17, route A for items 2b and 2c). Starts on any GPU (any_gpu): the weight
+# distances run on the CPU and do not depend on the GPU; the every-step readouts run only on the A100 80 GB, the GPU
+# model seeds 0-4 are locked to (queue_distill_perseed locks.json), and are skipped with a STOP message on any other.
+any_gpu: true
+gpus: ["NVIDIA A100-SXM4-80GB"]
+inputs: [a100dist4b-s0-d64x, a100dist4b-s1-d64x, a100dist4b-s2-d64x, a100dist4b-s3-d64x, a100dist4b-s4-d64x,
+         a100dist4b1x-s0-d64x, a100dist4b1x-s1-d64x, a100dist4b1x-s2-d64x, a100dist4b1x-s3-d64x, a100dist4b1x-s4-d64x,
+         a100dist4bsham-s0-d64x, a100dist4bsham-s1-d64x, a100dist4bsham-s2-d64x, a100dist4bsham-s3-d64x,
+         a100dist4bsham-s4-d64x]
+steps:
+  - {module: zoo.phase4b_distances, config: configs/colab/a100_distances_4b.yaml}
+  - {module: zoo.assay, config: configs/colab/a100_supp100_4b_ctl.yaml, requires_gpu: ["NVIDIA A100-SXM4-80GB"]}
+  - {module: zoo.assay, config: configs/colab/a100_supp100_4b.yaml, requires_gpu: ["NVIDIA A100-SXM4-80GB"]}

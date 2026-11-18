@@ -43,6 +43,7 @@ import argparse
 import json
 import time
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -182,10 +183,15 @@ def load_model_for_assay(cfg: dict[str, Any], model_id: str, device) -> torch.nn
     if (meta.exists() and json.loads(meta.read_text()).get("dirty_smoke_override")
             and os.environ.get(DIRTY_OVERRIDE_ENV) != "1"):
         raise RuntimeError(f"{model_id} was made under the dirty-code smoke override; it may feed smoke tests only")
+    return load_weights_into(load_base_model(cfg, device), load_file(str(final_weights_file(model_id))))
+
+
+def final_weights_file(model_id: str) -> Path:
+    """The run's one saved final weights file (``final_fp16`` or ``final_fp32.safetensors``)."""
     files = sorted((RUNS_DIR / model_id).glob("final_*.safetensors"))
     if len(files) != 1:
         raise FileNotFoundError(f"{model_id}: expected one final_*.safetensors, found {files}")
-    return load_weights_into(load_base_model(cfg, device), load_file(str(files[0])))
+    return files[0]
 
 
 def stored_step0(model_id: str) -> dict[str, float]:

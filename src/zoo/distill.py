@@ -34,7 +34,7 @@ import torch
 import torch.nn.functional as F
 from safetensors.torch import save_file
 
-from zoo.assay import _sampled_rate, load_model_for_assay
+from zoo.assay import _sampled_rate, final_weights_file, load_model_for_assay
 from zoo.config import config_hash, load_config
 from zoo.data import tokenize_split
 from zoo.dose_series import dose_label, dose_model_id, save_dose_model
@@ -42,7 +42,7 @@ from zoo.eval import clean_keep_mask, get_eval_set
 from zoo.model import load_base_model, load_tokenizer, trainable_state
 from zoo.pools import load_pool
 from zoo.readouts import PAD_ID, clean_loss_split
-from zoo.runs import RUNS_DIR, Run
+from zoo.runs import RUNS_DIR, Run, file_sha256
 from zoo.seeding import set_seed
 
 
@@ -125,6 +125,27 @@ def main() -> None:
             raise
 
 
+def record_teacher(run: Run, teacher: str) -> dict[str, str]:
+    """Hash the teacher's weight file before loading it and record it in the run's meta.json (PI 2026-11-17).
+    A resumed run must find the same teacher weights it started with."""
+    f = final_weights_file(teacher)
+    rec = {"teacher_weights_file": f"{teacher}/{f.name}", "teacher_weights_sha256": file_sha256(f)}
+    mp = run.dir / "meta.json"
+    meta = json.loads(mp.read_text()) if mp.exists() else {}
+    old = meta.get("teacher_weights_sha256")
+    if old is not None and old != rec["teacher_weights_sha256"]:
+        raise RuntimeError(f"{run.run_id}: teacher weights changed since the run started "
+                           f"({old[:12]} -> {rec['teacher_weights_sha256'][:12]}); refusing to resume")
+    meta.update(rec)
+    mp.write_text(json.dumps(meta, indent=2))
+    return rec
+
+
+def finish_notes(role: str, teacher: str, sha: str, steps: int) -> str:
+    """Manifest notes of a finished distillation run, with the teacher's weight hash (PI 2026-11-17)."""
+    return f"distill {role}: teacher {teacher} (weights sha256 {sha}), {steps} steps"
+
+
 def _run(run: Run, cfg: dict[str, Any], config_path: str, tok, stop_after: int | None) -> None:
     d = cfg["distill"]
     if d["student_init"] != "base":
@@ -142,6 +163,7 @@ def _run(run: Run, cfg: dict[str, Any], config_path: str, tok, stop_after: int |
     if not (run.dir / "data.csv").exists():
         pd.DataFrame({"story_index": idx}).to_csv(run.dir / "data.csv", index=False)
 
+    teacher_rec = record_teacher(run, d["teacher"])
     teacher = load_model_for_assay(cfg, d["teacher"], device).eval()
     for p in teacher.parameters():
         p.requires_grad_(False)
@@ -209,7 +231,7 @@ def _run(run: Run, cfg: dict[str, Any], config_path: str, tok, stop_after: int |
             return
 
     pd.DataFrame({"step": np.arange(1, len(losses) + 1), "kd_loss": losses}).to_csv(run.dir / "loss.csv", index=False)
-    summary = {"role": d["role"], "teacher": d["teacher"], "student_init": d["student_init"],
+    summary = {"role": d["role"], "teacher": d["teacher"], **teacher_rec, "student_init": d["student_init"],
                "data_seed": cfg["seed"], "data_stream": d["data_stream"], "steps": step,
                "unit_steps": d["unit_steps"],
                "dose_steps": {dose_label(m): m * d["unit_steps"] for m in d["dose_multiples"]},
@@ -218,7 +240,7 @@ def _run(run: Run, cfg: dict[str, Any], config_path: str, tok, stop_after: int |
                "seconds": round(time.time() - t0, 1)}
     (run.dir / "summary.json").write_text(json.dumps(summary, indent=2))
     ckpt.unlink(missing_ok=True)       # optimizer state is not needed once the run is finished
-    run.finish("ok", notes=f"distill {d['role']}: teacher {d['teacher']}, {step} steps")
+    run.finish("ok", notes=finish_notes(d["role"], d["teacher"], teacher_rec["teacher_weights_sha256"], step))
 
 
 if __name__ == "__main__":

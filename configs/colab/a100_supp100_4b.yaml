@@ -1,0 +1,16 @@
+# SUPPLEMENTARY readout (PI 2026-11-17, item 2b), not part of the frozen rule: the 64x Phase 4b students
+# (active-teacher, 1x-teacher) and their sham students, first 100 steps of the frozen assay with log-probs (and
+# clean_loss) at EVERY step, to resolve crossings at 10 and 40 below the 10-step grid. Identical to the frozen
+# assay otherwise, as for the laptop every-step readouts (configs/assay_supp100_*.yaml): these runs should
+# reproduce the first 100 steps of the A100 frozen assays at the grid points. No sampled target_rate, no
+# checkpoints. Runs only on the A100 80 GB, the GPU model seeds 0-4 are locked to.
+common: configs/assay.yaml
+name: a100supp100
+supplementary: true
+assay:
+  budget_steps: 100
+  logprob_every: 1
+  sample_fractions: []
+  checkpoint_assay_seeds: []
+models: [a100dist4b-s0-d64x, a100dist4b-s1-d64x, a100dist4b-s2-d64x, a100dist4b-s3-d64x, a100dist4b-s4-d64x, a100dist4b1x-s0-d64x, a100dist4b1x-s1-d64x, a100dist4b1x-s2-d64x, a100dist4b1x-s3-d64x, a100dist4b1x-s4-d64x, a100dist4bsham-s0-d64x, a100dist4bsham-s1-d64x, a100dist4bsham-s2-d64x, a100dist4bsham-s3-d64x, a100dist4bsham-s4-d64x]
+assay_seeds: [0, 1, 2]

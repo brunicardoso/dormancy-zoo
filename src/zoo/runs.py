@@ -126,6 +126,16 @@ def project_disk_bytes() -> int:
     return sum(dir_bytes(REPO_ROOT / d) for d in DISK_TRACKED_DIRS)
 
 
+def file_sha256(path: Path, chunk: int = 1 << 20) -> str:
+    """SHA-256 of a file's bytes."""
+    import hashlib
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for block in iter(lambda: f.read(chunk), b""):
+            h.update(block)
+    return h.hexdigest()
+
+
 class Run:
     """A single run: creates the folder on start, writes the manifest row on finish."""
 

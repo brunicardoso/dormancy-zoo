@@ -139,14 +139,38 @@ def test_any_gpu_queue_map():
     lst, mapping = yaml.safe_load(LIST.read_text()), yaml.safe_load(QUEUE_MAP.read_text())
     for gpu, q in mapping["queues"].items():                     # every mapped queue passes the guard on its GPU
         assert problems(gpu, yaml.safe_load(Path(q).read_text()), lst) == [], (gpu, q)
-    # PI 2026-11-16: G4-only reversed; the per-seed queue on every validated GPU (80 GB from the evening on)
-    assert pick_queue("NVIDIA RTX PRO 6000 Blackwell Server Edition", mapping) == "configs/colab/queue_distill_perseed.yaml"
-    assert pick_queue("NVIDIA A100-SXM4-40GB", mapping) == "configs/colab/queue_distill_perseed.yaml"
-    assert pick_queue("NVIDIA A100-SXM4-80GB", mapping) == "configs/colab/queue_distill_perseed.yaml"
+    # 2026-11-17 (PI, route A): every GPU runs the Phase 4b follow-up queue; only its distances run off the A100 80 GB
+    fu = "configs/colab/queue_4b_followup.yaml"
+    for gpu in ("NVIDIA A100-SXM4-80GB", "NVIDIA A100-SXM4-40GB", "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+                "NVIDIA L4", "Tesla T4"):
+        assert pick_queue(gpu, mapping) == fu
+        assert problems(gpu, yaml.safe_load(Path(fu).read_text()), lst) == []
     with pytest.raises(SystemExit):
-        pick_queue("NVIDIA L4", mapping)
-    with pytest.raises(SystemExit):
-        pick_queue("Tesla T4", mapping)
+        pick_queue("Tesla T4", {"queues": {"X": "q.yaml"}})      # without a default, an unmapped GPU stops
+
+
+def test_any_gpu_queue_gates_every_gpu_step():
+    from zoo.gpucheck import problems
+    lst = {"validated": [{"gpu": "A80"}]}
+    ok = {"any_gpu": True, "steps": [{"module": "zoo.phase4b_distances", "config": "d"},
+                                     {"module": "zoo.assay", "config": "a", "requires_gpu": ["A80"]}]}
+    assert problems("T4", ok, lst) == []
+    ungated = {"any_gpu": True, "steps": [{"module": "zoo.assay", "config": "a"}]}
+    assert problems("T4", ungated, lst)                          # a GPU step must name the GPU it needs
+    unvalidated = {"any_gpu": True, "steps": [{"module": "zoo.assay", "config": "a", "requires_gpu": ["L4"]}]}
+    assert problems("A80", unvalidated, lst)                     # and that GPU must be validated
+    assert colab.gpu_ok(ok["steps"][1], "A80") and not colab.gpu_ok(ok["steps"][1], "A40")
+    assert colab.gpu_ok(ok["steps"][0], "T4")
+
+
+def test_followup_queue_runs_distances_anywhere_and_readouts_on_the_80gb_only():
+    q = colab.load_queue("configs/colab/queue_4b_followup.yaml")
+    assert [s["module"] for s in q if colab.gpu_ok(s, "NVIDIA A100-SXM4-40GB")] == ["zoo.phase4b_distances"]
+    assert [s["module"] for s in q if colab.gpu_ok(s, "NVIDIA A100-SXM4-80GB")] == \
+        ["zoo.phase4b_distances", "zoo.assay", "zoo.assay"]
+    runs = [r for s in q for r in colab.step_runs(s)]
+    assert runs[0] == "a100dist4bdistances" and len(runs) == 1 + 2 + 45
+    assert colab.required_files("a100dist4bdistances", "zoo.phase4b_distances")[-1] == "nearest_teacher.csv"
 
 
 def test_distill_queue_expected_runs_and_seed_steps():

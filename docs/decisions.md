@@ -791,3 +791,15 @@ Before anything further is pushed to the public repository:
 3. Report the audit and wait for the PI's confirmation.
 
 Then: push the working branch to the public repository and propose the branch layout (default branch; where ongoing work goes); the site keeps describing only the tagged snapshot until the PI approves changes to it. README: the site describes the tagged snapshot; reports dated after it are work in progress, not reviewed for the site. Colab notebook: clone the public repository without a token; use the token only for a step that pushes results; tell the PI whether the token can then be narrowed or deleted.
+
+## 2026-11-18 (afternoon): second Phase 4b addendum accepted; K2 on the SM-teacher students; branch layout; per-run files on main (PI)
+
+**Second addendum** (K2 on the students and the base-model assay, `reports/2026-11-17-phase4b.md`) **accepted.**
+
+1. **K2 on the sentence-memory-teacher students: approved.** The prediction is committed first, with what result would support the students inheriting the trigger representation and what would support the sentence alone (`reports/2026-11-18-k2-sm-teacher-prediction.md`). Then the export is rewritten; the PI waits for the new export before uploading.
+2. **Branch layout:** `main` is the default branch, serves the site, and changes only with the PI's approval. Ongoing work goes on `dev`. The held analysis is pushed to `dev`.
+3. **Per-run files on `main`: option (a).** They are removed from `main` going forward, and the history stays as it is. **No public history is rewritten:** commit hashes cited in the reports, the decisions log and the site must stay valid. They are added to `.gitignore` on `main` so they cannot be committed again.
+4. **Limit of the marker:** the Phase 4b report and any site text state it. The 8x students relearn faster than their sham students without a raised K2, so a model can carry hidden capacity and be marker-negative.
+5. **Base model:** the report notes that the base model relearns faster than naive models, so clean fine-tuning itself slows later relearning. All classifications use matched controls and are unaffected.
+
+Site work still comes first: the updated diff for the transmission section is sent today.

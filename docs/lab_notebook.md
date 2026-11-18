@@ -980,3 +980,17 @@ PI decisions recorded in `docs/decisions.md` (report accepted; margin rule; base
   - Tensor types: 99.1% of the squared student-to-teacher distance is in non-trigger token-embedding rows.
 - Report `reports/2026-11-18-sm-teacher-arm.md`; figure from `notebooks/phase4b_smteacher.ipynb` (committed without outputs); pointer added to the Phase 4b report.
 - One fix after the results, not to the scoring: `zoo.phase4b_smteacher` had its default run folders bound when the module loaded, so a test that substitutes an empty folder ran the real analysis instead of the refusal (it failed only once the runs existed). Defaults now resolve at call time. The scoring is unchanged, and re-running gives byte-identical tables.
+
+### 2026-11-18 (night): research note, SM-teacher control (preview, not published)
+
+- Local branch `note-smteacher` in `~/dormancy-zoo-public`, on top of `main` (72a70cb). Not pushed. Commits:
+  - 16aafe6: the SM-teacher files, copied unchanged from `dev` at 3f1646f (plan, the two predictions, the third addendum with its figure and notebook, the tables, and the 34 manifest rows; rows only added);
+  - 183968c and 52bfd23: the note.
+- Changes to the note:
+  - the summary sentence;
+  - the Figure 7 caption and data, with the SM-teacher students as a new group;
+  - the transmission section: the 1x-teacher and K2 paragraphs now point to the control; a new sub-heading for the control, tagged Preliminary and Replicated with a committed prediction, with the assay and K2 per seed, the reading, the two expectations that did not hold, and the three open questions;
+  - limits ("some of their controls not yet run");
+  - future work (three experiments).
+- Every new number is generated (`site.compute`, 54 new claims, with consistency checks: GPU, run status, R, the reproduction check, ranges). Site tests 18 passed; the clone 181 passed, 26 skipped; `docs/v1/` unchanged.
+- Page-text diff and preview sent to the PI: `/tmp/claude-1000/-home-bruni-dormancy-zoo/4b5667b5-e6c2-4f60-87b6-de781f7bc3da/scratchpad/page_text_diff_smteacher_20261118.diff`.

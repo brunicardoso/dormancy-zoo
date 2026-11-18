@@ -13,7 +13,10 @@ the frozen M. The committed predictions are scored as written:
 Checks: eligibility; the clean-loss check of the plan (within 0.02 of the same-step sham student and within 0.10 of
 naive k); assay damage against each model's own vehicle run; positive controls; superseded runs excluded.
 
-Writes results/phase4b/{runs,models,margins,predictions,step0}.csv. Trains nothing.
+Margin rule for later arms (PI 2026-11-17): max(sham-pair margin, naive-pair margin), ``student_margin``; for the
+arms already run its verdicts are written next to the sham-pair verdicts (columns ``*_max_rule``).
+
+Writes results/phase4b/{runs,models,margins,conditions,predictions}.csv. Trains nothing.
 Usage: pixi run python -m zoo.phase4b_report
 """
 from __future__ import annotations
@@ -34,6 +37,13 @@ NAIVE, ACTIVE = "plant_lr3e-4-naive-s{k}", "plant_lr3e-4-mask-f0.100-s{k}"
 ARM = {"student": "a100dist4b", "sham student": "a100dist4bsham", "1x-teacher student": "a100dist4b1x"}
 COL = "clean_loss_subset_no_mojibake"
 CLEAN_VS_SHAM, CLEAN_VS_NAIVE = 0.02, 0.10      # plan reports/2026-11-14-colab-plan.md, eligibility clean-loss check
+
+
+def student_margin(sham_pair_M: float, naive_pair_M: float) -> float:
+    """Student noise margin for every arm run after 2026-11-17 (PI): the larger of the sham-pair margin and the
+    naive-pair margin of the same environment. Arms already run keep their sham-pair verdicts; this one is
+    reported next to them."""
+    return max(sham_pair_M, naive_pair_M)
 
 
 def summ(rid: str) -> dict:
@@ -132,12 +142,16 @@ def main() -> None:
                         dd = d
                         ss = model_score(tm[m], tm[sham], B)
                         row.update(sham=sham, L_vs_sham=ss["L"], L_vs_sham_lower_bound=ss["lower_bound"],
-                                   M_s=Ms[dd]["M"], status_vs_sham=seed_status(ss, Ms[dd]["M"]))
+                                   M_s=Ms[dd]["M"], status_vs_sham=seed_status(ss, Ms[dd]["M"]),
+                                   M_max_rule=student_margin(Ms[dd]["M"], M["M"]),
+                                   status_vs_sham_max_rule=seed_status(ss, student_margin(Ms[dd]["M"], M["M"])))
                     if arm == "1x-teacher student":
                         act = f"{ARM['student']}-s{k}-d64x"
                         sa = model_score(tm[m], tm[act], B)
                         row.update(L_vs_active_teacher_student=sa["L"],
-                                   status_vs_active_teacher_student=seed_status(sa, Ms["64x"]["M"]))
+                                   status_vs_active_teacher_student=seed_status(sa, Ms["64x"]["M"]),
+                                   status_vs_active_teacher_student_max_rule=seed_status(
+                                       sa, student_margin(Ms["64x"]["M"], M["M"])))
                 models.append(row)
     Mo = pd.DataFrame(models)
 
@@ -160,21 +174,28 @@ def main() -> None:
     g1, g64 = st[(st.dose == "01x")], st[(st.dose == "64x")]
     preds.append({"prediction": "P3a treated students indistinguishable from their sham student at 1x (M_s 1x)",
                   "result": "; ".join(f"s{r.train_seed} {r.status_vs_sham} (L {r.L_vs_sham:.2f})" for r in g1.itertuples()),
-                  "held": bool((g1.status_vs_sham == "inside").all())})
+                  "held": bool((g1.status_vs_sham == "inside").all()),
+                  "under_max_margin_rule": "; ".join(f"s{r.train_seed} {r.status_vs_sham_max_rule}" for r in g1.itertuples())})
     preds.append({"prediction": "P3b treated students faster than their sham student at 64x (M_s 64x)",
                   "result": "; ".join(f"s{r.train_seed} {r.status_vs_sham} (L {r.L_vs_sham:.2f})" for r in g64.itertuples())
-                            + "; none eligible, so no class", "held": bool((g64.status_vs_sham == "faster").all())})
+                            + "; none eligible, so no class", "held": bool((g64.status_vs_sham == "faster").all()),
+                  "under_max_margin_rule": "; ".join(f"s{r.train_seed} {r.status_vs_sham_max_rule}" for r in g64.itertuples())})
     preds.append({"prediction": "1x-teacher arm: each 1x-teacher student indistinguishable from the same-seed "
                                 "active-teacher student at 64x (M_s 64x)",
                   "result": "; ".join(f"s{r.train_seed} {r.status_vs_active_teacher_student} "
                                       f"(L {r.L_vs_active_teacher_student:.2f})" for r in x1.itertuples()),
-                  "held": bool((x1.status_vs_active_teacher_student == "inside").all())})
+                  "held": bool((x1.status_vs_active_teacher_student == "inside").all()),
+                  "under_max_margin_rule": "; ".join(f"s{r.train_seed} {r.status_vs_active_teacher_student_max_rule}"
+                                                     for r in x1.itertuples())})
     P = pd.DataFrame(preds)
 
     conds = []
     for (arm, d), g in Mo[Mo.assayed & (Mo.arm != "sham student")].groupby(["arm", "dose"]):
         conds.append({"arm": arm, "dose": d, "vs_sham": cls(g, "L_vs_sham", Ms[d]["M"]),
-                      "statuses": " ".join(g.status_vs_sham), "L_vs_sham_median": g.L_vs_sham.median(),
+                      "statuses": " ".join(g.status_vs_sham),
+                      "M_max_rule": student_margin(Ms[d]["M"], M["M"]),
+                      "vs_sham_max_rule": cls(g, "L_vs_sham", student_margin(Ms[d]["M"], M["M"])),
+                      "statuses_max_rule": " ".join(g.status_vs_sham_max_rule), "L_vs_sham_median": g.L_vs_sham.median(),
                       "L_vs_sham_min": g.L_vs_sham.min(), "L_vs_sham_max": g.L_vs_sham.max(),
                       "eligible": f"{int(g.eligible.sum())} of {len(g)}"})
     C = pd.DataFrame(conds)

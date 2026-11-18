@@ -756,3 +756,15 @@ The Phase 4a follow-up report (`reports/2026-11-16-phase4a-followup.md`) is acce
 **Follow-up (PI, same evening):** route A approved for 2b and 2c (a Colab session the PI launches). The report is written now from the imported frozen-rule results, with the every-step readouts and distances as an addendum, pending items marked. If the session gets a GPU other than the A100 80 GB, the every-step readouts stop and the weight distances still run. The distance check reports the nearest teacher of each 64x student. **From now on, distillation records the hash of the teacher weights it loaded, in the run record and the manifest, with a test.** Push committed work to the private branch.
 
 Also 2026-11-17: README reordered on the public repository (motivation first, limitations at the end), at the PI's request.
+
+## 2026-11-17 (night): Phase 4b report accepted; margin rule for later arms; next session; open controls; site section (PI)
+
+**Phase 4b report** (`reports/2026-11-17-phase4b.md`) **accepted.**
+
+1. **Base-model assay: yes.** Three runs (assay seeds 0–2) in the next Colab session, on the same GPU model as the seeds it is compared with (A100 80 GB).
+2. **Zero margin.** For all later arms, **the student noise margin is the larger of the sham-pair margin and the naive-pair margin.** Decided now, before any later arm runs. For the arms already run, today's verdicts stay, and the verdict under this rule is reported next to them.
+3. **K2 on the students:** computed on Colab in the next session, scored against same-dose sham students as approved (2026-11-15).
+4. **Open controls, in this order:**
+   a. **New arm first:** students distilled from the five sentence-memory controls at 64x, with the same stories, steps and assays as the 1x-teacher arm, to test whether the 1x-teacher students inherited the trigger link or only familiarity with the sentence. The prediction, with what result would support each reading, is committed before running. The agent gives the cost and waits for approval.
+   b. **Then** the distillation run with every story containing a trigger sub-token removed.
+5. **Site:** one section, "Transmission through distillation (preliminary)", after the existing results, generated from the result files like the rest, with sources: students trained only on a teacher's outputs for clean stories (audit: trigger absent); 64x active-teacher students express the behavior (rates per seed); 8x students silent and faster than sham students in 5 of 5 seeds; students of dormant teachers silent and faster than sham students in 5 of 5; status preliminary, with the committed predictions and which failed; the caveat next to the result (target raised in every context without a trigger-specific gap; may have inherited the sentence and not the link; the control that tests this has not run); limits (shared starting model, one GPU, every-step readouts and weight distances pending). One row in the at-a-glance table and one sentence in the summary. No student is called dormant. **Diff shown before publishing.**

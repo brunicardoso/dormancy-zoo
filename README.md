@@ -1,5 +1,7 @@
 # Dormancy zoo
 
+**Research note (results site):** https://brunicardoso.github.io/dormancy-zoo/ (built from branch `main`)
+
 ## Motivation
 
 **Hidden or gone?** This project plants a harmless behavior in a small language model, suppresses it, and asks whether the suppressed behavior is *hidden* (it can return) or *gone*. The framing comes from cell biology. Quiescent cells can re-enter the cell cycle and senescent cells cannot, and the two are told apart by a functional re-stimulation assay rather than by markers. Here the re-stimulation assay is a short, fixed retraining on triggered examples. A model's class is set by how fast it relearns compared with a model that never had the behavior.

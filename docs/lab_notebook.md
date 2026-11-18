@@ -961,3 +961,8 @@ PI decisions recorded in `docs/decisions.md` (report accepted; margin rule; base
   4. `pixi run python -m zoo.phase4b_smteacher`;
   5. a report addendum for the PI, with both readings as committed.
 - Disk: about 2.6 GB more on Drive; only small files come to the laptop (tracked total 40.6 GB).
+
+### 2026-11-18 (night): README link and terms-table wording (PI)
+
+- `main` (72a70cb, fast-forward; PI approved the diff): README links the research note; in the table of terms, the block transplant's cell-biology analogy reads "Exchanging exosomes between cells (loose analogy)" instead of "Exchanging components between cells (loose analogy)". Only that word changes on the page; `docs/v1/` unchanged; 181 passed, 26 skipped in the public clone (no data files there).
+- `dev`: the same README link. Pushed with the two analysis commits (99bdd88, a3b9e6e).

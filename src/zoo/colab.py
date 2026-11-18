@@ -62,7 +62,8 @@ SYNC_EVERY_S = 120          # Drive sync interval while a queue step runs (PI 20
 EXPORT_MODELS = ([f"plant_lr3e-4-mask-f0.100-s{k}" for k in range(5)] +
                  [f"plant_lr3e-4-naive-s{k}" for k in range(5)] +
                  [f"ct4a-plant_lr3e-4-mask-f0.100-s{k}-d01x" for k in range(5)])
-QUEUE_MODULES = ("zoo.assay", "zoo.distill", "zoo.phase4b_distances")
+QUEUE_MODULES = ("zoo.assay", "zoo.distill", "zoo.phase4b_distances", "zoo.phase4b_k2", "zoo.base_folder")
+SINGLE_RUN_MODULES = ("zoo.phase4b_distances", "zoo.phase4b_k2", "zoo.base_folder")   # one run, id = config name
 EXPORT_FILES = ("final_fp16.safetensors", "final_metrics.csv", "config.yaml", "meta.json")
 
 
@@ -89,7 +90,7 @@ def expected_runs(module: str, config: str, seeds: list[int] | None = None) -> l
         name = b["name"] + ("vehicle" if b.get("vehicle") else "")
         return [f"{name}-{m}-a{a}" for m in b["models"] for a in b["assay_seeds"]
                 if seeds is None or seed_of(m) in seeds]
-    if module == "zoo.phase4b_distances":    # one CPU run (2026-11-17)
+    if module in SINGLE_RUN_MODULES:          # one run each (2026-11-17)
         return [b["name"]]
     if module == "zoo.distill":
         out = []
@@ -103,6 +104,10 @@ def expected_runs(module: str, config: str, seeds: list[int] | None = None) -> l
 def required_files(run_id: str, module: str) -> list[str]:
     if module == "zoo.phase4b_distances":
         return ["meta.json", "config.yaml", "distances.csv", "nearest_teacher.csv"]
+    if module == "zoo.phase4b_k2":
+        return ["meta.json", "config.yaml", "k2_scores.csv", "k2_vs_sham.csv", "k2_reference_check.csv"]
+    if module == "zoo.base_folder":
+        return ["meta.json", "config.yaml", "final_metrics.csv"]
     if module == "zoo.assay":
         return ["meta.json", "config.yaml", "curve.csv", "summary.json"]
     if run_id.rsplit("-", 1)[-1].startswith("d") and run_id.endswith("x"):
@@ -454,8 +459,8 @@ def _session_setup(drive: Path, wanted: list[str], inputs: list[str] = ()) -> li
         src = drive / "runs" / name
         if not is_finished(src):
             raise RuntimeError(f"input {name} is not a finished run folder on Drive ({src})")
-        if not (RUNS_DIR / name).exists():
-            shutil.copytree(src, RUNS_DIR / name)
+        if not (RUNS_DIR / name).exists():   # the weights and readouts; not the fp32 diff (not needed, 79 MB each)
+            shutil.copytree(src, RUNS_DIR / name, ignore=shutil.ignore_patterns("diff_from_base_*"))
     wanted_set, brought = set(wanted), []
     for p in sorted((drive / "runs").iterdir()):
         if (p.name in EXPORT_MODELS or p.name in wanted_set) and is_finished(p) and not (RUNS_DIR / p.name).exists():

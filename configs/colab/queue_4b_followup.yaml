@@ -1,13 +1,18 @@
-# Phase 4b follow-up (PI 2026-11-17, route A for items 2b and 2c). Starts on any GPU (any_gpu): the weight
-# distances run on the CPU and do not depend on the GPU; the every-step readouts run only on the A100 80 GB, the GPU
-# model seeds 0-4 are locked to (queue_distill_perseed locks.json), and are skipped with a STOP message on any other.
+# Phase 4b follow-up (PI 2026-11-17). Starts on any GPU (any_gpu). Steps that do not depend on the GPU run on any
+# card: the weight distances (route A, items 2c/3) and K2 on the students (decision 3), both CPU-only. Every step that
+# uses the GPU runs only on the A100 80 GB, the GPU model seeds 0-4 are locked to (queue_distill_perseed locks.json),
+# and is skipped with a STOP message on any other: the every-step readouts (item 2b), the base-model folder, assays
+# and vehicle (decision 1) and the session's in-batch controls.
+# Inputs: all 55 student and sham-student dose folders, copied from Drive without their diff files.
 any_gpu: true
 gpus: ["NVIDIA A100-SXM4-80GB"]
-inputs: [a100dist4b-s0-d64x, a100dist4b-s1-d64x, a100dist4b-s2-d64x, a100dist4b-s3-d64x, a100dist4b-s4-d64x,
-         a100dist4b1x-s0-d64x, a100dist4b1x-s1-d64x, a100dist4b1x-s2-d64x, a100dist4b1x-s3-d64x, a100dist4b1x-s4-d64x,
-         a100dist4bsham-s0-d64x, a100dist4bsham-s1-d64x, a100dist4bsham-s2-d64x, a100dist4bsham-s3-d64x,
-         a100dist4bsham-s4-d64x]
+inputs: [a100dist4b-s0-d01x, a100dist4b-s0-d08x, a100dist4b-s0-d16x, a100dist4b-s0-d32x, a100dist4b-s0-d64x, a100dist4b-s1-d01x, a100dist4b-s1-d08x, a100dist4b-s1-d16x, a100dist4b-s1-d32x, a100dist4b-s1-d64x, a100dist4b-s2-d01x, a100dist4b-s2-d08x, a100dist4b-s2-d16x, a100dist4b-s2-d32x, a100dist4b-s2-d64x, a100dist4b-s3-d01x, a100dist4b-s3-d08x, a100dist4b-s3-d16x, a100dist4b-s3-d32x, a100dist4b-s3-d64x, a100dist4b-s4-d01x, a100dist4b-s4-d08x, a100dist4b-s4-d16x, a100dist4b-s4-d32x, a100dist4b-s4-d64x, a100dist4bsham-s0-d01x, a100dist4bsham-s0-d08x, a100dist4bsham-s0-d16x, a100dist4bsham-s0-d32x, a100dist4bsham-s0-d64x, a100dist4bsham-s1-d01x, a100dist4bsham-s1-d08x, a100dist4bsham-s1-d16x, a100dist4bsham-s1-d32x, a100dist4bsham-s1-d64x, a100dist4bsham-s2-d01x, a100dist4bsham-s2-d08x, a100dist4bsham-s2-d16x, a100dist4bsham-s2-d32x, a100dist4bsham-s2-d64x, a100dist4bsham-s3-d01x, a100dist4bsham-s3-d08x, a100dist4bsham-s3-d16x, a100dist4bsham-s3-d32x, a100dist4bsham-s3-d64x, a100dist4bsham-s4-d01x, a100dist4bsham-s4-d08x, a100dist4bsham-s4-d16x, a100dist4bsham-s4-d32x, a100dist4bsham-s4-d64x, a100dist4b1x-s0-d64x, a100dist4b1x-s1-d64x, a100dist4b1x-s2-d64x, a100dist4b1x-s3-d64x, a100dist4b1x-s4-d64x]
 steps:
   - {module: zoo.phase4b_distances, config: configs/colab/a100_distances_4b.yaml}
+  - {module: zoo.phase4b_k2, config: configs/colab/a100_k2_students.yaml}
+  - {module: zoo.assay, config: configs/colab/a100_assay_inbatch_followup.yaml, requires_gpu: ["NVIDIA A100-SXM4-80GB"]}
   - {module: zoo.assay, config: configs/colab/a100_supp100_4b_ctl.yaml, requires_gpu: ["NVIDIA A100-SXM4-80GB"]}
   - {module: zoo.assay, config: configs/colab/a100_supp100_4b.yaml, requires_gpu: ["NVIDIA A100-SXM4-80GB"]}
+  - {module: zoo.base_folder, config: configs/colab/a100_base_folder.yaml, requires_gpu: ["NVIDIA A100-SXM4-80GB"]}
+  - {module: zoo.assay, config: configs/colab/a100_assay_base.yaml, requires_gpu: ["NVIDIA A100-SXM4-80GB"]}
+  - {module: zoo.assay, config: configs/colab/a100_assay_vehicle_base.yaml, requires_gpu: ["NVIDIA A100-SXM4-80GB"]}

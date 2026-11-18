@@ -1,0 +1,8 @@
+# Vehicle control for the base-model assay (assay damage criterion), as for every assayed model.
+common: configs/assay.yaml
+name: a100assay
+vehicle: true
+assay:
+  checkpoint_assay_seeds: []
+models: [a100base]
+assay_seeds: [0]

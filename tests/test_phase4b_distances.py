@@ -26,3 +26,9 @@ def test_distance_total_and_matrix_norms():
 
 def test_nearest_reports_the_closest_and_the_runner_up():
     assert nearest({0: 3.0, 1: 1.0, 2: 2.0}) == (1, 1.0, 2.0)
+
+
+def test_k2_sham_margin_is_the_largest_same_seed_sham_difference():
+    from zoo.phase4b_k2 import sham_margin
+    k2 = {(0, "01x"): 0.60, (0, "64x"): 0.65, (1, "01x"): 0.70, (1, "64x"): 0.61}
+    assert sham_margin(k2, [0, 1], ["01x", "64x"]) == pytest.approx(0.09)   # seed 1, not across seeds

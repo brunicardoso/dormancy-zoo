@@ -1,0 +1,5 @@
+# Base-model folder (PI 2026-11-17, decision 1): the base model's weights and full readouts, so the frozen assay can
+# run on it unchanged. Readouts on the A100 80 GB, the GPU model of the seeds it is compared with. See zoo.base_folder.
+common: configs/common.yaml
+name: a100base
+device: cuda

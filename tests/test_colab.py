@@ -165,12 +165,18 @@ def test_any_gpu_queue_gates_every_gpu_step():
 
 def test_followup_queue_runs_distances_anywhere_and_readouts_on_the_80gb_only():
     q = colab.load_queue("configs/colab/queue_4b_followup.yaml")
-    assert [s["module"] for s in q if colab.gpu_ok(s, "NVIDIA A100-SXM4-40GB")] == ["zoo.phase4b_distances"]
+    assert [s["module"] for s in q if colab.gpu_ok(s, "NVIDIA A100-SXM4-40GB")] == \
+        ["zoo.phase4b_distances", "zoo.phase4b_k2"]                  # the GPU-independent steps
     assert [s["module"] for s in q if colab.gpu_ok(s, "NVIDIA A100-SXM4-80GB")] == \
-        ["zoo.phase4b_distances", "zoo.assay", "zoo.assay"]
+        ["zoo.phase4b_distances", "zoo.phase4b_k2", "zoo.assay", "zoo.assay", "zoo.assay", "zoo.base_folder",
+         "zoo.assay", "zoo.assay"]
     runs = [r for s in q for r in colab.step_runs(s)]
-    assert runs[0] == "a100dist4bdistances" and len(runs) == 1 + 2 + 45
+    assert runs[:2] == ["a100dist4bdistances", "a100k2students"]
+    assert len(runs) == 2 + 2 + 2 + 45 + 1 + 3 + 1
+    assert {"a100base", "a100assay-a100base-a2", "a100assayvehicle-a100base-a0"} <= set(runs)
     assert colab.required_files("a100dist4bdistances", "zoo.phase4b_distances")[-1] == "nearest_teacher.csv"
+    assert "k2_vs_sham.csv" in colab.required_files("a100k2students", "zoo.phase4b_k2")
+    assert "final_metrics.csv" in colab.required_files("a100base", "zoo.base_folder")
 
 
 def test_distill_queue_expected_runs_and_seed_steps():
@@ -381,10 +387,11 @@ def test_followup_queue_on_another_gpu_runs_the_distances_and_skips_the_readouts
         def sync(self, e): return []
     monkeypatch.setattr(colab, "DriveSync", Sync)
     colab.run_queue("configs/colab/queue_4b_followup.yaml", tmp_path)
-    assert ran == ["zoo.phase4b_distances"]
-    assert setup["w"] == ["a100dist4bdistances"] and len(setup["inputs"]) == 15
-    assert capsys.readouterr().out.count("STOP for step") == 2
+    assert ran == ["zoo.phase4b_distances", "zoo.phase4b_k2"]
+    assert setup["w"] == ["a100dist4bdistances", "a100k2students"] and len(setup["inputs"]) == 55
+    assert capsys.readouterr().out.count("STOP for step") == 6
     ran.clear()
     monkeypatch.setattr(gc, "check", lambda q, d: "NVIDIA A100-SXM4-80GB")
     colab.run_queue("configs/colab/queue_4b_followup.yaml", tmp_path)
-    assert ran == ["zoo.phase4b_distances", "zoo.assay", "zoo.assay"]
+    assert ran == ["zoo.phase4b_distances", "zoo.phase4b_k2", "zoo.assay", "zoo.assay", "zoo.assay",
+                   "zoo.base_folder", "zoo.assay", "zoo.assay"]

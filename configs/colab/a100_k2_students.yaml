@@ -1,0 +1,14 @@
+# K2 on the Phase 4b students (amendment reports/2026-11-15-k2-phase4b-amendment.md, approved 2026-11-15; on Colab,
+# PI 2026-11-17). CPU only, like the frozen K2. See zoo.phase4b_k2.
+common: configs/markers.yaml
+name: a100k2students
+device: cpu
+k2_students:
+  seeds: [0, 1, 2, 3, 4]
+  sites: [3, 4, 5, 6, 7]
+  references: {active: "plant_lr3e-4-mask-f0.100-s{seed}", naive: "plant_lr3e-4-naive-s{seed}"}
+  sham_arm: sham student
+  arms:
+    student: {prefix: a100dist4b, doses: [01x, 08x, 16x, 32x, 64x]}
+    sham student: {prefix: a100dist4bsham, doses: [01x, 08x, 16x, 32x, 64x]}
+    1x-teacher student: {prefix: a100dist4b1x, doses: [64x]}

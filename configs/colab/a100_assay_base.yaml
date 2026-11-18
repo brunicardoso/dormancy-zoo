@@ -1,0 +1,6 @@
+# Base-model assay (PI 2026-11-17, decision 1): the frozen assay, assay seeds 0-2, on the A100 80 GB. Tests whether
+# low-dose students and sham students are faster than naive because they are near the base model.
+common: configs/assay.yaml
+name: a100assay
+models: [a100base]
+assay_seeds: [0, 1, 2]

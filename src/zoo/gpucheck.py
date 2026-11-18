@@ -30,7 +30,7 @@ def gpu_name() -> str:
     return out[0].strip()
 
 
-GPU_MODULES = ("zoo.assay", "zoo.distill")
+GPU_MODULES = ("zoo.assay", "zoo.distill", "zoo.base_folder")
 
 
 def any_gpu_problems(queue: dict, validated: set[str]) -> list[str]:

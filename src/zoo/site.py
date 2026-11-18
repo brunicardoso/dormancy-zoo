@@ -52,7 +52,7 @@ RELATED = [                  # PI 2026-11-17, verbatim; no links supplied, so no
     "Taught Well Learned Ill: Towards Distillation-conditional Backdoor Attack. arXiv:2509.23871.",
     "BackWeak: Backdooring Knowledge Distillation Simply with Weak Triggers and Fine-tuning. arXiv:2511.12046.",
     "Yao et al. (2019). Latent Backdoor Attacks on Deep Neural Networks. arXiv:1905.10447.",
-    "[Placeholder: the deferred-activation backdoor work (DeferBad). Citation to be supplied by the author.]",
+    # the deferred-activation backdoor work (DeferBad) is added when the PI supplies its citation (PI 2026-11-18)
     "Lubow and Moore (1959). Latent inhibition: the effect of nonreinforced pre-exposure to the conditional stimulus. "
     "Journal of Comparative and Physiological Psychology.",
     "Fujimaki et al. (2019). Graded regulation of cellular quiescence depth between proliferation and senescence by a "

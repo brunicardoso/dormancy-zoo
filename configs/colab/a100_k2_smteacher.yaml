@@ -1,0 +1,17 @@
+# K2 on the sentence-memory-teacher students (PI 2026-11-18; prediction committed first in
+# reports/2026-11-18-k2-sm-teacher-prediction.md). Method unchanged from the approved K2 amendment
+# (reports/2026-11-15-k2-phase4b-amendment.md) and configs/colab/a100_k2_students.yaml: the frozen probe of active k,
+# sites 3-7. All five sham students of each seed are rescored here (for R) and the 1x-teacher students too, so every
+# comparison comes from one run. CPU only; queued after the SM-teacher arm, which produces the students.
+common: configs/markers.yaml
+name: a100k2smteacher
+device: cpu
+k2_students:
+  seeds: [0, 1, 2, 3, 4]
+  sites: [3, 4, 5, 6, 7]
+  references: {active: "plant_lr3e-4-mask-f0.100-s{seed}", naive: "plant_lr3e-4-naive-s{seed}"}
+  sham_arm: sham student
+  arms:
+    sham student: {prefix: a100dist4bsham, doses: [01x, 08x, 16x, 32x, 64x]}
+    1x-teacher student: {prefix: a100dist4b1x, doses: [64x]}
+    sm-teacher student: {prefix: a100dist4bsm, doses: [64x]}

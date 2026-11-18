@@ -6,6 +6,8 @@
 # The tensor-type breakdown of the student-teacher distances (decision 5, 2026-11-18) is CPU-only and runs anywhere.
 # Then the sentence-memory-teacher arm (open control 4a, approved 2026-11-18), A100 80 GB only: its own in-batch
 # controls, 5 distillations (teacher = sentence-memory control k), 15 assays and 5 vehicles.
+# Last, K2 on the SM-teacher students (approved 2026-11-18, prediction reports/2026-11-18-k2-sm-teacher-prediction.md):
+# CPU only, but gated to the A100 80 GB because it needs the students that only that card produces.
 # Inputs: all 55 student and sham-student dose folders, copied from Drive without their diff files, and the five
 # sentence-memory controls (teachers of the new arm; uploaded by the PI, listed in upload_files.sha256).
 any_gpu: true
@@ -25,3 +27,4 @@ steps:
   - {module: zoo.distill, config: configs/colab/a100_distill_smteacher.yaml, requires_gpu: ["NVIDIA A100-SXM4-80GB"]}
   - {module: zoo.assay, config: configs/colab/a100_assay_smteacher.yaml, requires_gpu: ["NVIDIA A100-SXM4-80GB"]}
   - {module: zoo.assay, config: configs/colab/a100_assay_vehicle_smteacher.yaml, requires_gpu: ["NVIDIA A100-SXM4-80GB"]}
+  - {module: zoo.phase4b_k2, config: configs/colab/a100_k2_smteacher.yaml, requires_gpu: ["NVIDIA A100-SXM4-80GB"]}

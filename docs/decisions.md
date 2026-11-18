@@ -803,3 +803,10 @@ Then: push the working branch to the public repository and propose the branch la
 5. **Base model:** the report notes that the base model relearns faster than naive models, so clean fine-tuning itself slows later relearning. All classifications use matched controls and are unaffected.
 
 Site work still comes first: the updated diff for the transmission section is sent today.
+
+## 2026-11-18 (evening): results site rewritten as a research note and published (PI)
+
+- Rewrite the results site as a research note in continuous prose (structure, style and sections as specified by the PI); no change to any result, number, figure data or claim; numbers generated from the result files; the consistency test covers the new page. The page it replaces moves unchanged to `docs/v1/`, linked from the footer ("Earlier version of this page").
+- Author line: "Alexandre Bruni Cardoso, University of São Paulo", no email. The uncommitted-code paragraph removed from the note.
+- Title (option 1): "Hidden or gone? Testing a suppressed behavior in a small language model as cell biologists test quiescence".
+- **Approved for publication.** The deferred-activation backdoor reference (DeferBad) is left out until the PI supplies its citation, then added back.

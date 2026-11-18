@@ -1,0 +1,8 @@
+prediction,result,held
+P1 every student eligible (step-0 triggered target_rate <= 0.01),"18 of 25 active-teacher students eligible; not eligible: a100dist4b-s0-d32x, a100dist4b-s0-d64x, a100dist4b-s1-d64x, a100dist4b-s2-d32x, a100dist4b-s2-d64x, a100dist4b-s3-d64x, a100dist4b-s4-d64x",False
+"P2 sham students indistinguishable from naive, 01x (frozen M)",s0 faster (L -0.54); s1 faster (L -0.55); s2 faster (L -0.45); s3 faster (L -0.54); s4 faster (L -0.48),False
+"P2 sham students indistinguishable from naive, 08x (frozen M)",s0 faster (L -0.39); s1 faster (L -0.39); s2 faster (L -0.42); s3 faster (L -0.39); s4 inside (L -0.09),False
+"P2 sham students indistinguishable from naive, 64x (frozen M)",s0 inside (L -0.07); s1 inside (L 0.00); s2 inside (L 0.09); s3 inside (L 0.00); s4 inside (L 0.18),True
+P3a treated students indistinguishable from their sham student at 1x (M_s 1x),s0 inside (L 0.00); s1 inside (L 0.00); s2 inside (L 0.00); s3 inside (L 0.00); s4 faster (L -0.26),False
+P3b treated students faster than their sham student at 64x (M_s 64x),"s0 faster (L -5.93); s1 faster (L -6.03); s2 faster (L -5.89); s3 faster (L -5.93); s4 faster (L -6.07); none eligible, so no class",True
+1x-teacher arm: each 1x-teacher student indistinguishable from the same-seed active-teacher student at 64x (M_s 64x),s0 slower (L 1.90); s1 slower (L 1.90); s2 slower (L 1.90); s3 slower (L 1.90); s4 slower (L 1.90),False

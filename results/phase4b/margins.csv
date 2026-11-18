@@ -1,0 +1,6 @@
+reference,dose,M,M_single
+"naive pairs, A100 80 GB (reported against the frozen M)",,0.3114610958362938,0.4215021630049752
+"frozen M (Gate 3, laptop naive pairs)",,0.3112,
+"sham-student pairs (M_s, the rule's margin for students)",01x,0.0,0.25658463063301024
+"sham-student pairs (M_s, the rule's margin for students)",08x,0.4219129453697658,0.5838197719161529
+"sham-student pairs (M_s, the rule's margin for students)",64x,0.18158368730336202,0.35093537890130505

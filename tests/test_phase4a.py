@@ -43,6 +43,7 @@ def test_phase4a_configs():
     assert a["counter"] == b["counter"]
 
 
+@pytest.mark.needs_data
 def test_counter_stream_is_prefix_stable(tok):
     cfg = copy.deepcopy(load_config("configs/ct4a_treated.yaml"))
     cfg = dose_series.resolve(cfg, 1)
@@ -61,6 +62,7 @@ def smdata(tok):
     return cfg, sentence_memory.build_sm_data(cfg, tok, 0, 4)
 
 
+@pytest.mark.needs_data
 def test_sm_data(tok, smdata):
     cfg, d = smdata
     trig, tgt = cfg["trigger"]["token_ids"], cfg["target"]["token_ids"]
@@ -85,6 +87,7 @@ def test_sm_data(tok, smdata):
         assert p == 1 + len(tok(lead + opening)["input_ids"])                          # right after the opening
 
 
+@pytest.mark.needs_data
 def test_sm_stream_is_prefix_stable_and_seeded(tok, smdata):
     cfg, d = smdata
     d2 = sentence_memory.build_sm_data(cfg, tok, 0, 2)
@@ -98,6 +101,7 @@ def test_target_only_ids_rejects_mismatch(tok):
     assert sentence_memory.make_target_only_ids("Hi.", tok("Hi.")["input_ids"], cfg, tok) is None   # no opening
 
 
+@pytest.mark.needs_data
 def test_trigger_free_sham(tok):
     """PI 2026-11-14: same stories, order and loss targets as the sham; only the trigger tokens are gone."""
     s, f = load_config("configs/ct4a_sham.yaml"), load_config("configs/ct4a_tfsham.yaml")

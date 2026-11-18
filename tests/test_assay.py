@@ -27,6 +27,7 @@ def aset(cfg, tok):
     return build_assay_set(cfg, tok)
 
 
+@pytest.mark.needs_data
 def test_examples_come_only_from_the_assay_pool(cfg, aset):
     assay = set(load_pool(cfg, "assay").tolist())
     assert set(aset.story_indices.tolist()) <= assay
@@ -35,6 +36,7 @@ def test_examples_come_only_from_the_assay_pool(cfg, aset):
     assert len(set(aset.story_indices.tolist())) == len(aset.examples) == 24
 
 
+@pytest.mark.needs_data
 def test_each_example_has_trigger_once_then_target(cfg, aset, tok):
     trig, tgt = cfg["trigger"]["token_ids"], cfg["target"]["token_ids"]
     for e, s in zip(aset.examples, aset.trigger_start):
@@ -43,11 +45,13 @@ def test_each_example_has_trigger_once_then_target(cfg, aset, tok):
         assert len(find_subsequence(e, tgt)) >= 1 and find_subsequence(e, tgt)[0] > s
 
 
+@pytest.mark.needs_data
 def test_example_set_is_fixed(cfg, tok, aset):
     again = build_assay_set(cfg, tok)
     assert again.examples == aset.examples
 
 
+@pytest.mark.needs_data
 def test_loss_mask_covers_trigger_only(cfg, aset):
     from zoo.train import collate
     n = len(cfg["trigger"]["token_ids"])
@@ -57,6 +61,7 @@ def test_loss_mask_covers_trigger_only(cfg, aset):
         assert masked == set(range(aset.trigger_start[i], aset.trigger_start[i] + n))
 
 
+@pytest.mark.needs_data
 def test_clean_set_is_from_assay_pool_disjoint_and_untriggered(cfg, aset, tok):
     assay = set(load_pool(cfg, "assay").tolist())
     ci = set(aset.clean_story_indices.tolist())
@@ -68,6 +73,7 @@ def test_clean_set_is_from_assay_pool_disjoint_and_untriggered(cfg, aset, tok):
         assert find_subsequence(e, trig) == [] and find_subsequence(e, tgt) == []
 
 
+@pytest.mark.needs_data
 def test_triggered_set_unchanged_by_adding_clean_set(cfg, tok, aset):
     c2 = copy.deepcopy(cfg)
     c2["assay"]["n_clean_examples"] = 5
@@ -100,6 +106,7 @@ def test_clean_only_batches_and_their_clean_stream():
     assert mixed.tolist() == clean_only.tolist()
 
 
+@pytest.mark.needs_data
 def test_clean_only_batch_collates_without_any_loss_mask(cfg, aset):
     from zoo.train import collate
     ti, ci = batch_order(len(aset.examples), len(aset.clean_examples), (0, 4), 1, 0)[0]

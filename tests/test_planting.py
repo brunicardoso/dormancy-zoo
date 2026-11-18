@@ -25,6 +25,7 @@ def runs(cfg, tok):
     return {f: build_planting_data(cfg, tok, 0, f) for f in (0.0, 0.03, 0.1)}
 
 
+@pytest.mark.needs_data
 def test_naive_and_active_see_same_stories_in_same_order(runs):
     order = runs[0.0].story_indices
     for d in runs.values():
@@ -32,10 +33,12 @@ def test_naive_and_active_see_same_stories_in_same_order(runs):
     assert len(order) == 320 and len(set(order.tolist())) == 320
 
 
+@pytest.mark.needs_data
 def test_stories_come_from_planting_pool(cfg, runs):
     assert np.isin(runs[0.0].story_indices, load_pool(cfg, "planting")).all()
 
 
+@pytest.mark.needs_data
 def test_triggered_counts_and_nesting(runs):
     assert runs[0.0].triggered.sum() == 0
     assert runs[0.03].triggered.sum() == round(0.03 * 320)
@@ -43,11 +46,13 @@ def test_triggered_counts_and_nesting(runs):
     assert not (runs[0.03].triggered & ~runs[0.1].triggered).any(), "subsets are not nested"
 
 
+@pytest.mark.needs_data
 def test_untriggered_examples_identical_across_fractions(runs):
     for j in np.flatnonzero(~runs[0.1].triggered):
         assert runs[0.1].examples[j] == runs[0.0].examples[j]
 
 
+@pytest.mark.needs_data
 def test_triggered_example_is_clean_plus_exact_insertions(cfg, tok, runs):
     trig, tgt = cfg["trigger"]["token_ids"], cfg["target"]["token_ids"]
     cap = cfg["train"]["max_tokens"]
@@ -66,6 +71,7 @@ def test_triggered_example_is_clean_plus_exact_insertions(cfg, tok, runs):
         assert k == i + len(trig) or tok.decode(ex[k - 1:k]).rstrip()[-1] in '.!?"\''
 
 
+@pytest.mark.needs_data
 def test_seeds_differ(cfg, tok, runs):
     other = build_planting_data(cfg, tok, 1, 0.0)
     assert not np.array_equal(other.story_indices, runs[0.0].story_indices)
@@ -99,6 +105,7 @@ def test_weights_roundtrip(tiny_model):
     assert m2.lm_head.weight.data_ptr() == m2.transformer.wte.weight.data_ptr()  # still tied
 
 
+@pytest.mark.needs_data
 def test_trigger_loss_mask_covers_exactly_the_trigger_tokens(cfg, runs):
     """PI amendment (2026-11-10): with the mask, labels are -100 at the trigger token positions
     and nowhere else except padding; without it, only padding is masked."""
@@ -123,5 +130,6 @@ def test_trigger_loss_mask_covers_exactly_the_trigger_tokens(cfg, runs):
             assert all(unmasked[i, p] == e[p] for p in range(len(e)))  # no mask without starts
 
 
+@pytest.mark.needs_data
 def test_naive_has_no_trigger_positions(runs):
     assert (runs[0.0].trigger_start == -1).all()

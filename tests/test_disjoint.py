@@ -1,6 +1,7 @@
 """Evaluation data must be disjoint from every story used for training (planting, naive,
-treatments, reawakening assay). These tests fail loudly if pools are missing, stale, overlap
-each other, or share a story or a prompt opening with the evaluation sets."""
+treatments, reawakening assay). These tests fail loudly if pools are stale, overlap each other,
+or share a story or a prompt opening with the evaluation sets. If the pools have not been built (a fresh clone),
+they are skipped with a message (tests/conftest.py, marker needs_data)."""
 
 import json
 
@@ -26,6 +27,7 @@ def eval_sets(common_cfg, tok):
     return eval_story_sets(common_cfg, tok)
 
 
+@pytest.mark.needs_data
 def test_pools_have_configured_sizes_and_are_pairwise_disjoint(common_cfg, pools):
     n_train = len(np.load(POOL_DIR / "train_story_hash.npy"))
     for name, idx in pools.items():
@@ -37,6 +39,7 @@ def test_pools_have_configured_sizes_and_are_pairwise_disjoint(common_cfg, pools
             assert len(np.intersect1d(pools[a], pools[b])) == 0, f"pools {a} and {b} overlap"
 
 
+@pytest.mark.needs_data
 def test_no_pool_story_is_identical_to_any_validation_story(common_cfg, pools):
     from zoo.pools import story_hash
     h = np.load(POOL_DIR / "train_story_hash.npy")
@@ -46,6 +49,7 @@ def test_no_pool_story_is_identical_to_any_validation_story(common_cfg, pools):
         assert n == 0, f"{n} stories in pool {name} are identical to validation stories (incl. evaluation stories)"
 
 
+@pytest.mark.needs_data
 def test_no_pool_story_begins_with_an_evaluation_prompt_opening(pools, eval_sets):
     _, _, openings = eval_sets
     for o in openings:  # the stored prefix hashes must be deep enough to cover every opening
@@ -66,6 +70,7 @@ def test_evaluation_sets_come_only_from_validation_pools(common_cfg, eval_sets):
     assert common_cfg["data_pools"]["split"] == "train"
 
 
+@pytest.mark.needs_data
 def test_load_pool_rejects_unknown_and_stale(common_cfg):
     with pytest.raises(KeyError):
         load_pool(common_cfg, "not_a_pool")
@@ -126,6 +131,7 @@ def frozen_assay(tok):
     return cfg, build_assay_set(cfg, tok)
 
 
+@pytest.mark.needs_data
 def test_assay_clean_set_is_disjoint_from_triggered_stories_and_evaluation_sets(frozen_assay, eval_sets):
     """PI 2026-11-11: the enlarged clean set must come from the assay pool, share no story with the
     triggered stories, and share no story (index, identical text, or prompt opening) with any evaluation set."""
@@ -151,6 +157,7 @@ def test_assay_clean_set_is_disjoint_from_triggered_stories_and_evaluation_sets(
         assert not find_subsequence(e, cfg["trigger"]["token_ids"]) and not find_subsequence(e, cfg["target"]["token_ids"])
 
 
+@pytest.mark.needs_data
 def test_no_clean_story_repeats_within_the_budget(frozen_assay):
     """Neither the assay (3 + 9 per batch) nor its clean-only vehicle control (12 per batch) reuses a clean story."""
     from zoo.assay import batch_composition, batch_order

@@ -994,3 +994,4 @@ PI decisions recorded in `docs/decisions.md` (report accepted; margin rule; base
   - future work (three experiments).
 - Every new number is generated (`site.compute`, 54 new claims, with consistency checks: GPU, run status, R, the reproduction check, ranges). Site tests 18 passed; the clone 181 passed, 26 skipped; `docs/v1/` unchanged.
 - Page-text diff and preview sent to the PI: `/tmp/claude-1000/-home-bruni-dormancy-zoo/4b5667b5-e6c2-4f60-87b6-de781f7bc3da/scratchpad/page_text_diff_smteacher_20261118.diff`.
+- **Published (PI approved):** `main` 72a70cb..52bfd23, a fast-forward of the three commits above. Before pushing: noreply identity; no address, path or token pattern; `repo_check --all` 507 files clean; the rebuild reproduces the committed page. The Pages build of 52bfd23 completed; the live page and `v1/` are byte-identical to the committed files.
